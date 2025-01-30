@@ -5,6 +5,9 @@ interface CreepMemory {
     action: string,
     cache: any,
     targetRoom?: string,
+    dontPullMe?: boolean,
+    
+    sign?: string,
 
     lastTargetPos?: {
         x: number,

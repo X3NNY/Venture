@@ -9,6 +9,7 @@ const creepOutDefenderActions = {
 
         let targets = hostiles;
 
+        // 没有敌军时候找一下核心有没有
         if (targets.length === 0) {
             const invaderCores = creep.room.find(FIND_STRUCTURES, {
                 filter: s => s.structureType === STRUCTURE_INVADER_CORE
@@ -16,11 +17,13 @@ const creepOutDefenderActions = {
             targets = invaderCores as any;
         }
 
+        // 什么都没有了治疗友军
         if (targets.length === 0) {
             creepOutDefenderActions.heal(creep);
             return ;
         }
 
+        // 优先攻击治疗单位
         let target = targets.find(c => c.getActiveBodyparts?.(HEAL) > 0);
         if (!target) {
             target = creep.pos.findClosestByRange(targets);
@@ -46,6 +49,7 @@ const creepOutDefenderActions = {
             }
         }
 
+        // 自我治疗
         if (creep.hits < creep.hitsMax) {
             creep.heal(creep);
         }

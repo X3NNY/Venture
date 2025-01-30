@@ -30,6 +30,7 @@ export const doneSpawnMission = (room: Room, task: Task) => {
         return;
     }
     global.SpawnCreepNum[room.name][role] = global.SpawnCreepNum[room.name][role] - 1;
+    return true;
 }
 
 export const getSpawnMission = (room: Room, filter?: ()=>boolean) => {

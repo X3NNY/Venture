@@ -1,11 +1,17 @@
-import { CREEP_ROLE } from "@/constant/creep";
 import creepHarvesterAction from "./main/harvester";
 import creepUniversalAction from "./main/universal";
 import creepCarrierAction from './main/carrier';
 import creepBuilderAction from './main/builder';
 import creepUpgraderAction from './main/upgrader';
 import creepMenderAction from './main/mender';
+import creepCourierAction from './main/courier';
+import creepManagerAction from './main/manager';
+
+import creepClaimerAction from './claim/claimer';
+
 import creepDefendAttackerAction from './defend/defendAttacker';
+
+import creepAidBuilderAction from './aid/builder';
 
 import creepOutScouterAction from './outMine/outScouter';
 import creepOutHarvesterAction from './outMine/outHarvester';
@@ -14,6 +20,7 @@ import creepOutCarrierAction from './outMine/outCarrier';
 import creepOutBuilderAction from './outMine/outBuilder';
 import creepOutReserverAction from './outMine/outReserver';
 
+
 const actions = {
     harvester: creepHarvesterAction,
     universal: creepUniversalAction,
@@ -21,8 +28,14 @@ const actions = {
     builder: creepBuilderAction,
     upgrader: creepUpgraderAction,
     mender: creepMenderAction,
+    courier: creepCourierAction,
+    manager: creepManagerAction,
+
+    claimer: creepClaimerAction,
 
     defend_attacker: creepDefendAttackerAction,
+
+    aid_builder: creepAidBuilderAction,
 
     // 外矿采集
     out_scouter: creepOutScouterAction,

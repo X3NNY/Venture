@@ -1,13 +1,13 @@
 import { updateBuildMission } from './buildMission';
 import { updateRepairMission, updateWallRepairMission } from './repairMission';
-import { updateSpawnMission } from './spwanMission';
+import { updateSpawnMission } from './spawnMission';
+import { updateTransportMission } from './transportMission';
 
 export const roomMissionUpdate = (room: Room) => {
 
     // 孵化任务
     if (Game.time % 10 === 0) updateSpawnMission(room);
-
-    // if (Game.time % 20 === 0) updateTransportMission(room);
+    if (Game.time % 20 === 0) updateTransportMission(room);
     
     // 建造&修复任务
     if (Game.time % 50 === 1) {

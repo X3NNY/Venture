@@ -9,7 +9,7 @@ export const loop = botLoop;
 // // 性能开销分析
 // import profiler from './module/wheel/screeps-profiler';
 // profiler.enable();
-// profiler.output()
+// global.profiler = profiler
 // export const loop = function() {
 //     profiler.wrap(botLoop);
 // }

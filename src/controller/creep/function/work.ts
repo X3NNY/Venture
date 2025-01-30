@@ -73,3 +73,19 @@ export const creepGoRepair = (creep: Creep, target: Structure) => {
     }
     return false;
 }
+
+export const creepGoTransfer = (creep: Creep, target: AnyStoreStructure, rType: ResourceConstant) => {
+    if (!target) return false;
+
+    const res = creep.transfer(target, rType);
+
+    if (res === OK) {
+        return true;
+    } else if (res === ERR_NOT_IN_RANGE) {
+        creepMoveTo(creep, target, {
+            maxRooms: 1,
+            range: 1
+        })
+    }
+    return false;
+}

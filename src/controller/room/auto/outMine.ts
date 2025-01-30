@@ -135,14 +135,14 @@ const createOutReserverCreep = (room: Room, targetRoom: Room) => {
 
     if (targetRoom.controller.reservation &&
         targetRoom.controller.reservation.username === room.controller.owner.username &&
-        targetRoom.controller.reservation.ticksToEnd > 1000
+        targetRoom.controller.reservation.ticksToEnd > 2000
     ) return false;
 
     const creeps = getRoomTargetCreepNum(targetRoom.name);
     const out_reserver = (creeps[CREEP_ROLE.OUT_RESERVER] || []).length;
     const spawns = global.SpawnCreepNum[room.name][CREEP_ROLE.OUT_RESERVER] || 0;
 
-    if (out_reserver + spawns >= 1) return false;
+    if (out_reserver + spawns > 0) return false;
 
     addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.out_reserver, {
         home: room.name, targetRoom: targetRoom.name

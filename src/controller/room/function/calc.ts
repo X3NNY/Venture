@@ -65,5 +65,13 @@ export const calcTowerDamageToCreep = (room: Room, creep: Creep) => {
         totalHeal += h;
     });
     return realDamage - totalHeal;
+}
 
+
+/**
+ * 计算两点间的切比雪夫距离
+ * 因为爬爬走斜的和走直线时间一样，所以用切比雪夫而不是欧几里得近似真实距离
+ */
+export const getPosDistance = (p1: RoomPosition, p2: RoomPosition) => {
+    return Math.max(Math.abs(p1.x-p2.x), Math.abs(p1.y-p2.y));
 }

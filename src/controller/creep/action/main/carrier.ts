@@ -31,13 +31,24 @@ const creepCarrierActions = {
 
         if (ruinedEnergy) target = ruinedEnergy;
 
-        // 爆金币
-        const container = creep.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter: s => s.structureType === STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > Math.min(1200, creep.store.getFreeCapacity()) && !s.pos.inRangeTo(creep.room.controller, 1)
-        });
-        if (container && !target) target = container;
+        // 从容器获取
+        if (!target) {
+            const containers = creep.room.container.filter(s => (creep.room.storage ? s.store.getUsedCapacity() : s?.store[RESOURCE_ENERGY] > Math.min(1200, creep.store.getFreeCapacity())) && !s.pos.inRangeTo(creep.room.controller, 1));
+            if (containers) target = creep.pos.findClosestByRange(containers);
+        }
 
-        if (creep.room.storage && !target) target = creep.room.storage;
+        // 从中央链接获取
+        if (!target) {
+            if (creep.room.level >= 5 && creep.room.storage && creep.room.link) {
+                const mLink = creep.room.link.find(l => l.pos.inRangeTo(creep.room.storage, 2))??null;
+                if (mLink && mLink.store[RESOURCE_ENERGY] > 0) target = mLink;
+            } 
+        }
+
+        if (!target && creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY] > 10000) target = creep.room.storage;
+        if (!target && creep.room.terminal) target = creep.room.terminal;
+
+        if (!target && creep.room.storage) target = creep.room.storage;
 
         if (target) {
             const resourceType = RESOURCE_ENERGY;

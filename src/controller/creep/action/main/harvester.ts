@@ -105,6 +105,23 @@ const creepHarvesterActions = {
 
         // 能量不能浪费
         if (creep.ticksToLive < 2) creep.drop(RESOURCE_ENERGY)
+
+        // 检查是否有链接
+        if (creep.getActiveBodyparts(CARRY) && creep.store.getFreeCapacity() === 0) {
+            if (creep.room.link) {
+                creep.memory.action = 'transfer';
+            }
+        }
+    },
+    transfer: (creep: Creep) => {
+        const target = creep.room.link.find(l => creep.pos.inRangeTo(l, 1) && l.store.getFreeCapacity(RESOURCE_ENERGY) > 0);
+
+        if (!target) {
+            creepHarvesterActions.harvest(creep);
+        } else {
+            creep.transfer(target, RESOURCE_ENERGY);
+        }
+        creep.memory.action = 'harvest';
     }
 }
 
@@ -130,6 +147,8 @@ export default {
                 creepHarvesterActions.build(creep); break;
             case 'harvest':
                 creepHarvesterActions.harvest(creep); break;
+            case 'transfer':
+                creepHarvesterActions.transfer(creep); break;
         }
     }
 }

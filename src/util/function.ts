@@ -13,3 +13,9 @@ export const insertSorted = (arr: any[], newObj: any, key: string) => {
     }
     arr.splice(left, 0, newObj);
 }
+
+export const getCpuConsumption = (func: CallableFunction) => {
+    const start = Game.cpu.getUsed();
+    func();
+    console.log(func.name, 'consume CPU:', Game.cpu.getUsed() - start);
+}

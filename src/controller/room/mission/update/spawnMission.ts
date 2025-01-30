@@ -44,6 +44,11 @@ const spawnMissionCheck = {
         return false
     },
 
+    courier: (room: Room, current: number, maxNum: number) => {
+        if (room.storage?.store[RESOURCE_ENERGY] < 10000) return false;
+        return current < maxNum;
+    },
+
     /**
      * 建造者检查
      */
@@ -65,6 +70,24 @@ const spawnMissionCheck = {
         // 新手期不需要
         if (room.level < 2) return false;
 
+        // 冲级
+        if (room.level < 8 && (room.storage?.store[RESOURCE_ENERGY]||0) > 100000) {
+            return current < maxNum+1;
+        }
+
+        return current < maxNum;
+    },
+    manager: (room: Room, current: number, maxNum: number) => {
+        if (maxNum === 0 || room.level < 5) return false;
+        const center = Memory.RoomInfo[room.name]?.center;
+        // 没有中心点
+        if (!center) return false;
+
+        const link = room.link.find(l => l?.pos.inRangeTo(center.x, center.y, 1));
+
+        // 还没有仓库和中央链接
+        if (!room.storage || !link) return ;
+
         return current < maxNum;
     },
     mender: (room: Room, current: number, maxNum: number) => {
@@ -73,14 +96,14 @@ const spawnMissionCheck = {
         // 新手期不需要
         if (room.level < 3) return false;
 
-        // 最多一个
-        if (current >= 1) return false;
+        // 低能量时 最多一个
+        if ((room.storage?.store[RESOURCE_ENERGY]||0) < 100000 && current >= 1) return false;
 
         // 紧急任务大于5个
-        if (countMission(room, MISSION_TYPE.REPAIR, m => m.type === REPAIRE_MISSION.urgent_structure.type || m.type === REPAIRE_MISSION.urgent_wall.type) > 5) return true;
+        if (countMission(room, MISSION_TYPE.REPAIR, m => m.type === REPAIRE_MISSION.urgent_structure.type || m.type === REPAIRE_MISSION.urgent_wall.type) > 5) return current < maxNum;
 
         // 太多要坏的了
-        if (countMission(room, MISSION_TYPE.REPAIR) >= 20) return true;
+        if (countMission(room, MISSION_TYPE.REPAIR) >= 20) return current < maxNum;
         return false;
     }
 }

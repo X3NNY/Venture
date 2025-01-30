@@ -1,5 +1,5 @@
 import { MISSION_TYPE } from "@/constant/mission";
-import { deleteMission, getMission } from "@/controller/room/mission/pool";
+import { deleteMission, getMission, getMissionByDist, lockMission, unlockMission } from "@/controller/room/mission/pool";
 import { creepGoRepair } from "../../function/work";
 import { creepMoveTo } from "../../function/move";
 import { creepChargeEnergy } from "../../function/charge";
@@ -14,7 +14,7 @@ const creepMenderActions = {
     },
     repair: (creep: Creep) => {
         if (!creep.memory.cache.task) {
-            const task = getMission(creep.room, MISSION_TYPE.REPAIR);
+            const task = getMissionByDist(creep.room, MISSION_TYPE.REPAIR, creep.pos);
 
             if (!task) {
                 creep.memory.action = 'upgrade';
@@ -22,13 +22,8 @@ const creepMenderActions = {
                 return ;
             }
 
+            lockMission(creep.room, MISSION_TYPE.REPAIR, task.id, creep.id);
             const target = Game.getObjectById(task.data.target) as Structure;
-
-            // 修盾单独判断
-            if (target?.structureType === STRUCTURE_RAMPART) {
-                creep.memory.cache.rampart = true;
-                creep.memory.cache.pos = {x: target.pos.x, y: target.pos.y};
-            }
 
             // 没有目标||目标已修复到阈值
             if (!target || target.hits >= task.data.hits) {
@@ -41,6 +36,11 @@ const creepMenderActions = {
         }
 
         if (!creep.memory.cache.task) return ;
+
+        // 快死了，释放任务
+        if (creep.ticksToLive < 20) {
+            unlockMission(creep.room, MISSION_TYPE.REPAIR, creep.memory.cache.task.id);
+        }
 
         const task = creep.memory.cache.task;
         const target = Game.getObjectById(task.data.target) as Structure;

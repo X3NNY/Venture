@@ -2,6 +2,8 @@ export const MISSION_TYPE = {
     SPAWN: 'spawn',
     BUILD: 'build',
     REPAIR: 'repair',
+    TRANSPORT: 'transport',
+    MANAGE: 'manage',
 };
 
 export const SPAWN_MISSION = {
@@ -24,7 +26,7 @@ export const SPAWN_MISSION = {
     // 搬运者：搬运资源至需要的地方或仓库、终端。
     carrier: {
         type: MISSION_TYPE.SPAWN,
-        code: 'C',
+        code: 'CA',
         level: 4,
         role: 'carrier'
     },
@@ -46,9 +48,28 @@ export const SPAWN_MISSION = {
 
     mender: {
         type: MISSION_TYPE.SPAWN,
-        code: 'M',
+        code: 'ME',
         level: 5,
         role: 'mender'
+    },
+    courier: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'CO',
+        level: 2,
+        role: 'courier'
+    },
+    manager: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'MA',
+        level: 1,
+        role: 'manager'
+    },
+
+    claimer: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'CL',
+        level: 10,
+        role: 'claimer'
     },
 
     defend_attacker: {
@@ -56,6 +77,14 @@ export const SPAWN_MISSION = {
         code: 'DFA',
         level: 8,
         role: 'defend_attacker'
+    },
+
+    // 援助工作
+    aid_builder: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'AB',
+        level: 10,
+        role: 'aid_builder'
     },
 
     // 外矿工作
@@ -144,4 +173,35 @@ export const REPAIRE_MISSION = {
         type: MISSION_TYPE.REPAIR,
         level: 'd'
     }
+}
+
+export const TRANSPORT_MISSION = {
+    boost: {
+        type: MISSION_TYPE.TRANSPORT,
+        level: 0,
+    },
+    spawn: {
+        type: MISSION_TYPE.TRANSPORT,
+        level: 1,
+    },
+    tower: {
+        type: MISSION_TYPE.TRANSPORT,
+        level: 1,
+    },
+    lab_energy: {
+        type: MISSION_TYPE.TRANSPORT,
+        level: 1,
+    },
+    lab: {
+        type: MISSION_TYPE.TRANSPORT,
+        level: 2,
+    },
+    power_spawn: {
+        type: MISSION_TYPE.TRANSPORT,
+        level: 2,
+    },
+    nuker: {
+        type: MISSION_TYPE.TRANSPORT,
+        level: 3,
+    },
 }

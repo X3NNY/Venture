@@ -5,7 +5,7 @@ export const getRoomTargetCreepNum = (roomName: string) => {
         return global.RoomCreepNum[roomName] || {};
     }
 
-    global.RoomCreepNum = { time: Game.time }
+    global.RoomCreepNum = {}
     for (const name in Game.creeps) {
         const creep = Game.creeps[name];
         const role = creep.memory.role;
@@ -25,5 +25,6 @@ export const getRoomTargetCreepNum = (roomName: string) => {
             home: creep.memory.home
         });
     }
+    global.RoomCreepNum.time = Game.time;
     return global.RoomCreepNum[roomName] || {};
 }

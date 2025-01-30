@@ -24,33 +24,38 @@ export default {
             if (res !== OK) {
                 return Error(res);
             }
+        },
+        visual: (roomName: string, layout?: string) => {
+            let cpu = Game.cpu.getUsed();
+            let layoutInfo = Memory.Layout[roomName];
+    
+            const result = layoutVisualShow(roomName, layoutInfo);
+    
+            cpu = Game.cpu.getUsed() - cpu;
+            if (result === OK) {
+                console.log(`可视化完成，消耗 ${cpu.toFixed(2)} CPU`);
+            } else {
+                console.log(`可视化失败，消耗 ${cpu.toFixed(2)} CPU`);
+            }
         }
     },
-    visual: (roomName: string, layout?: string) => {
-        let cpu = Game.cpu.getUsed();
-        let layoutInfo = Memory.Layout[roomName];
-        if (!layoutInfo) {
-            console.log(`房间 ${roomName} 不存在布局。`);
-            return ;
-        }
-
-        const result = layoutVisualShow(roomName, layoutInfo);
-
-        cpu = Game.cpu.getUsed() - cpu;
-        if (result === OK) {
-            console.log(`可视化完成，消耗 ${cpu.toFixed(2)} CPU`);
-        } else {
-            console.log(`可视化失败，消耗 ${cpu.toFixed(2)} CPU`);
-        }
-    }
 }
 
-export const layoutVisualShow = (roonName: string, layoutInfo: any) => {
-    const structMap = {};
-    for (const s in layoutInfo) {
-        structMap[s] = coordDecompress(layoutInfo[s]);
+export const layoutVisualShow = (roomName: string, layoutInfo?: any) => {
+    let structMap = {};
+    if (layoutInfo) {
+        for (const s in layoutInfo) {
+            structMap[s] = coordDecompress(layoutInfo[s]);
+        }
+    } else {
+        const room = Game.rooms[roomName];
+        const pa = room.source?.[0]?.pos || room.find(FIND_SOURCES)[0]?.pos;
+        const pb = room.source?.[1]?.pos || room.find(FIND_SOURCES)[1]?.pos;
+        const pm = room.mineral?.pos || room.find(FIND_MINERALS)[0]?.pos;
+        const pc = room.controller?.pos;
+        structMap = autoPlanner63.ManagerPlanner.computeManor(roomName, [pc, pm, pa, pb]);
     }
-    layoutVisual.showRoomStructures(roonName, structMap);
+    layoutVisual.showRoomStructures(roomName, structMap);
     return OK
 }
 

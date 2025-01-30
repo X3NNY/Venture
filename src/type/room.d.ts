@@ -58,6 +58,8 @@ interface Task {
     time: number,
     level: number,
     delay?: number,
+    lock?: boolean,
+    lockCreep?: Id<Creep>,
     data: any
 }
 

@@ -7,18 +7,26 @@ const sign = () => {
 
 const creepUpgraderActions = {
     withdraw: (creep: Creep) => {
-        const container = creep.room.container.find(c => c.pos.inRangeTo(creep.room.controller, 2)) ?? null;
+        const link = creep.room.link.find(l => l.pos.inRangeTo(creep.room.controller, 2));
+        let container = creep.room.container.find(c => c.pos.inRangeTo(creep.room.controller, 2)) ?? null;
         let res;
 
+        // 有控制器链接
+        if (link && link.store[RESOURCE_ENERGY] > 0) {
+            res = creep.withdraw(link, RESOURCE_ENERGY);
+            if (res === ERR_NOT_IN_RANGE) {
+                creepMoveTo(creep, link, { maxRooms: 1, range: 1 });
+            }
+        } 
         // 控制器旁边有容器
-        if (container && container.store[RESOURCE_ENERGY] > 0) {
+        else if (container && container.store[RESOURCE_ENERGY] > 0) {
             res = creep.withdraw(container, RESOURCE_ENERGY);
             if (res === ERR_NOT_IN_RANGE) {
                 creepMoveTo(creep, container, { maxRooms: 1, range: 1 });
             }
         }
         
-        // 中期
+        // 否则自己找
         else if (creep.room.level < 6) {
             creepChargeEnergy(creep)
         }
@@ -31,7 +39,14 @@ const creepUpgraderActions = {
         if (!creepMoveToHome(creep)) return ;
 
         // 先移动过去
-        if (!creep.pos.inRangeTo(creep.room.controller, 2)) {
+        const link = creep.room.link.find(l => l.pos.inRangeTo(creep.room.controller, 2));
+        if (link && !creep.pos.inRangeTo(link, 1)) {
+            creepMoveTo(creep, creep.room.controller.pos, {
+                maxRooms: 1,
+                range: 2,
+            })
+        }
+        else if (!link && !creep.pos.inRangeTo(creep.room.controller, 2)) {
             creepMoveTo(creep, creep.room.controller.pos, {
                 maxRooms: 1,
                 range: 2,

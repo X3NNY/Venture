@@ -8,7 +8,7 @@ export function GenSortNumber() {
 export const generateCreepName = (code: string) => {
     const number = GenSortNumber();
     const index = Math.floor(Game.time * Math.random() * 1000) % CreepNameConstant.length;
-    const name = `【${CreepNameConstant[index]}】${code}#${number}`;
+    const name = `[${CreepNameConstant[index]}]${code}#${number}`;
     if (Game.creeps[name]) {
         return generateCreepName(code);
     } else {
@@ -32,7 +32,14 @@ export const calcCreepBodyEnergy = (body: string[]) => {
 }
 
 const PART_LEVEL = {
-    'tough': 0, 'work': 1, 'carry': 2, 'move': 3, 'attack': 4, 'ranged_attack': 5, 'heal': 6, 'claim': 7
+    'tough': 0, 'work': 1, 'attack': 2, 'ranged_attack': 3, 'carry': 4, 'move': 5, 'heal': 6, 'claim': 7
+}
+
+const getCreepRoleMoveCount = (allRoad: boolean, bodyCount: number, moveType: string = 'normal') => {
+    if (moveType === 'nope') return 0;
+    if (moveType === 'full') return bodyCount;
+    
+    return allRoad ? Math.ceil(bodyCount/2) : bodyCount;
 }
 
 export const getCreepRoleBody = (room: Room, role: string, now: boolean = false) => {
@@ -44,15 +51,16 @@ export const getCreepRoleBody = (room: Room, role: string, now: boolean = false)
 
     if (CreepRoleBody[role]) {
         while (level >= 1) {
-            body = Object.assign([], CreepRoleBody[role][level].body);
-            const moveCost = (allRoad ? Math.ceil(body.length/2) : body.length) * 50;
+            body = CreepRoleBody[role][level].body;
+            const moveCost = getCreepRoleMoveCount(allRoad, body.length, CreepRoleBody[role][level].move) * 50;
             if (maxEnergy >= calcCreepBodyEnergy(body) + moveCost) break;
             level --;
         }
         if (level === 0) return [];
     }
 
-    const moveParts = allRoad ? Math.ceil(body.length/2) : body.length;
+    body = Object.assign([], body);
+    const moveParts = getCreepRoleMoveCount(allRoad, body.length, CreepRoleBody[role][level].move);
     if (moveParts > 2) {
         for (let i = 0; i < moveParts-2; i++) {
             body.push(MOVE);

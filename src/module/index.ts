@@ -7,6 +7,9 @@ import { memoryInit } from './init/memory';
 import mountConsole from '@/console';
 import { endClean } from './end/clean';
 import { endGeneratePixel } from './end/pixel';
+import { getCpuConsumption } from '@/util/function';
+import { endClaimCheck } from './end/claim';
+import { endAidCheck } from './end/aid';
 
 // let _cachedMemory: Memory;
 let _isFirstCreate = true;
@@ -49,6 +52,8 @@ const onProcess = () => {
 const onEnd = () => {
     endClean();
     endGeneratePixel();
+    endClaimCheck();
+    endAidCheck();
 }
 
 const onDestory = () => {
