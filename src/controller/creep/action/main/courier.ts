@@ -47,14 +47,14 @@ const creepCourierActions = {
         const amount = creep.memory.cache.amount;
         
         // 目标不存在或者存满了
-        if (target?.store.getFreeCapacity(rType) === 0) {
+        if (!target || target?.store.getFreeCapacity(rType) === 0) {
             deleteMission(creep.room, MISSION_TYPE.TRANSPORT, creep.memory.cache.missionId);
             creep.memory.cache = {};
             return ;
         }
 
         // 能源不够
-        if (source?.store[rType] + creep.store[rType] < amount) {
+        if ((source?.store[rType]||0) + creep.store[rType] < amount) {
             deleteMission(creep.room, MISSION_TYPE.TRANSPORT, creep.memory.cache.missionId);
             creep.memory.cache = {};
             return ;

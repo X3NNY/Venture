@@ -12,9 +12,20 @@ const checkSpawnAndTower = (room: Room) => {
 const creepCarrierActions = {
     // 获取资源
     withdraw: (creep: Creep) => {
+        const minAmount = Math.min(creep.store.getFreeCapacity(), 500);
         // 捡垃圾
+        const tombstone = creep.pos.findClosestByRange(FIND_TOMBSTONES, {
+            filter: t => t.store[RESOURCE_ENERGY] >= minAmount || (Object.keys(t.store).length > 1)
+        })
+        if (tombstone && (creep.room.storage || tombstone[RESOURCE_ENERGY] >= minAmount)) {
+            if (creep.withdraw(tombstone, Object.keys(tombstone.store)[0] as ResourceConstant) === ERR_NOT_IN_RANGE) {
+                creepMoveTo(creep, tombstone, { maxRooms: 1, range: 1 });
+            }
+            return ;
+        }
+
         const droppedEnergy = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
-            filter: r => r.amount >= 200
+            filter: r => (r.resourceType === RESOURCE_ENERGY && r.amount >= minAmount) || (r.resourceType !== RESOURCE_ENERGY && r.amount >= 10)
         })
         if (droppedEnergy && (creep.room.storage || droppedEnergy.resourceType === RESOURCE_ENERGY)) {
             if (creep.pickup(droppedEnergy) === ERR_NOT_IN_RANGE) {
