@@ -141,7 +141,26 @@ export const SPAWN_MISSION = {
         code: 'OPA',
         level: 12,
         role: 'out_pair_attacker'
-    }
+    },
+
+    out_attacker: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'OA',
+        level: 1,
+        role: 'out_attacker'
+    },
+    out_protector: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'OP',
+        level: 1,
+        role: 'out_protector'
+    },
+    out_miner: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'OM',
+        level: 1,
+        role: 'out_miner'
+    },
 }
 
 export const BUILD_MISSION = {

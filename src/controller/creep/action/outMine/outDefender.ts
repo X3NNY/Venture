@@ -86,7 +86,7 @@ export default {
             creepMoveToRoom(creep, creep.memory.targetRoom);
             return ;
         }
-
+        creep.memory.action = 'patrol'
         return true;
     },
     action: (creep: Creep) => {

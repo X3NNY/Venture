@@ -23,6 +23,9 @@ export const CREEP_ROLE = {
     OUT_INVADER: 'out_invader',             // 外房入侵爬爬
     OUT_PAIR_ATTACKER: 'out_pair_attacker', // 外房二人队攻击爬爬
     OUT_PAIR_HEALER: 'out_pair_healer',     // 外房二人队治疗爬爬
+    OUT_ATTACKER: 'out_attacker',           // 外房攻击爬爬
+    OUT_PROTECTOR: 'out_protector',         // 外房守卫爬爬
+    OUT_MINER: 'out_miner',                 // 外房采矿爬爬
 }
 
 /**
@@ -99,11 +102,11 @@ export const CreepRoleBody = {
         1: { body: [], num: 0 },
         2: { body: [], num: 0 },
         3: { body: [], num: 0 },
-        4: { body: [TOUGH, CLAIM], num: 0 },
-        5: { body: [TOUGH, CLAIM], num: 0 },
-        6: { body: [TOUGH, CLAIM], num: 0 },
-        7: { body: [TOUGH, CLAIM], num: 0 },
-        8: { body: [TOUGH, CLAIM], num: 0 },
+        4: { body: [TOUGH, CLAIM], num: 0, move: 'full' },
+        5: { body: [TOUGH, TOUGH, TOUGH, HEAL, CLAIM], num: 0, move: 'full' },
+        6: { body: [TOUGH, TOUGH, TOUGH, HEAL, HEAL, CLAIM], num: 0, move: 'full' },
+        7: { body: [TOUGH, TOUGH, TOUGH, HEAL, HEAL, CLAIM], num: 0, move: 'full' },
+        8: { body: [TOUGH, TOUGH, TOUGH, HEAL, HEAL, CLAIM], num: 0, move: 'full' },
     },
 
 
@@ -151,8 +154,8 @@ export const CreepRoleBody = {
         1: { body: [HEAL], num: 0, move: 'full' },
         2: { body: [RANGED_ATTACK, HEAL], num: 0, move: 'full' },
         3: { body: [RANGED_ATTACK, HEAL], num: 0, move: 'full' },
-        4: { body: [RANGED_ATTACK, RANGED_ATTACK, HEAL, HEAL], num: 0, move: 'full' },
-        5: { body: [RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL, HEAL, HEAL], num: 0, move: 'full' },
+        4: { body: [TOUGH, TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, HEAL], num: 0, move: 'full' },
+        5: { body: [TOUGH, TOUGH, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL, HEAL, HEAL], num: 0, move: 'full' },
     },
     out_scouter: {
         1: { body: [MOVE], num: 0, move: 'nope' },
@@ -173,6 +176,36 @@ export const CreepRoleBody = {
         6: { body: [CLAIM, CLAIM], num: 0 },
         7: { body: [CLAIM, CLAIM, CLAIM], num: 0 },
         8: { body: [CLAIM, CLAIM, CLAIM, CLAIM, CLAIM], num: 0 },
+    },
+    out_attacker: {
+        1: { body: [], num: 0 },
+        2: { body: [], num: 0 },
+        3: { body: [], num: 0 },
+        4: { body: [], num: 0 },
+        5: { body: [], num: 0 },
+        6: { body: [ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL], num: 0, move: 'full' },
+        7: { body: [ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL], num: 0, move: 'full' },
+        8: { body: [ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL], num: 0, move: 'full' }
+    },
+    out_protector: {
+        1: { body: [], num: 0 },
+        2: { body: [], num: 0 },
+        3: { body: [], num: 0 },
+        4: { body: [], num: 0 },
+        5: { body: [], num: 0 },
+        6: { body: [RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL], num: 0, move: 'full' },
+        7: { body: [RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL], num: 0, move: 'full' },
+        8: { body: [RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL], num: 0, move: 'full' },
+    },
+    out_miner: {
+        1: { body: [], num: 0 },
+        2: { body: [], num: 0 },
+        3: { body: [], num: 0 },
+        4: { body: [], num: 0 },
+        5: { body: [], num: 0 },
+        6: { body: [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY], num: 0 },
+        7: { body: [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY], num: 0 },
+        8: { body: [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY], num: 0 },
     }
 }
 

@@ -7,7 +7,7 @@ import { CREEP_ROLE } from "@/constant/creep";
 
 const creepOutHarvesterActions = {
     build: (creep: Creep) => {
-        if (Game.rooms[creep.memory.home].controller.level < 4) return ;
+        // if (Game.rooms[creep.memory.home].controller.level < 4) return ;
         // 不在目标房间
         if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
             creepMoveToRoom(creep, creep.memory.targetRoom, {
@@ -100,6 +100,36 @@ const creepOutHarvesterActions = {
         if (creep.memory.targetHarvestPos) {
             let structs = creep.room.lookForAt(LOOK_STRUCTURES, creep.memory.targetHarvestPos.x, creep.memory.targetHarvestPos.y);
             if (structs.length > 0) return ;
+        } else {
+            // 继续找一遍有没有Container
+            const containers = target.pos.findInRange(FIND_STRUCTURES, 1, {
+                filter: s => s.structureType === STRUCTURE_CONTAINER && s.pos.lookFor(LOOK_CREEPS).length === 0
+            });
+            if (containers.length > 0) {
+                creep.memory.targetHarvestPos = containers[0].pos;
+            }
+
+            // 继续找有没有工地
+            else {
+                const containerSites = target.pos.findInRange(FIND_CONSTRUCTION_SITES, 1, {
+                    filter: s => s.structureType === STRUCTURE_CONTAINER
+                });
+                if (containerSites.length > 0) {
+                    creep.memory.targetHarvestPos = containerSites[0].pos;
+                    return ;
+                }
+
+                // 建一个工地
+                else {
+                    creep.room.createConstructionSite(creep.pos, STRUCTURE_CONTAINER);
+                    // addMission(creep.room, MISSION_TYPE.BUILD, BUILD_MISSION, {
+                    //     pos: creep.pos,
+                    //     structureType: STRUCTURE_CONTAINER
+                    // });
+                    creep.memory.targetHarvestPos = creep.pos;
+                    return ;
+                }
+            }
         }
 
         if (creep.store.getFreeCapacity() === 0) creep.memory.action = 'transfer';

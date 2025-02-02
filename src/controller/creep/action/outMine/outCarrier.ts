@@ -181,6 +181,7 @@ const creepOutCarrierActions = {
             // 修容器
             const containers = creep.room.container.filter(c => {
                 if (!c || c.hits >= c.hitsMax * 0.8) return false;
+                if (!creep.room.source.some(s => s.pos.isNearTo(c.pos))) return false;
                 if (!creep.pos.inRangeTo(c.pos, 5)) return false;
                 return true;
             })

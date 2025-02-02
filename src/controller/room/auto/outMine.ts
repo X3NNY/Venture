@@ -1,8 +1,9 @@
+import { filter } from 'lodash';
 import { coordDecompress } from "@/util/coord";
 import { updateSpawnCreepNum } from "../function";
 import { getRoomTargetCreepNum } from "../function/get";
 import { CREEP_ROLE } from "@/constant/creep";
-import { addMission } from "../mission/pool";
+import { addMission, countMission, deleteMission, filterMission } from "../mission/pool";
 import { MISSION_TYPE, SPAWN_MISSION } from "@/constant/mission";
 
 const outEnergyMine = (room: Room) => {
@@ -55,13 +56,26 @@ const outEnergyMine = (room: Room) => {
             if (c.owner.username === 'Source Keeper') return false;
             return true;
         })) {
-            createOutDefendCreepPair(room, targetRoom, hostiles);
+            createOutDefendCreep(room, targetRoom, hostiles);
+            // createOutDefendCreepPair(room, targetRoom, hostiles);
         } else {
             createOutDefendCreep(room, targetRoom, hostiles);
         }
 
         // 有敌人暂时不采集
-        if (hostiles.length > 0) continue;
+        if (hostiles.length > 0) {
+            const tasks = filterMission(room, MISSION_TYPE.SPAWN,
+                m => m.data.role === SPAWN_MISSION.out_harvester.role ||
+                    m.data.role === SPAWN_MISSION.out_carrier.role ||
+                    m.data.role === SPAWN_MISSION.out_builder.role ||
+                    m.data.role === SPAWN_MISSION.out_reserver.role
+            )
+            // 删除已在队列的其他爬爬
+            for (const task of tasks) {
+                deleteMission(room, MISSION_TYPE.SPAWN, task.id);
+            }
+            continue;
+        }
 
         const controller = targetRoom.controller;
         
@@ -82,8 +96,117 @@ const outEnergyMine = (room: Room) => {
     }
 }
 
+// 中央九房外矿采集
+const outCenterMine = (room: Room) => {
+    if (Game.time % 20 !== 0) return;
+    const centerMineral = Memory.RoomInfo[room.name].OutMineral?.center;
+
+    if (!centerMineral || !centerMineral.length) return ;
+    updateSpawnCreepNum(room);
+
+    for (const roomName of centerMineral) {
+        const targetRoom = Game.rooms[roomName];
+
+        if (!targetRoom) {
+            createOutScoutCreep(room, roomName);
+            continue;
+        }
+        if (!targetRoom) continue;
+
+        if (Game.time % 100 === 0 && (targetRoom.memory.road?.length||0) > 0) {
+            let sites = targetRoom.find(FIND_MY_CONSTRUCTION_SITES).length;
+            for (const road of targetRoom.memory.road) {
+                if (sites >= 10) break;
+                const [x, y] = coordDecompress(road);
+                const pos = new RoomPosition(x, y, roomName);
+                const result = targetRoom.createConstructionSite(pos, STRUCTURE_ROAD)
+                if (result === OK) sites++;
+                if (result === ERR_FULL) break;
+            }
+        }
+
+        const hostiles = targetRoom.find(FIND_HOSTILE_CREEPS, {
+            filter: c => (c.getActiveBodyparts(ATTACK) > 0 || c.getActiveBodyparts(RANGED_ATTACK) > 0) &&
+            c.owner.username !== 'Source Keeper' &&
+            !Memory.Whitelist?.includes(c.owner.username)
+        });
+
+        const sourceKeeper = targetRoom.find(FIND_HOSTILE_CREEPS, {
+            filter: c => c.owner.username === 'Source Keeper'
+        });
+
+        const creeps = getRoomTargetCreepNum(roomName);
+        const out_attacker = (creeps[CREEP_ROLE.OUT_ATTACKER] || []).length;
+
+        if (hostiles.length > 0) {
+            createOutAttackerCreep(room, targetRoom);
+            createOutProtectorCreep(room, targetRoom);
+            continue;
+        }
+
+        // 有敌人暂时不采集
+        if (sourceKeeper.length > 0 && out_attacker < 1) continue;
+
+        const sources = targetRoom.source?.length || targetRoom.find(FIND_SOURCES).length || 0;
+        if (sources === 0) continue;
+
+        
+        createOutHarvesterCreep(room, targetRoom, sources);
+        const mineral = targetRoom.find(FIND_MINERALS)[0];
+        if (mineral && mineral.mineralAmount > 0) {
+            createOutMinerCreep(room, targetRoom);
+        }
+        createOutCarrierCreep(room, targetRoom, Math.ceil(sources*1.5));
+        createOutBuilderCreep(room, targetRoom);
+    }
+}
+
 export const roomOutMine = (room: Room) => {
     outEnergyMine(room);
+    outCenterMine(room);
+}
+
+// 外房攻击者
+const createOutAttackerCreep = (room: Room, targetRoom: Room) => {
+    const creeps = getRoomTargetCreepNum(targetRoom.name);
+    const out_attacker = (creeps[CREEP_ROLE.OUT_ATTACKER]||[]).filter(c => c.ticksToLive > 300 || c.spawning);
+
+    const spawns = global.SpawnMissionNum[room.name][CREEP_ROLE.OUT_ATTACKER] || 0;
+
+    if ((out_attacker?.length||0) + spawns >= 1) return false;
+
+    addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.out_attacker, {
+        home: room.name,
+        targetRoom: targetRoom.name
+    });
+}
+
+// 外房守护者
+const createOutProtectorCreep = (room: Room, targetRoom: Room) => {
+    const creeps = getRoomTargetCreepNum(targetRoom.name);
+    const out_protector = (creeps[CREEP_ROLE.OUT_PROTECTOR]||[]).filter(c => c.ticksToLive > 300 || c.spawning);
+
+    const spawns = global.SpawnMissionNum[room.name][CREEP_ROLE.OUT_PROTECTOR] || 0;
+
+    if (out_protector.length + spawns >= 1) return false;
+
+    addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.out_protector, {
+        home: room.name,
+        targetRoom: targetRoom.name
+    });
+}
+
+const createOutMinerCreep = (room: Room, targetRoom: Room) => {
+    const creeps = getRoomTargetCreepNum(targetRoom.name);
+    const out_miner = (creeps[CREEP_ROLE.OUT_MINER]||[]).length;
+    const spawns = global.SpawnMissionNum[room.name][CREEP_ROLE.OUT_MINER] || 0;
+
+    if (out_miner + spawns >= 1) return false;
+
+    addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.out_miner, {
+        home: room.name,
+        targetRoom: targetRoom.name
+    });
 }
 
 const createOutBuilderCreep = (room: Room, targetRoom: Room) => {
