@@ -75,6 +75,9 @@ const spawnMissionCheck = {
             return current < maxNum+1;
         }
 
+        // 建造任务太多了 少造一个
+        if (countMission(room, MISSION_TYPE.BUILD) > 10) return current < maxNum -1;
+
         return current < maxNum;
     },
     manager: (room: Room, current: number, maxNum: number) => {
