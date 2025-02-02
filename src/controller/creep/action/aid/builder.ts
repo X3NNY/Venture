@@ -1,14 +1,9 @@
-import { creepMoveTo, creepMoveToRoom } from "../../function/move";
+import { creepMoveTo, creepMoveToRoom, creepMoveToRoomBypass } from "../../function/move";
+import { creepIsOnEdge } from "../../function/position";
 import { creepGoBuild, creepGoHarvest } from "../../function/work";
 
 const creepAidBuilderActions = {
     harvest: (creep: Creep) => {
-        const targetRoom = creep.memory.targetRoom;
-        if (targetRoom && creep.room.name !== targetRoom) {
-            creepMoveToRoom(creep, targetRoom);
-            return ;
-        }
-
         if (creep.store.getFreeCapacity() === 0) {
             creep.memory.action = 'build';
             creepAidBuilderActions.build(creep);
@@ -111,8 +106,8 @@ const creepAidBuilderActions = {
             const structs = creep.room.find(FIND_STRUCTURES, { filter: s => s.hits < s.hitsMax * 0.7 && s.structureType !== STRUCTURE_WALL && s.structureType !== STRUCTURE_RAMPART  });
 
             if (structs.length === 0) {
-                creep.memory.action = 'build';
-                return creepAidBuilderActions.build(creep);
+                creep.memory.action = 'upgrade';
+                return creepAidBuilderActions.upgrade(creep);
             }
 
             creep.memory.cache.target = creep.pos.findClosestByRange(structs).id;
@@ -127,8 +122,26 @@ const creepAidBuilderActions = {
             creepMoveTo(creep, target, { range: 3, maxRooms: 1 });
         }
         if (target.hits >= target.hitsMax * 0.9) {
+            creep.memory.cache = {};
             creep.memory.action = 'build';
             return ;
+        }
+    },
+    upgrade: (creep: Creep) => {
+        if (creep.store[RESOURCE_ENERGY] === 0) {
+            creep.memory.action = 'harvest';
+            return creepAidBuilderActions.harvest(creep);
+        }
+
+        const controller = creep.room.controller;
+
+        const result = creep.upgradeController(controller);
+
+        if (result === OK) {
+            creep.memory.action = 'build';
+            return;
+        } else if (result === ERR_NOT_IN_RANGE) {
+            creepMoveTo(creep, controller, { maxRooms: 1, range: 3});
         }
     }
 }
@@ -136,6 +149,10 @@ const creepAidBuilderActions = {
 export default {
     prepare: (creep: Creep) => {
         if (!creep.memory.cache) creep.memory.cache = {};
+        if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
+            creepMoveToRoomBypass(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00'}})
+            return false;
+        }
         creep.memory.action = 'harvest';
         return true;
     },
@@ -147,6 +164,8 @@ export default {
                 creepAidBuilderActions.build(creep); break;
             case 'repair':
                 creepAidBuilderActions.repair(creep); break;
+            case 'upgrade':
+                creepAidBuilderActions.upgrade(creep); break;
         }
     },
 }

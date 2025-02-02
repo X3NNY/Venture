@@ -1,4 +1,5 @@
-import { creepMoveTo, creepMoveToRoom } from "../../function/move";
+import { creepMoveTo, creepMoveToRoom, creepMoveToRoomBypass } from "../../function/move";
+import { creepGetRangePos, creepIsOnEdge } from "../../function/position";
 
 const creepDoneClaim = (creep: Creep) => {
     const targetRoom = creep.memory.targetRoom;
@@ -27,8 +28,9 @@ const creepDoneClaim = (creep: Creep) => {
 
 export default {
     prepare: (creep: Creep) => {
-        if (creep.room.name !== creep.memory.targetRoom) {
-            creepMoveToRoom(creep, creep.memory.targetRoom);
+        if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
+            // 绕过敌对单位
+            creepMoveToRoomBypass(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00'}})
             return false;
         }
 
@@ -37,6 +39,11 @@ export default {
     action: (creep: Creep) => {
         const controller = creep.room.controller;
         if (!controller) return ;
+
+        // 自我治疗
+        if (creep.getActiveBodyparts(HEAL) > 0 && creep.hits < creep.hitsMax) {
+            creep.heal(creep);
+        }
 
         if (controller.reservation && controller.reservation.username !== creep.owner.username) {
             const result = creep.reserveController(controller);
@@ -59,7 +66,7 @@ export default {
                 creepDoneClaim(creep);
             }
 
-            if (controller.sign.username !== creep.owner.username) creep.signController(controller, creep.memory.sign??'𝙑𝙚𝙣𝙩𝙪𝙧𝙚');
+            if (controller.sign?.username !== creep.owner.username) creep.signController(controller, creep.memory.sign??'𝙑𝙚𝙣𝙩𝙪𝙧𝙚');
         }
     }
 }
