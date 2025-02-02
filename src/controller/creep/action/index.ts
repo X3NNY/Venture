@@ -49,6 +49,7 @@ const actions = {
 export const creepActionRun = (creep: Creep) => {
     const role = creep.memory.role;
 
+    if (!role) return ;
     // if (!role) {
     //     console.log(creep.name, JSON.stringify(creep.memory))
     //     creep.memory = {

@@ -28,8 +28,11 @@ const creepMenderActions = {
             // 没有目标||目标已修复到阈值
             if (!target || target.hits >= task.data.hits) {
                 deleteMission(creep.room, MISSION_TYPE.REPAIR, task.id);
-                creep.memory.cache = {};
                 return ;
+            }
+
+            if (task.level > 10 && (creep.room.storage?.store[RESOURCE_ENERGY]||0) < 50000) {
+                return deleteMission(creep.room, MISSION_TYPE.REPAIR, task.id);
             }
 
             creep.memory.cache.task = task;

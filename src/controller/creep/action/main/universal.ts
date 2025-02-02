@@ -107,6 +107,7 @@ const creepUniversalActions = {
             // 给容器充
             if (targets.length === 0) {
                 creep.room.container.forEach(c => {
+                    if (c.pos.findInRange(FIND_SOURCES, 1).length > 0) return ;
                     if (c.store.getFreeCapacity(RESOURCE_ENERGY) > 0){
                         targets.push(c);
                     }
@@ -184,6 +185,7 @@ export default {
                 break;
             case 'transfer':
                 if (creep.store.getUsedCapacity() === 0) {
+                    creep.memory.cache = {};
                     creep.memory.action = 'harvest';
                 }
                 break;
