@@ -4,7 +4,7 @@ import { roomOutMine } from "./auto/outMine";
 import { roomMissionUpdate, roomMissionInit } from "./mission";
 import { roomStructureWork } from "./structure";
 
-const roomInit = (room: Room) => {
+export const roomInit = (room: Room) => {
     global.CreepNum[room.name] = {}
     global.SpawnMissionNum[room.name] = {}
     roomMissionInit(room);

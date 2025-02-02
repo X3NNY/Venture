@@ -38,7 +38,42 @@ export const creepGoHarvest = (creep: Creep, target: Source, harvestPos?: any) =
             range: 1
         });
     }
-    
+    return false;
+}
+
+export const creepGoMine = (creep: Creep, mineral: Mineral<MineralConstant>, minePos?: any) => {
+    if (minePos && !creep.pos.isEqualTo(minePos.x, minePos.y)) {
+        // 检测一下还有爬爬没
+        if (minePos.isLock && Game.time % 100 === 0) {
+            if ((new RoomPosition(minePos.x, minePos.y, creep.room.name)).lookFor(LOOK_CREEPS).length === 0) {
+                minePos.isLock = false;
+            }
+        }
+        
+        else if (!minePos.isLock) {
+            // 没爬爬就占上
+            if ((new RoomPosition(minePos.x, minePos.y, creep.room.name)).lookFor(LOOK_CREEPS).length === 0) {
+                creepMoveToCoord(creep, minePos.x, minePos.y, {
+                    maxRooms: 1,
+                });
+                return false;
+            } else {
+                minePos.isLock = true;
+            }
+        }
+    }
+    if (mineral) {
+        const result = creep.harvest(mineral);
+        if (result === OK) {
+            return true;
+        } else if (result === ERR_NOT_IN_RANGE) {
+            if (mineral.pos.findInRange(FIND_HOSTILE_CREEPS, 3).length > 0) return ;
+            creepMoveTo(creep, mineral,{
+                maxRooms: 1,
+                range: 1
+            });
+        }
+    }
     return false;
 }
 

@@ -6,7 +6,7 @@ import { addRepairMission } from "./component/repair";
 import { addTransportMission, doneTransportMission } from './component/transport';
 import { getPosDistance } from "../function/calc";
 
-export const filterMission = (room: Room, type: string, filter: (m: any) => boolean): Task[] => {
+export const filterMission = (room: Room, type: string, filter: (m: Task) => boolean): Task[] => {
     return room.memory.missions[type].filter(filter);
 }
 

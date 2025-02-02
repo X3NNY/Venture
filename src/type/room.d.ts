@@ -47,7 +47,7 @@ interface Room {
         index?: number,
         [key: string]: any
     };
-
+    
     // 房间建筑缓存更新
     update(type?: StructureConstant): void;
 }

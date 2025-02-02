@@ -3,7 +3,8 @@ import { filterMission } from "./mission/pool";
 
 export const updateSpawnCreepNum = (room: Room) => {
     if (!global.SpawnCreepNum) global.SpawnCreepNum = {};
-    global.SpawnCreepNum[room.name] = {}
+    if (global.SpawnCreepNum[room.name]?.time === Game.time) return ;
+    global.SpawnCreepNum[room.name] = { time: Game.time }
     const missions = filterMission(room, MISSION_TYPE.SPAWN, ()=>true);
     for (const mission of missions) {
         const role = mission.data.memory.role;

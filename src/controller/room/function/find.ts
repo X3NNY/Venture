@@ -16,11 +16,13 @@ export const roomFindClosestSource = (room: Room, creep: Creep) => {
             filter: c => c.getActiveBodyparts(ATTACK) > 0 || c.getActiveBodyparts(RANGED_ATTACK) > 0
         }).length > 0) return false;
 
-        // const hPos = [[1,1], [1, 0], [1, -1], [0, 1], [0, -1], [-1, 1], [-1, 0], [-1, -1]].filter(([dx,dy]) => terrain.get(source.pos.x+dx, source.pos.y+dy) === 0).length;
+        const hPos = [[1,1], [1, 0], [1, -1], [0, 1], [0, -1], [-1, 1], [-1, 0], [-1, -1]].filter(([dx,dy]) => terrain.get(source.pos.x+dx, source.pos.y+dy) !== TERRAIN_MASK_WALL);
+
+        // if (hPos.length === 0) return false;
 
         if (creepCount === 0) zeroSources.push(source);
 
-        if (creepCount <= 1) return true;
+        if (creepCount < hPos.length) return true;
     })
 
     let targetSource = null;
