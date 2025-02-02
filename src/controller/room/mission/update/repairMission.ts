@@ -43,6 +43,8 @@ export const updateRepairMission = (room: Room) => {
                 continue
             }
 
+            if (!room.storage || room.storage.store[RESOURCE_ENERGY] < 10000) continue;
+
             if (hits < NORMAL_WALL_HITS) {
                 addMission(room, MISSION_TYPE.REPAIR, REPAIRE_MISSION.normal_wall, {
                     target: struct.id,
@@ -58,7 +60,7 @@ export const updateRepairMission = (room: Room) => {
 export const updateWallRepairMission = (room: Room) => {
     const WALL_MAX_THRESHOLD = .5;
 
-    if (room.storage?.store[RESOURCE_ENERGY] < 50000) return ;
+    if ((room.storage?.store[RESOURCE_ENERGY]||0) < 50000) return ;
 
     const layout = Memory.Layout[room.name] || {};
     const ramparts = []
