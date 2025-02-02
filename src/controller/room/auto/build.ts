@@ -41,11 +41,29 @@ export const roomBuildCheckSkip = (room: Room, structureType: string, structures
             // 有非墙非路建筑，跳过
             if (structures.length > 0 &&
                 structures.some(s => s.structureType !== STRUCTURE_RAMPART && s.structureType !== STRUCTURE_ROAD)) return true;
+            
+            // 6级之前不修矿旁边的容器
+            if (room.level <= 6 && room.mineral?.pos.isNearTo(pos)) return  true;
             if (room.level <= 7) return false;
 
             // 等级高无需建控制器旁边的容器
             if (pos.inRangeTo(room.controller, 2)) return true;
             break;
+        case STRUCTURE_LINK:
+            // 有非墙非路建筑，跳过
+            if (structures.length > 0 &&
+                structures.some(s => s.structureType !== STRUCTURE_RAMPART && s.structureType !== STRUCTURE_ROAD)) return true;
+            
+            // 5级只能两个链接，优先选离仓库远的能源建
+            if (room.level === 5) {
+                let source = room.source?.find(s => s.pos.inRangeTo(pos, 2));
+                if (!source) return false;
+
+                let cSource = room.storage.pos.findClosestByRange(room.source);
+                if (source.id == cSource.id) return true;
+            }
+            break;
+
         default:
             if (structures.length === 0) return false;
             if (structures.some(s => s.structureType !== STRUCTURE_RAMPART && s.structureType !== STRUCTURE_ROAD)) return true;
