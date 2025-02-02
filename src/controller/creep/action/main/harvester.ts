@@ -40,15 +40,6 @@ const creepHarvesterActions = {
                     if (containerSites.length > 0) {
                         creep.memory.targetHarvestPos = containerSites[0].pos;
                     }
-
-                    // 建一个工地
-                    // else {
-                    //     addMission(creep.room, MISSION_TYPE.BUILD, BUILD_MISSION, {
-                    //         pos: creep.pos,
-                    //         structureType: STRUCTURE_CONTAINER
-                    //     });
-                    //     creep.memory.targetHarvestPos = creep.pos;
-                    // }
                 }
             }
             // 如果在采集点上
