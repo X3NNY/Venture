@@ -120,7 +120,7 @@ const creepOutHarvesterActions = {
                 }
 
                 // 开采了，建一个工地
-                else if (result) {
+                else if (result && target.pos.findInRange(FIND_STRUCTURES, 1, {filter: s => s.structureType === STRUCTURE_CONTAINER}).length === 0) {
                     creep.room.createConstructionSite(creep.pos, STRUCTURE_CONTAINER);
                     // addMission(creep.room, MISSION_TYPE.BUILD, BUILD_MISSION, {
                     //     pos: creep.pos,
