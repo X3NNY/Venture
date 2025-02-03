@@ -149,6 +149,17 @@ const creepAidBuilderActions = {
 export default {
     prepare: (creep: Creep) => {
         if (!creep.memory.cache) creep.memory.cache = {};
+
+        const flag = Game.flags['CP-AID'];
+        if (flag && !creep.memory.cache.checkpoint) {
+            if (creep.room.name !== flag.pos.roomName || creepIsOnEdge(creep)) {
+                // 绕过敌对单位
+                creepMoveToRoomBypass(creep, flag.pos.roomName, {visualizePathStyle: {stroke: '#00ff00'}})
+                return false;
+            } else {
+                creep.memory.cache.checkpoint = true;
+            }
+        }
         if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
             creepMoveToRoomBypass(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00'}})
             return false;

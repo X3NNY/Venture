@@ -28,21 +28,33 @@ const creepDoneClaim = (creep: Creep) => {
 
 export default {
     prepare: (creep: Creep) => {
-        
-        const flag = Game.flags['CLAIM-CP'];
-        if (flag) {
+        if (!creep.memory.cache) creep.memory.cache = {};
+        const flag = Game.flags['CP-CLAIM'];
+        if (flag && !creep.memory.cache.checkpoint) {
             if (creep.room.name !== flag.pos.roomName || creepIsOnEdge(creep)) {
                 // 绕过敌对单位
-                creepMoveToRoomBypass(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00'}})
+                if (creep.room.find(FIND_HOSTILE_CREEPS, {
+                    filter: (c: Creep) => (c.getActiveBodyparts(ATTACK) > 0 || c.getActiveBodyparts(RANGED_ATTACK) > 0) && !Memory.Whitelist?.includes(c.owner.username)
+                }).length > 0) {
+                    creepMoveToRoomBypass(creep, flag.pos.roomName, {visualizePathStyle: {stroke: '#00ff00'}})
+                } else {
+                    creepMoveToRoom(creep, flag.pos.roomName, {visualizePathStyle: {stroke: '#00ff00'}})
+                }
                 return false;
             } else {
-                flag.remove();
+                creep.memory.cache.checkpoint = true;
             }
         }
 
         if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
             // 绕过敌对单位
-            creepMoveToRoomBypass(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00'}})
+            if (creep.room.find(FIND_HOSTILE_CREEPS, {
+                filter: (c: Creep) => (c.getActiveBodyparts(ATTACK) > 0 || c.getActiveBodyparts(RANGED_ATTACK) > 0) && !Memory.Whitelist?.includes(c.owner.username)
+            }).length > 0) {
+                creepMoveToRoomBypass(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00'}})
+            } else {
+                creepMoveToRoom(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00'}})
+            }
             return false;
         }
 
