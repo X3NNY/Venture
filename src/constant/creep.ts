@@ -43,28 +43,33 @@ export const CreepRoleBody = {
         2: { body: [WORK, WORK, WORK, CARRY,], num: 0 },
         3: { body: [WORK, WORK, WORK, WORK, WORK, WORK, CARRY,], num: 0 },
         4: { body: [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY,],num: 0 },
-        5: { body: [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY,],num: 0 }
+        5: { body: [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY,],num: 0 },
+        6: { body: [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY,],num: 0 },
+        7: { body: [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY,],num: 0 }
     },
     universal: {
         1: { body: [WORK, CARRY,], num: 2 },
         2: { body: [WORK, CARRY, CARRY], num: 2 },
         3: { body: [WORK, WORK, CARRY, CARRY, CARRY, CARRY], num: 2},
         4: { body: [WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 2 },
-        5: { body: [WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 2 }
+        5: { body: [WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 2 },
+        6: { body: [WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 2 }
     },
     carrier: {
         1: { body: [CARRY, CARRY], num: 2 },
         2: { body: [CARRY, CARRY, CARRY, CARRY, CARRY], num: 2 },
         3: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 2 },
-        4: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 2 },
-        5: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 2 },
+        4: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 2 },
+        5: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 2 },
+        6: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 1 },
     },
     builder: {
         1: { body: [WORK, CARRY,], num: 0 },
         2: { body: [WORK, WORK, CARRY, CARRY,], num: 0 },
         3: { body: [WORK, WORK, WORK, CARRY, CARRY, CARRY,], num: 0 },
         4: { body: [WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY,], num: 0 },
-        5: { body: [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY,CARRY, CARRY], num: 0 }
+        5: { body: [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY,CARRY, CARRY], num: 0 },
+        6: { body: [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY,CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 0 }
     },
     upgrader: {
         1: { body: [WORK, CARRY,], num: 3 },
@@ -72,6 +77,7 @@ export const CreepRoleBody = {
         3: { body: [WORK, WORK, WORK, CARRY, CARRY, CARRY,], num: 3 },
         4: { body: [WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY,], num: 2 },
         5: { body: [WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 2 },
+        6: { body: [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 1 },
     },
     mender: {
         1: { body: [WORK, CARRY,], num: 1},
@@ -79,6 +85,7 @@ export const CreepRoleBody = {
         3: { body: [WORK, WORK, WORK, CARRY, CARRY, CARRY,], num: 1},
         4: { body: [WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY,], num: 2},
         5: { body: [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY,], num: 2},
+        6: { body: [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 2},
     },
     courier: {
         1: { body: [CARRY, CARRY], num: 0 },
@@ -86,6 +93,7 @@ export const CreepRoleBody = {
         3: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 0 },
         4: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 1 },
         5: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 1 },
+        6: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 1 },
     },
     manager: {
         1: { body: [CARRY, CARRY, MOVE], num: 0, move: 'nope' },
@@ -116,6 +124,7 @@ export const CreepRoleBody = {
         3: { body: [ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK,], num: 0, move: 'full' },
         4: { body: [ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK,], num: 0, move: 'full' },
         5: { body: [ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK], num: 0, move: 'full' },
+        6: { body: [ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK], num: 0, move: 'full' },
     },
 
     aid_builder: {
@@ -135,6 +144,7 @@ export const CreepRoleBody = {
         3: { body: [WORK, WORK, WORK, WORK, WORK, CARRY,], num: 0 },
         4: { body: [WORK, WORK, WORK, WORK, WORK, WORK, CARRY,], num: 0 },
         5: { body: [WORK, WORK, WORK, WORK, WORK, WORK, CARRY,], num: 0 },
+        6: { body: [WORK, WORK, WORK, WORK, WORK, WORK, CARRY,], num: 0 },
     },
     out_carrier: {
         1: { body: [CARRY, CARRY,], num: 0 },
@@ -142,6 +152,7 @@ export const CreepRoleBody = {
         3: { body: [CARRY, CARRY, CARRY, CARRY,], num: 0},
         4: { body: [WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY,], num: 0},
         5: { body: [WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY,], num: 0},
+        6: { body: [WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY,], num: 0},
     },
     out_builder: {
         1: { body: [WORK, CARRY], num: 0 },
@@ -149,6 +160,7 @@ export const CreepRoleBody = {
         3: { body: [WORK, WORK, WORK, CARRY, CARRY, CARRY], num: 0 },
         4: { body: [WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY], num: 0 },
         5: { body: [WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 0 },
+        6: { body: [WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 0 },
     },
     out_defender: {
         1: { body: [HEAL], num: 0, move: 'full' },
@@ -156,6 +168,15 @@ export const CreepRoleBody = {
         3: { body: [RANGED_ATTACK, HEAL], num: 0, move: 'full' },
         4: { body: [TOUGH, TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, HEAL], num: 0, move: 'full' },
         5: { body: [TOUGH, TOUGH, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL, HEAL, HEAL], num: 0, move: 'full' },
+        6: { body: [TOUGH, TOUGH, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL, HEAL, HEAL, HEAL], num: 0, move: 'full' },
+    },
+    out_invader: {
+        1: { body: [ATTACK], num: 0, move: 'full' },
+        2: { body: [ATTACK, ATTACK], num: 0, move: 'full' },
+        3: { body: [ATTACK, ATTACK, ATTACK], num: 0, move: 'full' },
+        4: { body: [ATTACK, ATTACK, ATTACK, ATTACK], num: 0, move: 'full' },
+        5: { body: [ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK], num: 0, move: 'full' },
+        6: { body: [ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK], num: 0, move: 'full' },
     },
     out_scouter: {
         1: { body: [MOVE], num: 0, move: 'nope' },

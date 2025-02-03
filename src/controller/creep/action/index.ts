@@ -16,6 +16,7 @@ import creepAidBuilderAction from './aid/builder';
 import creepOutScouterAction from './outMine/outScouter';
 import creepOutHarvesterAction from './outMine/outHarvester';
 import creepOutDefenderAction from './outMine/outDefender';
+import creepOutInvaderAction from './outMine/outInvader';
 import creepOutCarrierAction from './outMine/outCarrier';
 import creepOutBuilderAction from './outMine/outBuilder';
 import creepOutReserverAction from './outMine/outReserver';
@@ -41,6 +42,7 @@ const actions = {
     out_scouter: creepOutScouterAction,
     out_harvester: creepOutHarvesterAction,
     out_defender: creepOutDefenderAction,
+    out_invader: creepOutInvaderAction,
     out_carrier: creepOutCarrierAction,
     out_builder: creepOutBuilderAction,
     out_reserver: creepOutReserverAction,
