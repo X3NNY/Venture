@@ -112,11 +112,10 @@ export const doneMission = (room: Room, type: string, missionId: string, data?: 
     const task = getMission(room, type, missionId);
 
     if (!task) {
-        console.log(room.name, type, missionId, data, JSON.stringify(task));
         return ;
     }
     let res;
-    if (type == MISSION_TYPE.SPAWN) {
+    if (type === MISSION_TYPE.SPAWN) {
         res = doneSpawnMission(room, task);
     } else if (type === MISSION_TYPE.TRANSPORT) {
         res = doneTransportMission(room, task, data);

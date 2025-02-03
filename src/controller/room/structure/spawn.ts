@@ -11,7 +11,6 @@ const getSpawnTask = (room: Room) => {
     const mission = getSpawnMission(room);
     if (!mission) return;
 
-
     // 检查能量是否够用
     const cost = calcCreepBodyEnergy(mission.data.body);
 
@@ -44,6 +43,10 @@ const spawnCreep = (room: Room) => {
     const result = spawn.spawnCreep(task.body, task.name, {memory: task.memory})
     const role = task.memory.role;
 
+    // if (role === CREEP_ROLE.AID_BUILDER || role === CREEP_ROLE.OUT_HARVESTER) {
+    //     console.log(role, 'spawn', Game.time, JSON.stringify(task));
+    // }
+
     // 如果创建成功
     if (result == OK) {
         if (!global.CreepNum) global.CreepNum = {};
@@ -67,7 +70,7 @@ const spawnCreep = (room: Room) => {
         // 已经至少有一个了
         const num = room.find(FIND_MY_CREEPS, { filter: c=>c.memory.role === role }).length;
         if (num !== 0) {
-            delayMission(room, MISSION_TYPE.SPAWN, task.missionId);
+            // delayMission(room, MISSION_TYPE.SPAWN, task.missionId);
             return ;
         }
 

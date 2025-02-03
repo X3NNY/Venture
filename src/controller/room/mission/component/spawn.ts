@@ -22,12 +22,13 @@ export const addSpawnMission = (room: Room, mission: MISSION, memory: any) => {
 
 export const doneSpawnMission = (room: Room, task: Task) => {
     const role = task.data.memory.role;
+    // console.log(room.name, JSON.stringify(task));
 
     if (!global.SpawnCreepNum) global.SpawnCreepNum = {}
     if (!global.SpawnCreepNum[room.name]) global.SpawnCreepNum[room.name] = {};
     if (!global.SpawnCreepNum[room.name][role]) {
         global.SpawnCreepNum[room.name][role] = 0;
-        return;
+        return true;
     }
     global.SpawnCreepNum[room.name][role] = global.SpawnCreepNum[room.name][role] - 1;
     return true;
