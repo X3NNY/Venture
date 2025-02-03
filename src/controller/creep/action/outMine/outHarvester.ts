@@ -12,7 +12,7 @@ const creepOutHarvesterActions = {
         if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
             creepMoveToRoom(creep, creep.memory.targetRoom, {
                 plainCost: 2, swampCost: 10
-            });
+            })
             return ;
         }
         // 已经铺路了
@@ -91,7 +91,7 @@ const creepOutHarvesterActions = {
 
         if (!target) return ;
 
-        creepGoHarvest(creep, target, creep.memory.targetHarvestPos);
+        const result = creepGoHarvest(creep, target, creep.memory.targetHarvestPos);
 
         // 没有CARRY的话就继续采集
         if (creep.store.getCapacity() === 0) return ;
@@ -119,8 +119,8 @@ const creepOutHarvesterActions = {
                     return ;
                 }
 
-                // 建一个工地
-                else {
+                // 开采了，建一个工地
+                else if (result) {
                     creep.room.createConstructionSite(creep.pos, STRUCTURE_CONTAINER);
                     // addMission(creep.room, MISSION_TYPE.BUILD, BUILD_MISSION, {
                     //     pos: creep.pos,
