@@ -127,40 +127,54 @@ export const SPAWN_MISSION = {
     out_invader: {
         type: MISSION_TYPE.SPAWN,
         code: 'OI',
-        level: 12,
+        level: 10,
         role: 'out_invader'
     },
     out_pair_healer: {
         type: MISSION_TYPE.SPAWN,
         code: 'OPH',
-        level: 12,
+        level: 8,
         role: 'out_pair_healer'
     },
     out_pair_attacker: {
         type: MISSION_TYPE.SPAWN,
         code: 'OPA',
-        level: 12,
+        level: 8,
         role: 'out_pair_attacker'
     },
 
     out_attacker: {
         type: MISSION_TYPE.SPAWN,
         code: 'OA',
-        level: 1,
+        level: 9,
         role: 'out_attacker'
     },
     out_protector: {
         type: MISSION_TYPE.SPAWN,
         code: 'OP',
-        level: 1,
+        level: 9,
         role: 'out_protector'
     },
     out_miner: {
         type: MISSION_TYPE.SPAWN,
         code: 'OM',
-        level: 1,
+        level: 12,
         role: 'out_miner'
     },
+
+    // 商品采集
+    deposit_harvester: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'DH',
+        level: 11,
+        role: 'deposit_harvester'
+    },
+    deposit_carrier: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'DC',
+        level: 11,
+        role: 'deposit_carrier'
+    }
 }
 
 export const BUILD_MISSION = {

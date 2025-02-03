@@ -161,9 +161,86 @@ const outCenterMine = (room: Room) => {
     }
 }
 
+// 高速通道外矿采集
+const outHighwayMine = (room: Room) => {
+    if (Game.time % 20 !== 1) return;
+    const highwayMineral = Memory.RoomInfo[room.name].OutMineral?.highway;
+    if (!highwayMineral || highwayMineral.length === 0) return ;
+    
+    updateSpawnCreepNum(room);
+
+    for (const roomName in highwayMineral) {
+        const targetRoom = Game.rooms[roomName];
+
+        if (!targetRoom) {
+            createOutScoutCreep(room, roomName);
+            continue;
+        }
+        if (!targetRoom) continue;
+
+        if (!targetRoom.memory.depositMineral || Game.time % 50 === 1) {
+            outRoomDepositCheck(targetRoom);
+            if ((targetRoom.memory.depositMineral?.count||0) === 0) {
+                continue;
+            }
+        }
+
+        const creeps = getRoomTargetCreepNum(roomName);
+
+        // 检查商品采集爬爬数量
+        const dhs = (creeps[CREEP_ROLE.DEPOSIT_HARVESTER] || []).filter(c => c.spawning || c.ticksToLive > 200).length;
+        const dhspawns = global.spawnCreepNum[room.name][CREEP_ROLE.DEPOSIT_HARVESTER] || 0
+        if (dhs + dhspawns < targetRoom.memory.depositMineral.count) {
+            addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.deposit_harvester, {
+                home: room.name, targetRoom: roomName
+            })
+        }
+
+        const dcs = (creeps[CREEP_ROLE.DEPOSIT_CARRIER] || []).filter(c => c.spawning || c.ticksToLive > 200).length;
+        const dcspawns = global.spawnCreepNum[room.name][CREEP_ROLE.DEPOSIT_CARRIER] || 0
+        if (dcs + dcspawns < targetRoom.memory.depositMineral.count) {
+            addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.deposit_carrier, {
+                home: room.name, targetRoom: roomName
+            })
+        }
+    }
+
+}
+
+const outRoomDepositCheck = (room: Room) => {
+    const deposits = room.find(FIND_DEPOSITS);
+
+    if (!deposits || deposits.length === 0) return 0;
+    
+    let count = 0;
+    let amount = 0;
+    for (const deposit of deposits) {
+        if (deposit.lastCooldown >= 100) continue;
+        
+        // 统计可用采集点
+        const terrain = room.getTerrain();
+        let hpos = 0;
+        [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]].forEach(([dx, dy]) => {
+            if (terrain.get(deposit.pos.x+dx, deposit.pos.y+dy) !== TERRAIN_MASK_WALL) hpos++;
+        })
+
+        if (hpos === 0) continue;
+        if (!room.memory['depositMineral']) room.memory['depositMineral'] = {};
+        room.memory['depositMineral'][deposit.id] = hpos;
+        count += 1;
+    }
+    room.memory.depositMineral.count = count;
+
+    for (const id in (room.memory['depositMineral']||{})) {
+        if (Game.getObjectById(id as Id<Deposit>)) continue;
+        delete room.memory['depositMineral'][id];
+    }
+}
+
 export const roomOutMine = (room: Room) => {
     outEnergyMine(room);
     outCenterMine(room);
+    outHighwayMine(room);
 }
 
 // 外房攻击者

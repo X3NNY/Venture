@@ -21,6 +21,8 @@ import creepOutCarrierAction from './outMine/outCarrier';
 import creepOutBuilderAction from './outMine/outBuilder';
 import creepOutReserverAction from './outMine/outReserver';
 
+import creepDepositHarvesterAction from './deposit/depositHarvester';
+import creepDepositCarrierAction from './deposit/depositCarrier';
 
 const actions = {
     harvester: creepHarvesterAction,
@@ -46,6 +48,10 @@ const actions = {
     out_carrier: creepOutCarrierAction,
     out_builder: creepOutBuilderAction,
     out_reserver: creepOutReserverAction,
+
+    // 商品采集
+    deposit_harvester: creepDepositHarvesterAction,
+    deposit_carrier: creepDepositCarrierAction,
 }
 
 export const creepActionRun = (creep: Creep) => {
