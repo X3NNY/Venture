@@ -28,6 +28,18 @@ const creepDoneClaim = (creep: Creep) => {
 
 export default {
     prepare: (creep: Creep) => {
+        
+        const flag = Game.flags['CLAIM-CP'];
+        if (flag) {
+            if (creep.room.name !== flag.pos.roomName || creepIsOnEdge(creep)) {
+                // 绕过敌对单位
+                creepMoveToRoomBypass(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00'}})
+                return false;
+            } else {
+                flag.remove();
+            }
+        }
+
         if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
             // 绕过敌对单位
             creepMoveToRoomBypass(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00'}})
