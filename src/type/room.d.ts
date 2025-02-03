@@ -43,7 +43,10 @@ interface Room {
         missions: {
             [taskType: string]: Task[]
         },
-        sourceHarvestPos?: {},
+        depositMineral?: {
+            [roomName: string]: any
+        },
+        sourceHarvestPos?: any,
         index?: number,
         [key: string]: any
     };

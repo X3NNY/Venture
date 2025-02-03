@@ -60,7 +60,7 @@ const creepOutCarrierActions = {
         // 寻找容器：资源足够&没有其他爬爬选中
         const containers = creep.room.find(FIND_STRUCTURES, {
             filter: s => s.structureType === STRUCTURE_CONTAINER &&
-                        s.store.getUsedCapacity() >= 300 &&
+                        s.store.getUsedCapacity() >= 500 &&
                         Object.values(Memory.creeps).every(m => m.role !== CREEP_ROLE.OUT_CARRIER || m.cache?.targetId !== s.id) 
         }) as StructureContainer[];
 
@@ -86,8 +86,9 @@ const creepOutCarrierActions = {
         }
 
         // 找掉落资源
+        const minAmount = Math.min(creep.store.getFreeCapacity(), 200);
         const droppedResource = creep.room.find(FIND_DROPPED_RESOURCES, {
-            filter: r => r.amount > 500
+            filter: r => r.amount > minAmount
         });
         if (droppedResource && droppedResource.length > 0) {
             const resource = droppedResource.reduce((a, b) => {

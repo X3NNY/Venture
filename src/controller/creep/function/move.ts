@@ -86,10 +86,10 @@ export const creepMoveToRoomBypass = (creep: Creep, roomName: string, options = 
     return creep.originMoveTo(target, options);
 }
 
-export const creepMoveToHome = (creep: Creep) => {
+export const creepMoveToHome = (creep: Creep, options = {}) => {
     if (!creep.memory.home) return true;
     if (creep.room.name == creep.memory.home) return true;
-    creepMoveToRoom(creep, creep.memory.home)
+    creepMoveToRoom(creep, creep.memory.home, options);
     return false;
 }
 
