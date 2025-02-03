@@ -28,9 +28,13 @@ const creepOutDefenderActions = {
         if (!target) {
             target = creep.pos.findClosestByRange(targets);
         }
+        
+        let healFlag = true;
+
         if (creep.getActiveBodyparts(ATTACK) > 0) {
             if (creep.pos.inRangeTo(target, 1)) {
                 creep.attack(target);
+                healFlag = false;
                 creep.rangedMassAttack();
             } else if (creep.pos.inRangeTo(target, 3)) {
                 creep.rangedAttack(target);
@@ -50,7 +54,7 @@ const creepOutDefenderActions = {
         }
 
         // 自我治疗
-        if (creep.hits < creep.hitsMax) {
+        if (healFlag && creep.hits < creep.hitsMax) {
             creep.heal(creep);
         }
         return ;
