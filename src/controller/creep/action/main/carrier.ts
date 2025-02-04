@@ -62,7 +62,7 @@ const creepCarrierActions = {
         if (!target && creep.room.storage) target = creep.room.storage;
 
         if (target) {
-            const resourceType = RESOURCE_ENERGY;
+            const resourceType = creep.room.storage ? Object.keys(target.store)[0] : RESOURCE_ENERGY;
             if (creep.withdraw(target, resourceType as ResourceConstant) === ERR_NOT_IN_RANGE) {
                 creepMoveTo(creep, target, { maxRooms: 1, range: 1 });
             }
@@ -109,7 +109,7 @@ const creepCarrierActions = {
             }
 
             if (!target) {
-                target = [creep.room.storage, creep.room.terminal].find(s => s?.store.getFreeCapacity() > 0);
+                target = [creep.room.storage, creep.room.terminal].find(s => s && s.store.getFreeCapacity() > 0);
                 if (target) {
                     creep.memory.cache.targetId = target.id;
                     creep.memory.cache.resourceType = Object.keys(creep.store)[0];
