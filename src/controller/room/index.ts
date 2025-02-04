@@ -1,6 +1,7 @@
 import { roomAutoBuild } from "./auto/build";
 import { roomDefendCheck } from "./auto/defend";
 import { roomOutMine } from "./auto/outMine";
+import { roomAutoTransaction } from "./auto/transaction";
 import { roomMissionUpdate, roomMissionInit } from "./mission";
 import { roomStructureWork } from "./structure";
 
@@ -38,5 +39,6 @@ export const eventLoop = (room: Room) => {
     roomStructureWork(room);                // 建筑行为
     roomAutoBuild(room);                    // 自动建设
     roomDefendCheck(room);                  // 防御检测
+    roomAutoTransaction(room);                  // 自动交易
     roomOutMine(room);                      // 外矿采集
 }

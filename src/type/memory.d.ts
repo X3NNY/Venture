@@ -23,13 +23,22 @@ interface CreepMemory {
     },
 }
 
+interface MarketOrder {
+    orderType: ORDER_BUY | ORDER_SELL | 'deal_buy' | 'deal_sell',
+    amount: number,
+    price: number,
+    rType: ResourceConstant,
+}
 interface Memory {
     gamemode: 'auto' | 'manual',
     Layout: {
         [roomName: string]: any
     },
     RoomInfo: {
-        [roomName: string]: any
+        [roomName: string]: {
+            Market?: MarketOrder[],
+            [key: string]: any,
+        }
     },
     Whitelist: string[]
 }
