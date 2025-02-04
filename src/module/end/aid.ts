@@ -16,8 +16,11 @@ export const endAidCheck = () => {
             }
 
             const targetRoom = Game.flags[flag].pos.roomName;
+            let sourceRoom = flag.match(/-S\[([EW]\d+[NS]\d+)\]/)?.[1];
+            if (!sourceRoom) sourceRoom = targetRoom;
             addMission(spawnRoom, MISSION_TYPE.SPAWN, SPAWN_MISSION.aid_builder, {
                 home: spawnRoom.name,
+                sourceRoom: sourceRoom,
                 targetRoom: targetRoom,
             })
             Game.flags[flag].memory['lastTime'] = Game.time;

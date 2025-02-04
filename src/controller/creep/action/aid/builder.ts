@@ -10,6 +10,11 @@ const creepAidBuilderActions = {
             return ;
         }
 
+        if (creep.memory.sourceRoom && creep.room.name !== creep.memory.sourceRoom) {
+            creepMoveToRoom(creep, creep.memory.sourceRoom);
+            return ;
+        }
+
         // 捡垃圾
         const droppedEnergy = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
             filter: r => r.resourceType === RESOURCE_ENERGY && r.amount > 500
@@ -75,6 +80,11 @@ const creepAidBuilderActions = {
             return ;
         }
 
+        if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
+            creepMoveToRoomBypass(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00'}})
+            return false;
+        }
+
         const sites = creep.room.find(FIND_CONSTRUCTION_SITES);
         
         if (sites.length === 0) {
@@ -100,6 +110,11 @@ const creepAidBuilderActions = {
         if (creep.store[RESOURCE_ENERGY] === 0) {
             creep.memory.action = 'harvest';
             return creepAidBuilderActions.harvest(creep);
+        }
+
+        if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
+            creepMoveToRoomBypass(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00'}})
+            return false;
         }
 
         if (!creep.memory.cache.target) {
@@ -131,6 +146,11 @@ const creepAidBuilderActions = {
         if (creep.store[RESOURCE_ENERGY] === 0) {
             creep.memory.action = 'harvest';
             return creepAidBuilderActions.harvest(creep);
+        }
+
+        if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
+            creepMoveToRoomBypass(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00'}})
+            return false;
         }
 
         const controller = creep.room.controller;
