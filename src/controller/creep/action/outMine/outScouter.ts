@@ -1,8 +1,9 @@
 import { creepMoveTo, creepMoveToRoom } from "../../function/move";
+import { creepIsOnEdge } from "../../function/position";
 
 const creepOutScouterActions = {
     scout: (creep: Creep) => {
-        if (creep.room.name !== creep.memory.targetRoom) {
+        if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
             creepMoveToRoom(creep, creep.memory.targetRoom);
             return false;
         }
