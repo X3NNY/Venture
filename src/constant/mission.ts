@@ -1,9 +1,10 @@
 export const MISSION_TYPE = {
-    SPAWN: 'spawn',
-    BUILD: 'build',
-    REPAIR: 'repair',
-    TRANSPORT: 'transport',
-    MANAGE: 'manage',
+    SPAWN: 'spawn',             // 爬爬孵化任务
+    BUILD: 'build',             // 工地建造任务
+    REPAIR: 'repair',           // 修理刷墙任务
+    TRANSPORT: 'transport',     // 资源运输任务
+    MANAGE: 'manage',           // 中央管理任务
+    TERMINAL: 'terminal'        // 终端传送任务
 };
 
 export const SPAWN_MISSION = {

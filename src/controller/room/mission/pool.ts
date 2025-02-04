@@ -5,6 +5,7 @@ import { insertSorted } from '@/util/function';
 import { addRepairMission } from "./component/repair";
 import { addTransportMission, doneTransportMission } from './component/transport';
 import { getPosDistance } from "../function/calc";
+import { doneTerminalMission } from "./component/terminal";
 
 export const filterMission = (room: Room, type: string, filter: (m: Task) => boolean): Task[] => {
     return room.memory.missions[type].filter(filter);
@@ -45,6 +46,14 @@ export const getMissionByDist = (room: Room, type: string, pos?: RoomPosition) =
         const currDist = getPosDistance(curr.data.pos, pos);
         return prevDist <= currDist ? prev : curr;
     })
+}
+
+export const getMissionByFilter = (room: Room, type: string, filter: (t: Task) => boolean) => {
+    if (!room.memory.missions[type]) return;
+    const tasks = room.memory.missions[type].filter(m => !m.lock && filter(m));
+
+    if (tasks.length === 0) return null;
+    return tasks[0];
 }
 
 
@@ -119,6 +128,8 @@ export const doneMission = (room: Room, type: string, missionId: string, data?: 
         res = doneSpawnMission(room, task);
     } else if (type === MISSION_TYPE.TRANSPORT) {
         res = doneTransportMission(room, task, data);
+    } else if (type === MISSION_TYPE.TERMINAL) {
+        res = doneTerminalMission(room, task, data);
     }
 
     if (res) {
