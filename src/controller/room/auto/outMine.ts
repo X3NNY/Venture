@@ -177,34 +177,30 @@ const outHighwayMine = (room: Room) => {
             continue;
         }
         if (!targetRoom) continue;
+        const creeps = getRoomTargetCreepNum(roomName);
 
         if (!targetRoom.memory.depositMineral || Game.time % 50 === 1) {
             outRoomDepositCheck(targetRoom);
-            if ((targetRoom.memory.depositMineral?.count||0) === 0) {
-                continue;
+            if ((targetRoom.memory.depositMineral?.count||0) > 0) {
+                    // 检查商品采集爬爬数量
+                    const dhs = (creeps[CREEP_ROLE.DEPOSIT_HARVESTER] || []).filter(c => c.spawning || c.ticksToLive > 200).length;
+                    const dhspawns = global.spawnCreepNum[room.name][CREEP_ROLE.DEPOSIT_HARVESTER] || 0
+                    if (dhs + dhspawns < targetRoom.memory.depositMineral.count) {
+                        addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.deposit_harvester, {
+                            home: room.name, targetRoom: roomName
+                        })
+                    }
+
+                    const dcs = (creeps[CREEP_ROLE.DEPOSIT_CARRIER] || []).filter(c => c.spawning || c.ticksToLive > 200).length;
+                    const dcspawns = global.spawnCreepNum[room.name][CREEP_ROLE.DEPOSIT_CARRIER] || 0
+                    if (dcs + dcspawns < targetRoom.memory.depositMineral.count) {
+                        addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.deposit_carrier, {
+                            home: room.name, targetRoom: roomName
+                        })
+                    }
             }
         }
-
-        const creeps = getRoomTargetCreepNum(roomName);
-
-        // 检查商品采集爬爬数量
-        const dhs = (creeps[CREEP_ROLE.DEPOSIT_HARVESTER] || []).filter(c => c.spawning || c.ticksToLive > 200).length;
-        const dhspawns = global.spawnCreepNum[room.name][CREEP_ROLE.DEPOSIT_HARVESTER] || 0
-        if (dhs + dhspawns < targetRoom.memory.depositMineral.count) {
-            addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.deposit_harvester, {
-                home: room.name, targetRoom: roomName
-            })
-        }
-
-        const dcs = (creeps[CREEP_ROLE.DEPOSIT_CARRIER] || []).filter(c => c.spawning || c.ticksToLive > 200).length;
-        const dcspawns = global.spawnCreepNum[room.name][CREEP_ROLE.DEPOSIT_CARRIER] || 0
-        if (dcs + dcspawns < targetRoom.memory.depositMineral.count) {
-            addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.deposit_carrier, {
-                home: room.name, targetRoom: roomName
-            })
-        }
     }
-
 }
 
 const outRoomDepositCheck = (room: Room) => {
@@ -215,6 +211,7 @@ const outRoomDepositCheck = (room: Room) => {
     let count = 0;
     let amount = 0;
     for (const deposit of deposits) {
+        // 冷却太长不值得
         if (deposit.lastCooldown >= 100) continue;
         
         // 统计可用采集点

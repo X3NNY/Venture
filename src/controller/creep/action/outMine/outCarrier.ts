@@ -133,8 +133,6 @@ const creepOutCarrierActions = {
                     ignoreCreeps: false,
                     range: 1,
                     maxRooms: 1,
-                    plainCost: 2,
-                    swampCost: 10
                 })
             }
             return ;
@@ -146,8 +144,6 @@ const creepOutCarrierActions = {
                 ignoreCreeps: false,
                 range: 3,
                 maxRooms: 1,
-                plainCost: 2,
-                swampCost: 10
             })
         }
     },
@@ -214,10 +210,9 @@ const creepOutCarrierActions = {
             }
         }
 
-
         // 否则先走回去存仓库
         if(creep.room.name !== creep.memory.home || creepIsOnEdge(creep)) {
-            creepMoveToRoom(creep, creep.memory.home, { plainCost: 2, swampCost: 10 });
+            creepMoveToRoom(creep, creep.memory.home, { visualizePathStyle: {stroke: '#00ff00'}});
             return ;
         }
 
