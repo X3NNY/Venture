@@ -62,7 +62,7 @@ const spawnCreep = (room: Room) => {
     // 能量不足导致的创建失败
     if (task.cost > room.energyAvailable) {
         // 不是房间运维爬爬
-        if (role !== 'harvester' && role !== 'carrier') {
+        if (role !== 'harvester' && role !== 'carrier' && role !== CREEP_ROLE.UNIVERSAL) {
             delayMission(room, MISSION_TYPE.SPAWN, task.missionId);
             return ;
         }
@@ -70,7 +70,7 @@ const spawnCreep = (room: Room) => {
         // 已经至少有一个了
         const num = room.find(FIND_MY_CREEPS, { filter: c=>c.memory.role === role }).length;
         if (num !== 0) {
-            // delayMission(room, MISSION_TYPE.SPAWN, task.missionId);
+            delayMission(room, MISSION_TYPE.SPAWN, task.missionId);
             return ;
         }
 
@@ -83,7 +83,6 @@ const spawnCreep = (room: Room) => {
         }
 
         const body = getCreepRoleBody(room, CREEP_ROLE.UNIVERSAL, true);
-
         spawn.spawnCreep(
             body,
             generateCreepName(SPAWN_MISSION.universal.code),
@@ -93,7 +92,7 @@ const spawnCreep = (room: Room) => {
         console.log(`房间 ${room.name} 没有且不足以孵化 ${role}，已紧急孵化通用爬爬。`);
         return ;
     }
-
+    deleteMission(room, MISSION_TYPE.SPAWN, task.missionId);
 }
 
 export const roomStructureSpawn = {

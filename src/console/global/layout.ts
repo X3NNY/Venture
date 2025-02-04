@@ -68,7 +68,7 @@ export const layoutDynamicPlanner = (roomName: string, type: string) => {
     if (!room) return `房间 ${roomName} 不存在或不可见。`
     
     const pa = room.source?.[0]?.pos || room.find(FIND_SOURCES)[0]?.pos;
-    const pb = room.source?.[1]?.pos || room.find(FIND_SOURCES)[1]?.pos;
+    const pb = room.source?.[1]?.pos || room.find(FIND_SOURCES)[1]?.pos || pa;
     const pm = room.mineral?.pos || room.find(FIND_MINERALS)[0]?.pos;
     const pc = room.controller?.pos;
 
