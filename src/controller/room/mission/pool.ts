@@ -107,11 +107,11 @@ export const delayMission = (room: Room, type: string, missionId: string) => {
 
     const newMission = Object.assign({}, room.memory.missions[type][index]);
 
-    newMission.level += 1;
+    newMission.level += 2;
     newMission.delay = (newMission.delay || 0) + 1;
     room.memory.missions[type].splice(index, 1);
     
-    if (newMission.delay > 5) return ;
+    if (newMission.delay > 3) return ;
     insertSorted(room.memory.missions[type], newMission, 'level');
 }
 

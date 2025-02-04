@@ -45,7 +45,7 @@ const spawnMissionCheck = {
     },
 
     courier: (room: Room, current: number, maxNum: number) => {
-        if (room.storage?.store[RESOURCE_ENERGY] < 10000) return false;
+        if (!room.storage || room.storage.store[RESOURCE_ENERGY] < 10000) return false;
         return current < maxNum;
     },
 
@@ -112,6 +112,8 @@ const spawnMissionCheck = {
     miner: (room: Room, current: number, maxNum: number) => {
         // 防御模式不开
         if (room.memory.defend) return false;
+
+        if (!room.storage || room.storage.store[RESOURCE_ENERGY] < 10000) return false;
 
         // 能采矿且没有采矿爬爬
         if (room.level >= 6 && room.extractor && current < 1 && room.mineral.mineralAmount > 0) return true;
