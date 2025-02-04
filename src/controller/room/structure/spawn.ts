@@ -62,7 +62,7 @@ const spawnCreep = (room: Room) => {
     // 能量不足导致的创建失败
     if (task.cost > room.energyAvailable) {
         // 不是房间运维爬爬
-        if (role !== 'harvester' && role !== 'carrier' && role !== CREEP_ROLE.UNIVERSAL) {
+        if (role !== CREEP_ROLE.HARVESTER && role !== CREEP_ROLE.CARRIER && role !== CREEP_ROLE.UNIVERSAL && role !== CREEP_ROLE.COURIER && role !== CREEP_ROLE.MANAGER) {
             delayMission(room, MISSION_TYPE.SPAWN, task.missionId);
             return ;
         }
