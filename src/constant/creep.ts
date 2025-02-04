@@ -8,7 +8,8 @@ export const CREEP_ROLE = {
     MENDER: 'mender',                       // 修理爬爬 修理建筑&修建墙盾
     COURIER: 'courier',                     // 快递爬爬 参与制定运输任务
     MANAGER: 'manager',                     // 管理爬爬 管理中心点资源运转
-    
+    MINER: 'miner',                         // 采矿爬爬 采集矿藏
+
     /** 特殊任务爬爬 */
     CLAIMER: 'claimer',                     // 占领爬爬 占领中立房间
 
@@ -116,6 +117,16 @@ export const CreepRoleBody = {
         6: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE], num: 1, move: 'nope' },
         7: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE], num: 1, move: 'nope' },
         8: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE], num: 1, move: 'nope'},
+    },
+    miner: {
+        1: { body: [], num: 0 },
+        2: { body: [], num: 0 },
+        3: { body: [], num: 0 },
+        4: { body: [], num: 0 },
+        5: { body: [], num: 0 },
+        6: { body: [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY], num: 0 },
+        7: { body: [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY], num: 0 },
+        8: { body: [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY], num: 0 },
     },
 
     claimer: {

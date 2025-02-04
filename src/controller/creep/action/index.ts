@@ -6,6 +6,7 @@ import creepUpgraderAction from './main/upgrader';
 import creepMenderAction from './main/mender';
 import creepCourierAction from './main/courier';
 import creepManagerAction from './main/manager';
+import creepMinerAction from './main/miner';
 
 import creepClaimerAction from './claim/claimer';
 
@@ -33,6 +34,7 @@ const actions = {
     mender: creepMenderAction,
     courier: creepCourierAction,
     manager: creepManagerAction,
+    miner: creepMinerAction,
 
     claimer: creepClaimerAction,
 

@@ -65,6 +65,12 @@ export const SPAWN_MISSION = {
         level: 1,
         role: 'manager'
     },
+    miner: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'MI',
+        level: 6,
+        role: 'miner'
+    },
 
     claimer: {
         type: MISSION_TYPE.SPAWN,

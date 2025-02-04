@@ -4,6 +4,7 @@ interface CreepMemory {
     ready: boolean,
     action: string,
     cache: any,
+    sourceRoom?: string,
     targetRoom?: string,
     dontPullMe?: boolean,
     
@@ -37,6 +38,11 @@ interface Memory {
     RoomInfo: {
         [roomName: string]: {
             Market?: MarketOrder[],
+            OutMineral?: {
+                energy?: string[],
+                center?: string[],
+                highway?: string[],
+            },
             [key: string]: any,
         }
     },

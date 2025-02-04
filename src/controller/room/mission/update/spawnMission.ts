@@ -108,6 +108,13 @@ const spawnMissionCheck = {
         // 太多要坏的了
         if (countMission(room, MISSION_TYPE.REPAIR) >= 20) return current < maxNum;
         return false;
+    },
+    miner: (room: Room, current: number, maxNum: number) => {
+        // 防御模式不开
+        if (room.memory.defend) return false;
+
+        // 能采矿且没有采矿爬爬
+        if (room.level >= 6 && room.extractor && current < 1 && room.mineral.mineralAmount > 0) return true;
     }
 }
 
