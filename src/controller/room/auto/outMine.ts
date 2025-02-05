@@ -136,12 +136,14 @@ const outCenterMine = (room: Room) => {
         });
 
         const creeps = getRoomTargetCreepNum(roomName);
-        const out_attacker = (creeps[CREEP_ROLE.OUT_ATTACKER] || []).length;
+        const out_attacker = (creeps[CREEP_ROLE.OUT_ATTACKER] || []).filter(c => !c.spawing).length;
 
         if (hostiles.length > 0) {
             createOutProtectorCreep(room, targetRoom);
             continue;
         }
+
+        if (room.level <= 6) createOutProtectorCreep(room, targetRoom);
 
         // 有敌人暂时不采集
         if (sourceKeeper.length > 0 && out_attacker < 1) continue;

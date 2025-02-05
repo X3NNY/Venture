@@ -22,6 +22,9 @@ import creepOutInvaderAction from './outMine/outInvader';
 import creepOutCarrierAction from './outMine/outCarrier';
 import creepOutBuilderAction from './outMine/outBuilder';
 import creepOutReserverAction from './outMine/outReserver';
+import creepOutAttackerAction from './outMine/outAttacker';
+import creepOutMinerAction from './outMine/outMiner';
+import creepOutProtectorAction from './outMine/outProtector';
 
 import creepDepositHarvesterAction from './deposit/depositHarvester';
 import creepDepositCarrierAction from './deposit/depositCarrier';
@@ -49,10 +52,13 @@ const actions = {
     out_scouter: creepOutScouterAction,
     out_harvester: creepOutHarvesterAction,
     out_defender: creepOutDefenderAction,
+    out_attacker: creepOutAttackerAction,
     out_invader: creepOutInvaderAction,
     out_carrier: creepOutCarrierAction,
     out_builder: creepOutBuilderAction,
+    out_miner: creepOutMinerAction,
     out_reserver: creepOutReserverAction,
+    out_protector: creepOutProtectorAction,
 
     // 商品采集
     deposit_harvester: creepDepositHarvesterAction,
@@ -72,6 +78,9 @@ export const creepActionRun = (creep: Creep) => {
     // }
     // console.log(JSON.stringify(creep.memory))
     // 准备阶段
+
+    if (!actions[role])
+        console.log(role, actions[role])
     if (!creep.memory.ready) {
         creep.memory.ready = actions[role].prepare(creep);
         return ;

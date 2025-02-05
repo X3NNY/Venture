@@ -10,7 +10,7 @@ const creepOutCarrierActions = {
         }
 
         // 快死了快去存
-        if (creep.hits < creep.hitsMax * 0.5 &&
+        if ((creep.hits < creep.hitsMax * 0.8 || creep.ticksToLive < 80) &&
             creep.store.getUsedCapacity() > 0
         ) {
             creep.memory.action = 'transfer';

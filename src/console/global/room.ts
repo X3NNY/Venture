@@ -51,7 +51,7 @@ export default {
                 }
             }
         },
-        remove_outMieral: (roomName: string, targetRoom: string) => {
+        remove_outMineral: (roomName: string, targetRoom: string) => {
             if (!Memory.RoomInfo[roomName].OutMineral) Memory.RoomInfo[roomName].OutMineral = {}; 
             const isCenterRoom = /^[EW]\d*[456][NS]\d*[456]$/.test(targetRoom); // 中间房间
             const isNotHighway = /^[EW]\d*[1-9][NS]\d*[1-9]$/.test(targetRoom); // 非过道房间

@@ -3,6 +3,10 @@ import { creepIsOnEdge } from "../../function/position";
 
 const creepOutDefenderActions = {
     patrol: (creep: Creep) => {
+        if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
+            creepMoveToRoom(creep, creep.memory.targetRoom);
+            return ;
+        }
         const hostiles = creep.room.find(FIND_HOSTILE_CREEPS, {
             filter: c => !Memory.Whitelist?.includes(c.owner.username)
         });

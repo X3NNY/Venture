@@ -11,6 +11,10 @@ export default {
         return true;
     },
     action: (creep: Creep) => {
+        if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
+            creepMoveToRoom(creep, creep.memory.targetRoom);
+            return ;
+        }
         const hostiles = creep.room.find(FIND_HOSTILE_CREEPS, {
             filter: c => c.owner.username === 'Source Keeper'
         });
