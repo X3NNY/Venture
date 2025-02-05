@@ -104,24 +104,24 @@ const creepManagerActions = {
     manage: (creep: Creep) => {
         if (!creep.memory.cache.task) {
             const task = getMission(creep.room, MISSION_TYPE.MANAGE);
-            if (!task) return ;
+            if (!task) return false;
             const source = Game.getObjectById(task.data.source) as AnyStoreStructure;
             const target = Game.getObjectById(task.data.target) as AnyStoreStructure;
 
             if (!source || !target) {
                 deleteMission(creep.room, MISSION_TYPE.MANAGE, task.id);
-                return ;
+                return false;
             }
 
             if (!source.pos.inRangeTo(target.pos, 2)) {
                 deleteMission(creep.room, MISSION_TYPE.MANAGE, task.id);
-                return ;
+                return false;
             }
 
             // 能源不够
             if ((source?.store[task.data.rType]||0) + creep.store[task.data.rType] < task.data.amount) {
                 deleteMission(creep.room, MISSION_TYPE.MANAGE, task.id);
-                return ;
+                return false;
             }
 
             creep.memory.cache.task = Object.assign({ missionId: task.id }, task.data);
@@ -138,7 +138,7 @@ const creepManagerActions = {
         if ((source?.store[rType]||0) + creep.store[rType] < amount) {
             deleteMission(creep.room, MISSION_TYPE.MANAGE, creep.memory.cache.task.missionId);
             creep.memory.cache.task = null;
-            return ;
+            return false;
         }
 
         // 身上有其他资源先放入仓库/终端
@@ -148,6 +148,7 @@ const creepManagerActions = {
         if (creep.store.getUsedCapacity(rType) === 0) {
             const num = Math.min(amount, creep.store.getFreeCapacity(rType), source.store[rType]);
             creep.withdraw(source, rType, num);
+            return true;
         }
         
         // 转移资源
@@ -157,7 +158,6 @@ const creepManagerActions = {
             if (res === ERR_FULL) {
                 deleteMission(creep.room, MISSION_TYPE.MANAGE, creep.memory.cache.task.missionId);
                 creep.memory.cache.task = null;
-                return ;
             } else if (res === OK) {
                 // 查看是否已经转了足够的资源，没转够下轮继续转
                 creep.memory.cache.task.amount -= Math.min(creep.store[rType], amount);
@@ -166,6 +166,7 @@ const creepManagerActions = {
                     creep.memory.cache.task = null;
                 }
             }
+            return true;
         }
     }
 }
@@ -189,7 +190,14 @@ export default {
     },
     action: (creep: Creep) => {
         if (creepManagerActions.transfer(creep)) return ;
-        creepManagerActions.manage(creep);
+        if (creepManagerActions.manage(creep)) return ;
+
+        const rType = Object.keys(creep.store)[0] as ResourceConstant;
+
+        if (rType && creep.store[rType] > 0) {
+            const target = creep.room.storage?.store.getFreeCapacity(rType) > 0 ? creep.room.storage : creep.room.terminal;
+            creep.transfer(target, rType);
+        }
     },
     done: (creep: Creep, res: any) => {
 
