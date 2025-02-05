@@ -6,9 +6,13 @@ import { addRepairMission } from "./component/repair";
 import { addTransportMission, doneTransportMission } from './component/transport';
 import { getPosDistance } from "../function/calc";
 import { doneTerminalMission } from "./component/terminal";
+import { addManageMission } from "./component/manage";
 
-export const filterMission = (room: Room, type: string, filter: (m: Task) => boolean): Task[] => {
-    return room.memory.missions[type].filter(filter);
+export const filterMission = (room: Room, type: string, filter?: (m: Task) => boolean): Task[] => {
+    if (!room.memory.missions[type]) return [];
+    if (filter)
+        return room.memory.missions[type].filter(filter);
+    return room.memory.missions[type]
 }
 
 export const countMission = (room: Room, type: string, filter?: (m: Task) => boolean) => {//E57N34
@@ -29,6 +33,8 @@ export const addMission = (room: Room, type: string, mission: MISSION, data: any
         return addRepairMission(room, mission, data);
     } else if (type === MISSION_TYPE.TRANSPORT) {
         return addTransportMission(room, mission, data);
+    } else if (type === MISSION_TYPE.MANAGE) {
+        return addManageMission(room, mission, data);
     }
 }
 

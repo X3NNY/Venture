@@ -178,7 +178,7 @@ export default {
         const center = Memory.RoomInfo[creep.room.name]?.center;
         if (center) {
             const pos = new RoomPosition(center.x, center.y, creep.room.name);
-            if (creep.pos.isEqualTo(pos)) {
+            if (!creep.pos.isEqualTo(pos)) {
                 creepMoveTo(creep, pos, { ignoreCreeps: false });
                 return false;
             }
@@ -188,7 +188,6 @@ export default {
         return true;
     },
     action: (creep: Creep) => {
-
         if (creepManagerActions.transfer(creep)) return ;
         creepManagerActions.manage(creep);
     },
