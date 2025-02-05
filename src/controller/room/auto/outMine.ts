@@ -124,7 +124,7 @@ const outCenterMine = (room: Room) => {
                 if (result === ERR_FULL) break;
             }
         }
-
+        createOutAttackerCreep(room, targetRoom);
         const hostiles = targetRoom.find(FIND_HOSTILE_CREEPS, {
             filter: c => (c.getActiveBodyparts(ATTACK) > 0 || c.getActiveBodyparts(RANGED_ATTACK) > 0) &&
             c.owner.username !== 'Source Keeper' &&
@@ -139,7 +139,6 @@ const outCenterMine = (room: Room) => {
         const out_attacker = (creeps[CREEP_ROLE.OUT_ATTACKER] || []).length;
 
         if (hostiles.length > 0) {
-            createOutAttackerCreep(room, targetRoom);
             createOutProtectorCreep(room, targetRoom);
             continue;
         }
@@ -245,8 +244,8 @@ const createOutAttackerCreep = (room: Room, targetRoom: Room) => {
     const creeps = getRoomTargetCreepNum(targetRoom.name);
     const out_attacker = (creeps[CREEP_ROLE.OUT_ATTACKER]||[]).filter(c => c.ticksToLive > 300 || c.spawning);
 
-    const spawns = global.SpawnMissionNum[room.name][CREEP_ROLE.OUT_ATTACKER] || 0;
-
+    const spawns = global.SpawnCreepNum[room.name][CREEP_ROLE.OUT_ATTACKER] || 0;
+    
     if ((out_attacker?.length||0) + spawns >= 1) return false;
 
     addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.out_attacker, {
@@ -260,7 +259,7 @@ const createOutProtectorCreep = (room: Room, targetRoom: Room) => {
     const creeps = getRoomTargetCreepNum(targetRoom.name);
     const out_protector = (creeps[CREEP_ROLE.OUT_PROTECTOR]||[]).filter(c => c.ticksToLive > 300 || c.spawning);
 
-    const spawns = global.SpawnMissionNum[room.name][CREEP_ROLE.OUT_PROTECTOR] || 0;
+    const spawns = global.SpawnCreepNum[room.name][CREEP_ROLE.OUT_PROTECTOR] || 0;
 
     if (out_protector.length + spawns >= 1) return false;
 
@@ -273,7 +272,7 @@ const createOutProtectorCreep = (room: Room, targetRoom: Room) => {
 const createOutMinerCreep = (room: Room, targetRoom: Room) => {
     const creeps = getRoomTargetCreepNum(targetRoom.name);
     const out_miner = (creeps[CREEP_ROLE.OUT_MINER]||[]).length;
-    const spawns = global.SpawnMissionNum[room.name][CREEP_ROLE.OUT_MINER] || 0;
+    const spawns = global.SpawnCreepNum[room.name][CREEP_ROLE.OUT_MINER] || 0;
 
     if (out_miner + spawns >= 1) return false;
 

@@ -79,6 +79,12 @@ const creepOutHarvesterActions = {
         creep.memory.action = 'harvest';
     },
     harvest: (creep: Creep) => {
+        if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
+            creepMoveToRoom(creep, creep.memory.targetRoom, {
+                plainCost: 2, swampCost: 10
+            })
+            return ;
+        }
         if (!creep.memory.targetSourceId) {
             const res = roomFindClosestSource(creep.room, creep);
             if (res.source) {

@@ -130,7 +130,6 @@ const creepOutCarrierActions = {
         if (miner) {
             if (!creep.pos.inRangeTo(miner, 1) || miner.store.getUsedCapacity() > 0) {
                 creepMoveTo(creep, miner, {
-                    ignoreCreeps: false,
                     range: 1,
                     maxRooms: 1,
                 })
@@ -141,7 +140,6 @@ const creepOutCarrierActions = {
         const source = creep.pos.findClosestByRange(FIND_SOURCES);
         if (source) {
             creepMoveTo(creep, source, {
-                ignoreCreeps: false,
                 range: 3,
                 maxRooms: 1,
             })
@@ -242,6 +240,10 @@ const creepOutCarrierActions = {
             if (creep.room.storage &&
                 creep.room.storage.store.getFreeCapacity() > 10000
             ) target = creep.room.storage;
+        }
+
+        if (!target) {
+            target = creep.pos.findClosestByRange(creep.room.container.filter(c => c && c.store.getFreeCapacity() > 0));
         }
 
         if (target) {
