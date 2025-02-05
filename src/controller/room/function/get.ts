@@ -28,3 +28,16 @@ export const getRoomTargetCreepNum = (roomName: string) => {
     global.RoomCreepNum.time = Game.time;
     return global.RoomCreepNum[roomName] || {};
 }
+
+/**
+ * 获取房间指定资源数量
+ * @param room 
+ * @param rType
+ */
+export const getRoomResourceAmount = (room: Room, rType: ResourceConstant) => {
+    let amount = 0;
+    if (room.storage)  amount += room.storage.store[rType];
+    if (room.terminal) amount += room.terminal.store[rType];
+
+    return amount;
+}

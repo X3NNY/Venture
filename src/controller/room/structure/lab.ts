@@ -27,7 +27,7 @@ export const roomStructureLab = {
             const labs = room.lab.filter(lab => lab.id !== labA.id && lab.id !== labB.id && lab.cooldown === 0);
             if (!labs || labs.length === 0) return ;
 
-            const boostSetting = Memory.RoomInfo[room.name].BOOST;
+            const boostSetting = Memory.RoomInfo[room.name].lab.BOOST;
 
             // 遍历其他化工厂作为输出厂进行合成
             for (const lab of labs) {
