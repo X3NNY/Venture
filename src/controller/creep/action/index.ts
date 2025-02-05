@@ -13,6 +13,7 @@ import creepClaimerAction from './claim/claimer';
 import creepDefendAttackerAction from './defend/defendAttacker';
 
 import creepAidBuilderAction from './aid/builder';
+import creepAidCarrierAction from './aid/carrier';
 
 import creepOutScouterAction from './outMine/outScouter';
 import creepOutHarvesterAction from './outMine/outHarvester';
@@ -40,7 +41,9 @@ const actions = {
 
     defend_attacker: creepDefendAttackerAction,
 
+    // 协助爬爬
     aid_builder: creepAidBuilderAction,
+    aid_carrier: creepAidCarrierAction,
 
     // 外矿采集
     out_scouter: creepOutScouterAction,
