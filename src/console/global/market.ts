@@ -2,7 +2,8 @@ export default {
     market: {
         add_order: (roomName: string, type: ORDER_BUY | ORDER_SELL | 'deal_buy' | 'deal_sell', rType: ResourceConstant, amount: number, price?: number) => {
             if (!Memory.RoomInfo[roomName]) {
-                Memory.RoomInfo[roomName] = {};
+                console.log(`[指令] 房间 ${roomName} 不在控制列表。`)
+                return false;
             }
             if (!Memory.RoomInfo[roomName].Market) {
                 Memory.RoomInfo[roomName].Market = [];

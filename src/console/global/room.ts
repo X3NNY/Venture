@@ -7,7 +7,7 @@ export default {
 
             // 普通房间
             if (!isCenterRoom && isNotHighway) {
-                if (Memory.RoomInfo[roomName].OutMineral.energy) {
+                if (!Memory.RoomInfo[roomName].OutMineral.energy) {
                     Memory.RoomInfo[roomName].OutMineral.energy = [];
                 }
 
@@ -22,7 +22,7 @@ export default {
             }
             // 过道房间
             else if(!isNotHighway) {
-                if (Memory.RoomInfo[roomName].OutMineral.highway) {
+                if (!Memory.RoomInfo[roomName].OutMineral.highway) {
                     Memory.RoomInfo[roomName].OutMineral.highway = [];
                 }
 
@@ -37,7 +37,7 @@ export default {
             }
             // 中央九房
             else {
-                if (Memory.RoomInfo[roomName].OutMineral.center) {
+                if (!Memory.RoomInfo[roomName].OutMineral.center) {
                     Memory.RoomInfo[roomName].OutMineral.center = [];
                 }
 
