@@ -8,6 +8,14 @@ const creepBuilderActions = {
     withdraw: (creep: Creep) => {
         if (creepChargeEnergy(creep)) {
             creep.memory.cache = {}
+        } else {
+            const source = creep.pos.findClosestByRange(creep.room.source.filter(s => s && s.energy > 0));
+            if (source) {
+                const result = creep.harvest(source);
+                if (result === ERR_NOT_IN_RANGE) {
+                    creepMoveTo(creep, source, { maxRooms: 1, range: 1});
+                }
+            }
         }
 
         if (creep.store.getFreeCapacity() === 0) {

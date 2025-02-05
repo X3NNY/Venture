@@ -36,21 +36,20 @@ export const SPAWN_MISSION = {
     builder: {
         type: MISSION_TYPE.SPAWN,
         code: 'B',
-        level: 5,
+        level: 10,
         role: 'builder'
     },
 
     upgrader: {
         type: MISSION_TYPE.SPAWN,
         code: 'UP',
-        level: 5,
+        level: 10,
         role: 'upgrader',
     },
-
     mender: {
         type: MISSION_TYPE.SPAWN,
         code: 'ME',
-        level: 5,
+        level: 10,
         role: 'mender'
     },
     courier: {
@@ -92,6 +91,12 @@ export const SPAWN_MISSION = {
         code: 'AB',
         level: 10,
         role: 'aid_builder'
+    },
+    aid_carrier: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'AC',
+        level: 10,
+        role: 'aid_carrier',
     },
 
     // 外矿工作
@@ -243,5 +248,18 @@ export const TRANSPORT_MISSION = {
     nuker: {
         type: MISSION_TYPE.TRANSPORT,
         level: 3,
+    },
+}
+
+export const MANAGE_MISSION = {
+    s2t: {
+        type: MISSION_TYPE.MANAGE,
+        code: 's2t',
+        level: 1
+    },
+    t2s: {
+        type: MISSION_TYPE.MANAGE,
+        code: 't2s',
+        level: 1
     },
 }

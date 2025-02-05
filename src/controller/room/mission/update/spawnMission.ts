@@ -57,7 +57,7 @@ const spawnMissionCheck = {
         if (room.level < 3 && current < 2 && countMission(room, MISSION_TYPE.BUILD)) return true;
 
         // 有资源后可以多造点
-        if (room.level < 4 && current < 3 && countMission(room, MISSION_TYPE.BUILD) > 5) return true;
+        if (room.level < 4 && room.source.length >= 2 && current < 3 && countMission(room, MISSION_TYPE.BUILD) > 5) return true;
 
         // 后续的话任务多孵化两个，否则一个就够了
         if (countMission(room, MISSION_TYPE.BUILD) > 5 && current < 2) return true;
@@ -81,7 +81,7 @@ const spawnMissionCheck = {
         return current < maxNum;
     },
     manager: (room: Room, current: number, maxNum: number) => {
-        if (maxNum === 0 || room.level < 5) return false;
+        if (maxNum === 0 || room.level < 6) return false;
         const center = Memory.RoomInfo[room.name]?.center;
         // 没有中心点
         if (!center) return false;
@@ -89,7 +89,7 @@ const spawnMissionCheck = {
         const link = room.link.find(l => l?.pos.inRangeTo(center.x, center.y, 1));
 
         // 还没有仓库和中央链接
-        if (!room.storage || !link) return ;
+        if (!room.storage || (!room.terminal && !link)) return ;
 
         return current < maxNum;
     },
