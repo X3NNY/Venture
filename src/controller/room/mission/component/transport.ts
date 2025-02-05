@@ -3,7 +3,7 @@ import { generateMissionId } from "../util";
 import { insertSorted } from "@/util/function";
 
 export const addTransportMission = (room: Room, mission: MISSION, data: {source: Id<Structure>, target: Id<Structure>, pos: RoomPosition, rType: ResourceConstant, amount: number}) => {
-let pos = room.memory.missions[MISSION_TYPE.TRANSPORT].findIndex(m => m.data.target === data.target);
+    let pos = room.memory.missions[MISSION_TYPE.TRANSPORT].findIndex(m => m.data.target === data.target);
 
     // 已存在则更新
     if (pos !== -1) {

@@ -4,6 +4,7 @@ interface CreepMemory {
     ready: boolean,
     action: string,
     cache: any,
+    rType?: ResourceConstant,
     sourceRoom?: string,
     targetRoom?: string,
     dontPullMe?: boolean,

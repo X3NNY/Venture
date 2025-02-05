@@ -22,7 +22,7 @@ const roomTransactionArbitrage = (room: Room) => {
             // 出账=数量*单价+传过来的花费+传出去的花费+手续费
             const out = maxDeal * sellOrder.price*1.1 + Game.market.calcTransactionCost(maxDeal, room.name, sellOrder.roomName)*sellOrder.price + Game.market.calcTransactionCost(maxDeal, highestOrder.roomName, room.name)*sellOrder.price;
 
-            // 进帐=数量*单价
+            // 进账=数量*单价
             const inp = maxDeal * highestOrder.price;
             if (out < inp) {
                 const r1 = Game.market.deal(sellOrder.id, maxDeal, room.name);
@@ -148,7 +148,7 @@ const roomMarket = {
         if (total >= item.amount) return;
 
         const buyAmount = Math.min(item.amount - total, room.terminal.store.getFreeCapacity());
-        if (buyAmount <= 10000) return ;
+        if (buyAmount < 5000) return ;
         // 按照最优卖单成交
         roomMarket.auto_deal(room, item.rType, buyAmount, ORDER_SELL, 10, item.price);
     },
@@ -164,8 +164,8 @@ const roomMarket = {
         // 如果已有数量小于设定值，返回
         if (total <= item.amount) return;
 
-        const sellAmount = Math.min(item.amount - total, room.terminal.store.getFreeCapacity());
-        if (sellAmount <= 5000) return ;
+        const sellAmount = Math.min(total - item.amount, room.terminal.store[item.rType]);
+        if (sellAmount < 3000) return ;
 
         // 按照最优买单成交
         roomMarket.auto_deal(room, item.rType, sellAmount, ORDER_BUY, 10, item.price);
@@ -262,7 +262,7 @@ const roomMarket = {
 }
 
 export const roomAutoTransaction = (room: Room) => {
-    if (Game.time % 50 !== 0) return ;
+    if (Game.time % 10 !== 0) return ;
     if (!room.terminal) return ;
     
     const market = Memory.RoomInfo[room.name].Market;

@@ -52,9 +52,9 @@ export const roomStructureTerminal = {
                 deleteMission(room, MISSION_TYPE.TERMINAL, task.id)
             }
             const cost = Game.market.calcTransactionCost(sendAmount, room.name, targetRoom);
-            global.log(`[资源发送] ${room.name} -> ${targetRoom}, ${sendAmount} ${rType}, 消耗能量：${cost}`);
+            console.log(`[资源发送] ${room.name} -> ${targetRoom}, ${sendAmount} ${rType}, 消耗能量：${cost}`);
         } else {
-            global.log(`[资源发送] ${room.name} -> ${targetRoom}, ${sendAmount} ${rType} 失败, 返回值：${result}`);
+            console.log(`[资源发送] ${room.name} -> ${targetRoom}, ${sendAmount} ${rType} 失败, 返回值：${result}`);
         }
     }
 }
