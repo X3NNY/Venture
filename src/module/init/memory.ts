@@ -1,3 +1,5 @@
+import { BaseConfig } from "@/constant/config";
+
 /**
  * 初始化内存
  */
@@ -9,4 +11,5 @@ export const memoryInit = () => {
     if (!Memory.gamemode) Memory.gamemode = 'auto';
     if (!Memory.Layout) Memory.Layout = {};
     if (!Memory.RoomInfo) Memory.RoomInfo = {};
+    if (!Memory.lang) Memory.lang = BaseConfig.LANG
 }

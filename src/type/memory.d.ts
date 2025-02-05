@@ -33,18 +33,39 @@ interface MarketOrder {
 }
 interface Memory {
     gamemode: 'auto' | 'manual',
+    lang: 'cn' | 'us',
     Layout: {
         [roomName: string]: any
     },
     RoomInfo: {
         [roomName: string]: {
+            autobuild: boolean,
+            layout?: string,
+            sign?: string,
+            defend?: boolean,
+            center?: { x: number, y: number },
             Market?: MarketOrder[],
             OutMineral?: {
                 energy?: string[],
                 center?: string[],
                 highway?: string[],
             },
-            [key: string]: any,
+            lab?: {
+                labA: Id<StructureLab>,
+                labB: Id<StructureLab>,
+                labAType: ResourceConstant,
+                labBType: ResourceConstant,
+                BOOST?: {
+                    [labId: Id<StructureLab>]: {
+                        type: MineralBoostConstant,
+                        mineral: MineralBoostConstant,
+                        amount: number
+                    }
+                },
+                boostQueue?: {
+                    [m: MineralBoostConstant]: number
+                }
+            },
         }
     },
     Whitelist: string[]
