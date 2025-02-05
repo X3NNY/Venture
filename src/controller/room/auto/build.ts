@@ -62,6 +62,20 @@ export const roomBuildCheckSkip = (room: Room, structureType: string, structures
                 let cSource = room.storage.pos.findClosestByRange(room.source);
                 if (source.id == cSource.id) return true;
             }
+
+            // 6级先建造中心链接
+            else if (room.level === 6) {
+                const center = Memory.RoomInfo[room.name]?.center;
+                // 没有中心点
+                if (!center) return false;
+
+                // 如果是中心的链接，不跳过
+                if (pos.inRangeTo(center.x, center.y, 1)) return false;
+                
+                // 如果中心还没有链接也没有链接工地，跳过
+                const link = room.link.find(l => l?.pos.inRangeTo(center.x, center.y, 1));
+                if (!link && room.getPositionAt(center.x, center.y).findInRange(FIND_CONSTRUCTION_SITES, 1, { filter: cs => cs.structureType === STRUCTURE_LINK}).length === 0) return true;
+            }
             break;
 
         default:
