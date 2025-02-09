@@ -47,7 +47,7 @@ export const getCreepRoleBody = (room: Room, role: string, now: boolean = false)
     let body: any[];
     const maxEnergy = now ? room.energyAvailable : room.energyCapacityAvailable;
 
-    const allRoad = room.road.length > 100;
+    const allRoad = room.road.length > 90;
 
     if (CreepRoleBody[role]) {
         while (level >= 1) {

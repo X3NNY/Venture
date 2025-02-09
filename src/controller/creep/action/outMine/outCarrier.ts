@@ -138,7 +138,7 @@ const creepOutCarrierActions = {
         }
 
         const source = creep.pos.findClosestByRange(FIND_SOURCES);
-        if (source) {
+        if (source && !creep.pos.inRangeTo(source, 3)) {
             creepMoveTo(creep, source, {
                 range: 3,
                 maxRooms: 1,
@@ -194,12 +194,44 @@ const creepOutCarrierActions = {
             // 找工地
             const sites = creep.room.find(FIND_MY_CONSTRUCTION_SITES);
             if (sites.length > 0) {
+                if (creepIsOnEdge(creep)) {
+                    creepMoveToRoom(creep, creep.room.name, { plainCost: 2, swampCost: 10 });
+                    return true;
+                }
                 const site = creep.pos.findClosestByRange(sites);
                 const result = creep.build(site);
+                if (result === OK) return true;
+                if (result === ERR_NOT_IN_RANGE) {
+                    creepMoveTo(creep, site);
+                    return true;
+                }
+            }
+        }
 
+        // 沿途也修复一下
+        if (creep.getActiveBodyparts(WORK) > 0 && creep.room.name !== creep.memory.targetRoom && creep.room.name !== creep.memory.home) {
+            const roads = creep.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType === STRUCTURE_ROAD && s.hits < s.hitsMax * 0.8);
+
+            if (roads.length > 0) {
+                const result = creep.repair(roads[0]);
                 if (creepIsOnEdge(creep)) {
                     creepMoveToRoom(creep, creep.room.name, { plainCost: 2, swampCost: 10 });
                 }
+                if (result === OK) return true;
+            }
+
+            const sites = creep.pos.findInRange(FIND_CONSTRUCTION_SITES, 1, {
+                filter: cs => cs.structureType === STRUCTURE_ROAD
+            });
+
+            if (sites.length > 0) {
+                if (creepIsOnEdge(creep)) {
+                    creepMoveToRoom(creep, creep.room.name, { plainCost: 2, swampCost: 10 });
+                    return true;
+                }
+                const site = creep.pos.findClosestByRange(sites);
+                const result = creep.build(site);
+
                 if (result === OK) return true;
                 if (result === ERR_NOT_IN_RANGE) {
                     creepMoveTo(creep, site);

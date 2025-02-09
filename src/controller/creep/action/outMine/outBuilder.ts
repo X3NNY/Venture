@@ -1,3 +1,4 @@
+import { CREEP_ROLE } from "@/constant/creep";
 import { creepMoveTo, creepMoveToRoom } from "../../function/move";
 import { creepIsOnEdge } from "../../function/position";
 
@@ -25,7 +26,7 @@ const creepOutBuilderActions = {
             }
         }
 
-        if (target) {
+        if (target && target.store.getUsedCapacity() > 0) {
             const result = creep.withdraw(target, RESOURCE_ENERGY);
 
             if (result === ERR_NOT_IN_RANGE) {
@@ -51,12 +52,12 @@ const creepOutBuilderActions = {
             return ;
         }
         
-        // 自己挖
-        const source = creep.room.source?.[0];
+        // 自己挖（但是不要占用采集爬爬的地方）
+        const source = creep.pos.findClosestByRange(creep.room.source.filter(s => s && s.pos.findInRange(FIND_MY_CREEPS, 1, { filter: c => c.memory.role === CREEP_ROLE.OUT_HARVESTER }).length === 0));
         if (!source) return ;
         const result = creep.harvest(source);
         if (result === ERR_NOT_IN_RANGE) {
-            creepMoveTo(creep, source, { range: 3 });
+            creepMoveTo(creep, source, { maxRooms: 1, range: 1 });
         }
     },
     build: (creep: Creep) => {
@@ -85,6 +86,7 @@ const creepOutBuilderActions = {
 
         if (sites.length > 0) {
             const site = creep.pos.findClosestByRange(sites);
+            creep.memory.cache.siteId = site.id;
             if (creep.pos.inRangeTo(site, 3)) {
                 creep.build(site);
             } else {

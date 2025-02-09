@@ -30,7 +30,7 @@ export default {
                 creep.signController(controller, creep.memory['sign'] ?? '𝙑𝙚𝙣𝙩𝙪𝙧𝙚');
             }
         } else {
-            creepMoveTo(creep, controller, { ignoreCreeps: false });
+            creepMoveTo(creep, controller, { ignoreCreeps: false, range: 1 });
         }
     },
 }

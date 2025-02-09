@@ -44,7 +44,7 @@ const creepCarrierActions = {
 
         // 从容器获取
         if (!target) {
-            const containers = creep.room.container.filter(s => (creep.room.storage ? s.store.getUsedCapacity() : s?.store[RESOURCE_ENERGY] > Math.min(1200, creep.store.getFreeCapacity())) && !s.pos.inRangeTo(creep.room.controller, 1));
+            const containers = creep.room.container.filter(s => (creep.room.storage ? s.store.getUsedCapacity() > minAmount : s?.store[RESOURCE_ENERGY] > Math.min(1200, creep.store.getFreeCapacity())) && !s.pos.inRangeTo(creep.room.controller, 1));
             if (containers) target = creep.pos.findClosestByRange(containers);
         }
 
@@ -62,7 +62,7 @@ const creepCarrierActions = {
         if (!target && creep.room.storage) target = creep.room.storage;
 
         if (target) {
-            const resourceType = creep.room.storage ? Object.keys(target.store)[0] : RESOURCE_ENERGY;
+            const resourceType = (creep.room.storage && target.id !== creep.room.storage.id) ? Object.keys(target.store)[0] : RESOURCE_ENERGY;
             if (creep.withdraw(target, resourceType as ResourceConstant) === ERR_NOT_IN_RANGE) {
                 creepMoveTo(creep, target, { maxRooms: 1, range: 1 });
             }
