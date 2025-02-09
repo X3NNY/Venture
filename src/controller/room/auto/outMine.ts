@@ -206,7 +206,7 @@ const outHighwayMine = (room: Room) => {
 
 const outRoomDepositCheck = (room: Room) => {
     const deposits = room.find(FIND_DEPOSITS);
-
+    
     if (!deposits || deposits.length === 0) return 0;
     
     let count = 0;
