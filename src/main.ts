@@ -1,5 +1,7 @@
-import '@/module/wheel/betterMove';        // 超级移动优化
+import '@/module/wheel/betterMove';         // 超级移动优化
 import '@/module/wheel/structureCache';     // 极致建筑缓存
+import '@/module/wheel/format';             // 字符串格式化
+
 import { globalInitialize, botLoop } from './module';
 
 globalInitialize();
