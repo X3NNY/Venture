@@ -186,7 +186,15 @@ export const SPAWN_MISSION = {
         code: 'DC',
         level: 11,
         role: 'deposit_carrier'
-    }
+    },
+
+    // 小队爬爬
+    squad_attacker: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'SA',
+        level: 10,
+        role: 'squad_attacker'
+    },
 }
 
 export const BUILD_MISSION = {
@@ -223,30 +231,37 @@ export const REPAIRE_MISSION = {
 export const TRANSPORT_MISSION = {
     boost: {
         type: MISSION_TYPE.TRANSPORT,
+        code: 'boost',
         level: 0,
     },
     spawn: {
         type: MISSION_TYPE.TRANSPORT,
+        code: 'spawn',
         level: 1,
     },
     tower: {
         type: MISSION_TYPE.TRANSPORT,
+        code: 'tower',
         level: 1,
     },
     lab_energy: {
         type: MISSION_TYPE.TRANSPORT,
+        code: 'lab_energy',
         level: 1,
     },
     lab: {
         type: MISSION_TYPE.TRANSPORT,
+        code: 'lab',
         level: 2,
     },
     power_spawn: {
         type: MISSION_TYPE.TRANSPORT,
+        code: 'power_spawn',
         level: 2,
     },
     nuker: {
         type: MISSION_TYPE.TRANSPORT,
+        code: 'nuker',
         level: 3,
     },
 }
@@ -262,4 +277,12 @@ export const MANAGE_MISSION = {
         code: 't2s',
         level: 1
     },
+}
+
+export const TERMINAL_MISSION = {
+    send: {
+        type: MISSION_TYPE.TERMINAL,
+        code: 'send',
+        level: 0
+    }
 }

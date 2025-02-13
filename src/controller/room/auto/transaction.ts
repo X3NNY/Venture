@@ -13,28 +13,43 @@ const roomTransactionArbitrage = (room: Room) => {
         type: ORDER_SELL,
         resourceType: RESOURCE_ENERGY
     });
+    sellList.sort((a, b) => b.price - a.price);
     if (!highestOrder || !highestOrder.roomName) {
         return;
     }
-    for (const sellOrder of sellList) {
-        const maxDeal = Math.max(sellOrder.amount, highestOrder.amount);
-        if (sellOrder.roomName) {
-            // 出账=数量*单价+传过来的花费+传出去的花费+手续费
-            const out = maxDeal * sellOrder.price*1.1 + Game.market.calcTransactionCost(maxDeal, room.name, sellOrder.roomName)*sellOrder.price + Game.market.calcTransactionCost(maxDeal, highestOrder.roomName, room.name)*sellOrder.price;
+    for (let i = 0; i < Math.min(10, sellList.length); i++) {
+        const sellOrder = sellList[i];
+        const d1 = Game.map.getRoomLinearDistance(sellOrder.roomName, room.name, true);
+        const d2 = Game.map.getRoomLinearDistance(sellOrder.roomName, room.name, true);
+        let buyEnergy = sellOrder.amount
+        let sellEnergy = Math.floor(sellOrder.amount * Math.exp((d2-d1) / 30) / (2*Math.exp(d2/30) - 1));
+        if (sellEnergy > highestOrder.amount) {
+            sellEnergy = highestOrder.amount;
+            buyEnergy = Math.ceil(sellEnergy * (2*Math.exp(d1 / 30) - Math.exp((d1-d2)/30)));
+        }
+        let ecost = Game.market.calcTransactionCost(buyEnergy, sellOrder.roomName, room.name)
 
-            // 进账=数量*单价
-            const inp = maxDeal * highestOrder.price;
-            if (out < inp) {
-                const r1 = Game.market.deal(sellOrder.id, maxDeal, room.name);
-                const r2 = Game.market.deal(highestOrder.id, maxDeal, room.name);
+        if (ecost > room.terminal.store[RESOURCE_ENERGY]) {
+            buyEnergy = Math.floor(buyEnergy * room.terminal.store[RESOURCE_ENERGY] / Game.market.calcTransactionCost(buyEnergy, sellOrder.roomName, room.name));
+            sellEnergy = Math.floor(sellOrder.amount * Math.exp((d2-d1) / 30) / (2*Math.exp(d2/30) - 1));
+            ecost = Game.market.calcTransactionCost(buyEnergy, sellOrder.roomName, room.name)
+        }
 
-                if (r1 === OK && r2 === OK) {
-                    console.log(`[自动交易] 套利交易成功，本次赚取 ${inp-out} 能量。`);
-                } else {
-                    console.log(`[自动交易] 套利交易失败，应赚取 ${inp-out} 能量，返回码${r1},${r2}。`);
-                }
-                return;
+        // 出账=数量*单价+传过来的花费+传出去的花费
+        const out = buyEnergy * sellOrder.price + ecost*sellOrder.price + Game.market.calcTransactionCost(sellEnergy, highestOrder.roomName, room.name)*sellOrder.price;
+
+        // 进账=数量*单价
+        const inp = sellEnergy * highestOrder.price;
+        if (out < inp) {
+            const r1 = Game.market.deal(sellOrder.id, buyEnergy, room.name);
+            const r2 = Game.market.deal(highestOrder.id, sellEnergy, room.name);
+
+            if (r1 === OK && r2 === OK) {
+                console.log(`[自动交易] 套利交易成功，本次赚取 ${inp-out} Cr。`);
+            } else {
+                console.log(`[自动交易] 套利交易失败，应赚取 ${inp-out} Cr，返回码${r1},${r2}。`);
             }
+            return;
         }
     }
 }
@@ -53,7 +68,8 @@ const roomMarket = {
         if (total >= item.amount) return;
 
         // 单次购买量
-        const orderAmount = item.rType !== RESOURCE_ENERGY ? 3000 : 50000;
+        const orderAmount = Math.min(item.rType !== RESOURCE_ENERGY ? 3000 : 50000, item.amount-total);
+        
 
         let eOrder = null;
         // 查找是否已挂单
@@ -217,10 +233,10 @@ const roomMarket = {
             let cost = 0;
             if (rType === RESOURCE_ENERGY) {
                 if (orderType === ORDER_SELL) {
-                    // 购买：价格 = 交易金额/(数量-消耗)
+                    // 购买能量：价格 = 交易金额/(数量-消耗)
                     cost = totalPrice / (dealAmount - ecost);
                 } else {
-                    // 出售：价格 = 交易金额/(数量+消耗)
+                    // 出售能量：价格 = 交易金额/(数量+消耗)
                     cost = totalPrice / (dealAmount + ecost);
                 }
             } else {
@@ -262,7 +278,7 @@ const roomMarket = {
 }
 
 export const roomAutoTransaction = (room: Room) => {
-    if (Game.time % 10 !== 0) return ;
+    if (Game.time % 50 !== 0) return ;
     if (!room.terminal) return ;
     
     const market = Memory.RoomInfo[room.name].Market;
@@ -281,6 +297,6 @@ export const roomAutoTransaction = (room: Room) => {
         }
     }
     // if (Game.time % 20 === 3) {
-    roomTransactionArbitrage(room);
+    // roomTransactionArbitrage(room);
     // }
 }
