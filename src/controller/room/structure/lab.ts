@@ -1,51 +1,275 @@
-export const roomStructureLab = {
-    work: (room: Room) => {
-        if (Game.time % 5 !== 1) return ;
-        room.lab.forEach(lab => {
-            // 没有矿物， 不处理
-            if (!lab.mineralType) return ;
+import lab from "@/console/structure/lab";
+import { CompoundMineral, LabTarget } from "@/constant/resource";
+import { LAB_STATE } from "@/constant/structure";
+import { addMission, countMission } from "../mission/pool";
+import { MISSION_TYPE, TRANSPORT_MISSION } from "@/constant/mission";
+import { getRoomCenterLab } from "../function/get";
 
-            // 不足3个lab
-            if (!room.lab || room.lab.length < 3) return ;
+const labIndexUpdate = (room: Room) => {
+    Memory.RoomInfo[room.name].lab.index = (Memory.RoomInfo[room.name].lab.index+1) % Memory.RoomInfo[room.name].lab.autoQueue.length;
+}
 
-            // 检查内存中的化工厂设置
-            const memory = Memory.RoomInfo[room.name];
-            if (!memory || !memory.lab || room.memory.defend) return ;
-            if (!memory.lab.labA || !memory.lab.labB) return ;
+const labGetTarget = (room: Room) => {
+    if (!Memory.RoomInfo[room.name].lab.index) Memory.RoomInfo[room.name].lab.index = 0;
 
-            const labAType = memory.lab.labAType;
-            const labBType = memory.lab.labBType;
+    const resource = Memory.RoomInfo[room.name].lab.autoQueue[Memory.RoomInfo[room.name].lab.index];
 
-            if (!labAType || !labBType) return ;
+    if (!resource) return labIndexUpdate(room);
+    if (room.storage.store[resource.target] + room.terminal.store[resource.target] >= resource.amount) {
+        return labIndexUpdate(room);
+    }
+    // console.log(JSON.stringify(resource))
+    // console.log(JSON.stringify(CompoundMineral[resource.target]));
+    const {rct1, rct2} = CompoundMineral[resource.target];
+    const minAmount = Math.min(room.terminal.store[rct1], room.terminal.store[rct2]);
 
-            const labA = Game.getObjectById(memory.lab.labA) as StructureLab;
-            const labB = Game.getObjectById(memory.lab.labB) as StructureLab;
+    if (minAmount >= 5) {    // 至少需要5个资源
+        Memory.RoomInfo[room.name].lab.state = LAB_STATE.LOAD;
+        Memory.RoomInfo[room.name].lab.labAType = rct1;
+        Memory.RoomInfo[room.name].lab.labBType = rct2;
+        // 这里保持5的倍数，防止底物反应不完
+        Memory.RoomInfo[room.name].lab.labAmount = Math.min(minAmount-minAmount%5,LAB_MINERAL_CAPACITY)
+    } else {
+        return labIndexUpdate(room);
+    }
+}
 
-            if (!labA || !labB) return ;
-            if (labA.store[labAType] < 5 || labB.store[labBType] < 5) return ;
+const labGetResource = (room: Room) => {
+    const memory = Memory.RoomInfo[room.name].lab;
+    if (!memory.labA || !memory.labB) return ;
 
-            const labs = room.lab.filter(lab => lab.id !== labA.id && lab.id !== labB.id && lab.cooldown === 0);
-            if (!labs || labs.length === 0) return ;
+    const labAType = memory.labAType;
+    const labBType = memory.labBType;
 
-            const boostSetting = Memory.RoomInfo[room.name].lab.BOOST;
+    if (!labAType || !labBType) {
+        memory.state = LAB_STATE.IDLE;
+        return labIndexUpdate(room);
+    }
 
-            // 遍历其他化工厂作为输出厂进行合成
-            for (const lab of labs) {
-                const product = REACTIONS[labAType][labBType] as ResourceConstant;
+    const labA = Game.getObjectById(memory.labA) as StructureLab;
+    const labB = Game.getObjectById(memory.labB) as StructureLab;
+    if (labA.mineralType && labB.mineralType) {
+        memory.state = LAB_STATE.WORK;
+        return ;
+    }
 
-                // 如果化工厂分配的BOOST类型和产物不一样，跳过
-                if (boostSetting && boostSetting[lab.id] &&
-                    boostSetting[lab.id].type !== product) continue;
-                
-                // 如果存在与产物不同的资源，跳过
-                if (lab.mineralType && lab.mineralType !== product) continue;
-
-                // 如果已满，跳过
-                if (lab.store.getFreeCapacity(product) === 0) continue;
-
-                // 合成
-                lab.runReaction(labA, labB);
-            }
+    // 检查底物是否足够
+    const targetResource = Memory.RoomInfo[room.name].lab.autoQueue[memory.index].target
+    const { rct1, rct2 } = CompoundMineral[targetResource];
+    
+    if (labA.store[labAType] < memory.labAmount && countMission(room, MISSION_TYPE.TRANSPORT, m => m.data.target === labA.id && m.data.rType === labAType) === 0) {
+        if (room.terminal.store[rct1] < memory.labAmount) {
+            memory.state = LAB_STATE.IDLE;
+            return labIndexUpdate(room);
+        }
+        addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
+            source: room.terminal.id,
+            target: labA.id,
+            pos: labA.pos,
+            rType: labAType,
+            amount: memory.labAmount - labA.store[labAType]
         })
+    }
+    if (labB.store[labBType] < memory.labAmount && countMission(room, MISSION_TYPE.TRANSPORT, m => m.data.target === labB.id && m.data.rType === labBType) === 0) {
+        if (room.terminal.store[rct2] < memory.labAmount) {
+            memory.state = LAB_STATE.IDLE;
+            return labIndexUpdate(room);
+        }
+        addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
+            source: room.terminal.id,
+            target: labB.id,
+            pos: labB.pos,
+            rType: labBType,
+            amount: memory.labAmount - labB.store[labBType]
+        })
+    }
+}
+
+const labWork = (room: Room) => {
+    const memory = Memory.RoomInfo[room.name].lab;
+
+    // 冷却未完成退出
+    if (memory.nextRunTime && Game.time < memory.nextRunTime) return ;
+    const labA = Game.getObjectById(memory.labA) as StructureLab;
+    const labB = Game.getObjectById(memory.labB) as StructureLab;
+
+    const labs = room.lab.filter(lab => lab.id !== labA.id && lab.id !== labB.id);
+    if (!labs || labs.length === 0) return ;
+
+     // 遍历其他化工厂作为输出厂进行合成
+    for (const lab of labs) {
+        const product = REACTIONS[memory.labAType][memory.labBType];
+
+        // 如果化工厂分配的BOOST类型和产物不一样，跳过
+        if (memory.BOOST && memory.BOOST[lab.id] &&
+            memory.BOOST[lab.id].type !== product) continue;
+        
+        // 如果存在与产物不同的资源，跳过
+        if (lab.mineralType && lab.mineralType !== product) continue;
+
+        // 如果已满，跳过
+        if (lab.store.getFreeCapacity(product) === 0) {
+            memory.state = LAB_STATE.TAKE;
+            return ;
+        }
+
+        // 合成
+        const result = lab.runReaction(labA, labB);
+
+        // 在冷却中，记录下次运行时间
+        if (result === ERR_TIRED) {
+            memory.nextRunTime = Game.time + lab.cooldown;
+            return ;
+        }
+        // 底物不足
+        else if (result === ERR_NOT_ENOUGH_RESOURCES) {
+            memory.state = LAB_STATE.TAKE;
+            return ;
+        }
+    }
+}
+
+const labTakeResource = (room: Room) => {
+    const memory = Memory.RoomInfo[room.name].lab;
+    // const product = REACTIONS[memory.labAType][memory.labBType];
+    // 检查是否已发布转移任务
+    if (countMission(room, MISSION_TYPE.TRANSPORT, m =>  m.data.target === room.terminal.id)) return;
+
+    const labs = room.lab.filter(lab => lab.id !== memory.labA && lab.id !== memory.labB);
+
+    // 检查资源有没有全部转移出去
+    for (const lab of labs) {
+        const product = lab.mineralType;
+        if (lab.mineralType === product && lab.store[product] > 0) {
+            return addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
+                source: lab.id,
+                target: room.terminal.id,
+                pos: lab.pos,
+                rType: product,
+                amount: lab.store[product]
+            });
+        }
+    }
+
+    memory.state = LAB_STATE.IDLE;
+    memory.labAmount = 0;
+    memory.labAType = memory.labBType = null;
+    return labIndexUpdate(room);
+}
+
+export const roomStructureLab = {
+
+    setTarget: (room: Room, update: boolean = false) => {
+        const memory = Memory.RoomInfo[room.name];
+        if (memory.lab.autoQueue && !update) return ;
+        if (!memory.lab.autoQueue) {
+            memory.lab.autoQueue = []
+        } else {
+            memory.lab.autoQueue = memory.lab.autoQueue.filter(task => task.manual);
+        }
+
+        // 寻找房间大于6级的矿物种类数
+        const minerals = _.uniq(Object.keys(Memory.RoomInfo).filter(roomName => (Game.rooms[roomName]?.level||0) >= 6 && Game.rooms[roomName].mineral).map(roomName => Game.rooms[roomName].mineral.mineralType)).length;
+
+        // 小于3种 都需要合成
+        if (minerals < 3) {
+            memory.lab.autoQueue.push(...LabTarget.OH);
+            memory.lab.autoQueue.push(...LabTarget.G);
+            memory.lab.autoQueue.push(...LabTarget.U);
+            memory.lab.autoQueue.push(...LabTarget.L);
+            memory.lab.autoQueue.push(...LabTarget.K);
+            memory.lab.autoQueue.push(...LabTarget.Z);
+
+            memory.lab.autoQueue = _.uniq(memory.lab.autoQueue, false, task => task.target);
+        }
+        // 小于5种 部分合成
+        else if (minerals < 5) {
+            switch (room.mineral.mineralType) {
+                case RESOURCE_OXYGEN:
+                case RESOURCE_HYDROGEN:
+                    memory.lab.autoQueue.push(...LabTarget.OH);
+                    memory.lab.autoQueue.push(...LabTarget.G);
+                    break;
+                case RESOURCE_UTRIUM:
+                case RESOURCE_LEMERGIUM:
+                    memory.lab.autoQueue.push(...LabTarget.U);
+                    memory.lab.autoQueue.push(...LabTarget.L);
+                    break;
+                case RESOURCE_KEANIUM:
+                case RESOURCE_ZYNTHIUM:
+                    memory.lab.autoQueue.push(...LabTarget.K);
+                    memory.lab.autoQueue.push(...LabTarget.Z);
+                    break;
+                case RESOURCE_CATALYST:
+                    memory.lab.autoQueue.push(...LabTarget.OH);
+                    break;
+            }
+            memory.lab.autoQueue = _.uniq(memory.lab.autoQueue, false, task => task.target);
+        }
+        // 分开合成
+        else {
+            switch (room.mineral.mineralType) {
+                case RESOURCE_OXYGEN:
+                case RESOURCE_HYDROGEN:
+                    memory.lab.autoQueue.push(...LabTarget.OH);
+                    memory.lab.autoQueue.push(...LabTarget.G);
+                    break;
+                case RESOURCE_UTRIUM:
+                    memory.lab.autoQueue.push(...LabTarget.U);
+                    break;
+                case RESOURCE_LEMERGIUM:
+                    memory.lab.autoQueue.push(...LabTarget.L);
+                    break;
+                case RESOURCE_KEANIUM:
+                    memory.lab.autoQueue.push(...LabTarget.K);
+                    break;
+                case RESOURCE_ZYNTHIUM:
+                    memory.lab.autoQueue.push(...LabTarget.Z);
+                    break;
+                case RESOURCE_CATALYST:
+                    break;
+            }
+        }
+    },
+    open: (room: Room) => {
+        const memory = Memory.RoomInfo[room.name];
+        // 不足3个lab
+        if (!room.lab || room.lab.length < 3) return -1;
+
+        if (!memory.lab) memory.lab = { open: true, state: LAB_STATE.IDLE };
+        else memory.lab.open = true;
+
+        const [labA, labB] = getRoomCenterLab(room);
+        if (labA && labB) {
+            memory.lab.labA = labA;
+            memory.lab.labB = labB;
+        }
+
+        // 指定合成线路
+        roomStructureLab.setTarget(room);
+    },
+    work: (room: Room) => {
+        // 不足3个lab
+        if (!room.lab || room.lab.length < 3) return ;
+
+        // 检查内存中的化工厂设置
+        const memory = Memory.RoomInfo[room.name].lab;
+        if (!memory || !memory.open || room.memory.defend) return ;
+        if (!memory.labA || !memory.labB) return ;
+
+        switch (Memory.RoomInfo[room.name].lab.state) {
+            case LAB_STATE.IDLE:
+                if (Game.time % 5 !== 1) return ;
+                return labGetTarget(room);
+            case LAB_STATE.LOAD:
+                if (Game.time % 15 !== 1) return ;
+                return labGetResource(room);
+            case LAB_STATE.WORK:
+                if (Game.time % 2) return ;
+                return labWork(room);
+            case LAB_STATE.TAKE:
+                if (Game.time % 15 !== 1) return ;
+                return labTakeResource(room);
+        }
     }
 }
