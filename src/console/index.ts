@@ -3,10 +3,12 @@ import lang_switch from "./general/lang_switch";
 import layout from "./global/layout";
 import market from "./global/market";
 import room from './global/room';
+import lab from "./structure/lab";
 
 const plugins = [
     layout,
     room,
+    lab,
     market,
 ]
 

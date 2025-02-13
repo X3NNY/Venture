@@ -13,20 +13,22 @@ const logo = ` __     __   U _____ u   _   _       _____      _   _     ____    
 const helpStrings = {
     cn: {
         help: '\n######  指令列表  ######\n' +
-            '- 通用：\n' + 
+            '- 通用功能：\n' + 
             '    help: 查看帮助\n' +
             '    lang_switch: 切换语言/switch language\n' + 
-            '- 功能（直接输入指令名可查看详细功能介绍）：\n' +
+            '- 全局操控（直接输入指令名可查看详细功能介绍）：\n' +
             '    room: 房间操控指令\n' +
             '    layout: 布局操控指令\n' +
-            '    market: 市场操控指令\n'
+            '    market: 市场操控指令\n' + 
+            '- 建筑操控：\n' +
+            '   lab: 化工厂操控指令\n'
     },
     us: {
         help: '\n######  Commands  ######\n' +
-            '- General：\n' + 
+            '- General function：\n' + 
             '    help: View help\n' +
             '    lang_switch: 切换语言/switch language\n' + 
-            '- Function（Input command for more details）：\n' +
+            '- Global control（Input command for more details）：\n' +
             '    room: Room commands\n' +
             '    layout: Layout commands\n' +
             '    market: Market commands\n'

@@ -1,13 +1,14 @@
 import { roomAutoBuild } from "./auto/build";
 import { roomDefendCheck } from "./auto/defend";
+import { roomInfoUpdate } from "./auto/info";
 import { roomOutMine } from "./auto/outMine";
 import { roomAutoTransaction } from "./auto/transaction";
 import { roomMissionUpdate, roomMissionInit } from "./mission";
 import { roomStructureWork } from "./structure";
 
 export const roomInit = (room: Room) => {
-    global.CreepNum[room.name] = {}
-    global.SpawnMissionNum[room.name] = {}
+    // global.CreepNum[room.name] = {}
+    // global.SpawnCreepNum[room.name] = {}
     roomMissionInit(room);
     room.update();
     room.memory.init = true;
@@ -39,6 +40,7 @@ export const eventLoop = (room: Room) => {
     roomStructureWork(room);                // 建筑行为
     roomAutoBuild(room);                    // 自动建设
     roomDefendCheck(room);                  // 防御检测
-    roomAutoTransaction(room);                  // 自动交易
+    roomAutoTransaction(room);              // 自动交易
     roomOutMine(room);                      // 外矿采集
+    roomInfoUpdate(room);                   // 更新房间信息
 }

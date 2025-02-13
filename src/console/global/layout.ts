@@ -37,6 +37,40 @@ export default {
             } else {
                 console.log(`可视化失败，消耗 ${cpu.toFixed(2)} CPU`);
             }
+        },
+        remove_site: (roomName: string, x: number, y: number, sType?: StructureConstant) => {
+            let layoutInfo = Memory.Layout[roomName];
+
+            const rp = new RoomPosition(x, y, roomName);
+            if (!rp) return ;
+
+            const sites = rp.lookFor(LOOK_CONSTRUCTION_SITES);
+
+            sites.forEach(site => site.remove())
+
+            const coord = coordCompress([x, y]);
+
+            if (!layoutInfo) return ;
+            if (sType) {
+                if (!layoutInfo[sType]) return ;
+                const pos = layoutInfo[sType].findIndex(pos => pos === coord);
+                if (pos !== -1) {
+                    layoutInfo[sType].splice(pos, 1);
+                    return `已从房间 ${roomName} 建筑布局中删除坐标(${x},${y})处的 ${sType} 建筑。`
+                }
+            } else {
+                const dTypes = [];
+                for (const s in layoutInfo) {
+                    const pos = layoutInfo[s].findIndex(pos => pos === coord);
+                    if (pos !== -1) {
+                        dTypes.push(s);
+                        layoutInfo[s].splice(pos, 1);
+                    }
+                }
+                if (dTypes.length > 0) {
+                    return `已从房间 ${roomName} 建筑布局中删除坐标(${x},${y})处的 ${dTypes.join(',')} 建筑。`
+                }
+            }
         }
     },
 }

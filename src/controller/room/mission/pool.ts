@@ -5,7 +5,7 @@ import { insertSorted } from '@/util/function';
 import { addRepairMission } from "./component/repair";
 import { addTransportMission, doneTransportMission } from './component/transport';
 import { getPosDistance } from "../function/calc";
-import { doneTerminalMission } from "./component/terminal";
+import { addTerminalMission, doneTerminalMission } from "./component/terminal";
 import { addManageMission } from "./component/manage";
 
 export const filterMission = (room: Room, type: string, filter?: (m: Task) => boolean): Task[] => {
@@ -35,6 +35,8 @@ export const addMission = (room: Room, type: string, mission: MISSION, data: any
         return addTransportMission(room, mission, data);
     } else if (type === MISSION_TYPE.MANAGE) {
         return addManageMission(room, mission, data);
+    } else if (type === MISSION_TYPE.TERMINAL) {
+        return addTerminalMission(room, mission, data);
     }
 }
 

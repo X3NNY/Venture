@@ -29,7 +29,7 @@ const roomTerminalManageChcek = (room: Room) => {
     const THRESHOLD = {
         source: {
             RESOURCE_ENERGY: 30000,
-            default: 4000
+            default: 5000
         },
         target: {
             RESOURCE_ENERGY: 25000,

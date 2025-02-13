@@ -45,7 +45,7 @@ const updateEnergyMission = (room: Room) => {
                 source: source.id,
                 target: t.id,
                 pos: { x: t.pos.x, y: t.pos.y, roomName: t.pos.roomName },
-                resourceType: RESOURCE_ENERGY,
+                rType: RESOURCE_ENERGY,
                 amount: t.store.getFreeCapacity(RESOURCE_ENERGY)
             })
         })
@@ -86,7 +86,7 @@ const updateLabMission = (room: Room) => {
     const labBType = memory.labBType;
 
     // 转走不正确的资源
-    [[labA, labAType], [labB, labBType]].forEach(([lab, rType]: [StructureLab, ResourceConstant]) => {
+    [[labA, labAType], [labB, labBType]].forEach(([lab, rType]: [StructureLab, MineralConstant]) => {
         if (!lab.mineralType || lab.mineralType === rType) return ;
         if (!lab.store[lab.mineralType] || lab.store[lab.mineralType] === 0) return ;
 
@@ -100,7 +100,7 @@ const updateLabMission = (room: Room) => {
     });
 
     // 检查化工厂是否需要添加资源
-    [[labA, labAType], [labB, labBType]].forEach(([lab, rType]: [StructureLab, ResourceConstant]) => {
+    [[labA, labAType], [labB, labBType]].forEach(([lab, rType]: [StructureLab, MineralConstant]) => {
         if (lab.mineralType && lab.mineralType !== rType) return ;
         if (lab.store.getFreeCapacity(rType) < 1000) return ;
         if (getRoomResourceAmount(room, rType) < 1000) return ;
@@ -233,6 +233,6 @@ export const updateTransportMission = (room: Room) => {
     if (!storage) return ;
 
     updateEnergyMission(room);
-    updateLabMission(room);
-    updateLabBoostMission(room);
+    // updateLabMission(room);
+    // updateLabBoostMission(room);
 }
