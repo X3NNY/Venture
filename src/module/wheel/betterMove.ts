@@ -1614,7 +1614,7 @@ if(!Creep.prototype.$moveTo) {
 if(!Creep.prototype.$build) {
     Creep.prototype.$build = Creep.prototype.build;
     Creep.prototype.build = function (...e) {
-        // this.memory.dontPullMe = true;
+        this.memory.dontPullMe = true;
         return this.$build(...e)
     };
 }

@@ -8,6 +8,6 @@ export const globalInit = () => {
     global.BOT_NAME = BaseConfig.BOT_NAME;
 
     global.CreepNum = {}        // 爬爬数量
-    global.SpawnMissionNum = {} // 孵化中数量
+    global.SpawnCreepNum = {} // 孵化中数量
 
 }
