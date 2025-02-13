@@ -72,7 +72,7 @@ export default {
         if (controller.reservation && controller.reservation.username !== creep.owner.username) {
             const result = creep.reserveController(controller);
             if (result === ERR_NOT_IN_RANGE) {
-                creepMoveTo(creep, controller);
+                creepMoveTo(creep, controller, { maxRooms: 1, range: 1 });
             }
             return ;
         }
@@ -80,7 +80,7 @@ export default {
         if (!controller.my) {
             const result = creep.claimController(controller);
             if (result === ERR_NOT_IN_RANGE) {
-                creepMoveTo(creep, controller);
+                creepMoveTo(creep, controller, { maxRooms: 1, range: 1 });
                 return ;
             } else if (result !== OK) {
                 creep.reserveController(controller);

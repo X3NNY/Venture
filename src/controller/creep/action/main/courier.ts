@@ -36,7 +36,7 @@ const creepCourierActions = {
             const storage = creep.room.storage;
             if (!storage) return ;
             if (creep.transfer(storage, Object.keys(creep.store)[0] as ResourceConstant) === ERR_NOT_IN_RANGE) {
-                creepMoveTo(creep, storage, { range: 1 });
+                creepMoveTo(creep, storage, { maxRooms: 1, range: 1 });
             }
             return ;
         }

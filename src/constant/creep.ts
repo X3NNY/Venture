@@ -163,7 +163,7 @@ export const CreepRoleBody = {
     },
     aid_carrier: {
         1: { body: [], num: 0, move: 'full' },
-        2: { body: [], num: 0, move: 'full' },
+        2: { body: [CARRY, CARRY, CARRY, CARRY, CARRY], num: 0, move: 'full' },
         3: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 0, move: 'full' },
         4: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 0, move: 'full' },
         5: { body: [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY], num: 0, move: 'full' },

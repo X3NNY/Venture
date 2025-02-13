@@ -32,7 +32,7 @@ export const calcCreepBodyEnergy = (body: string[]) => {
 }
 
 const PART_LEVEL = {
-    'tough': 0, 'work': 1, 'attack': 2, 'ranged_attack': 3, 'carry': 4, 'move': 5, 'heal': 6, 'claim': 7
+    'tough': 0, 'work': 1, 'attack': 2, 'ranged_attack': 5, 'carry': 3, 'move': 4, 'heal': 6, 'claim': 7
 }
 
 const getCreepRoleMoveCount = (allRoad: boolean, bodyCount: number, moveType: string = 'normal') => {
@@ -47,7 +47,11 @@ export const getCreepRoleBody = (room: Room, role: string, now: boolean = false)
     let body: any[];
     const maxEnergy = now ? room.energyAvailable : room.energyCapacityAvailable;
 
-    const allRoad = room.road.length > 90;
+    if (room.level > 2 && room.source.length < 2 && (room.storage?.store[RESOURCE_ENERGY]||0) < 30000) {
+        level -= 1;
+    }
+
+    const allRoad = room.road.length > 70;
 
     if (CreepRoleBody[role]) {
         while (level >= 1) {

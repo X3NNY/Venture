@@ -52,7 +52,7 @@ const creepAidBuilderActions = {
         if (target) {
             const result = creep.withdraw(target, RESOURCE_ENERGY);
             if (result === ERR_NOT_IN_RANGE) {
-                creepMoveTo(creep, target);
+                creepMoveTo(creep, target, { range: 1, maxRooms: 1 });
             }
             return ;
         }

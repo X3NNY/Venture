@@ -68,7 +68,7 @@ const creepMenderActions = {
 
         const res = creep.upgradeController(creep.room.controller);
         if (res === ERR_NOT_IN_RANGE) {
-            creepMoveTo(creep, creep.room.controller);
+            creepMoveTo(creep, creep.room.controller, { maxRooms: 1, range: 2 });
         }
 
         // 没能量了

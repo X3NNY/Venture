@@ -55,7 +55,7 @@ const creepBuilderActions = {
             delete creep.memory.cache.taskId;
             return;
         }
-
+        
         creepGoBuild(creep, site);
 
         // 没能量了
@@ -73,7 +73,7 @@ const creepBuilderActions = {
 
         const res = creep.upgradeController(creep.room.controller);
         if (res === ERR_NOT_IN_RANGE) {
-            creepMoveTo(creep, creep.room.controller);
+            creepMoveTo(creep, creep.room.controller, { maxRooms: 1, range: 3 });
         }
         
         // 成功升级一次就切回去看看有没有任务

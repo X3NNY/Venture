@@ -30,7 +30,7 @@ const creepDefendAttackerActions = {
         }
 
         if (targetRampart) {
-            creepMoveTo(creep, targetRampart.pos)
+            creepMoveTo(creep, targetRampart.pos, { maxRooms: 1 })
         }
 
         const target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);

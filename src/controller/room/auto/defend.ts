@@ -36,9 +36,9 @@ export const roomDefendCheck = (room: Room) => {
     } else {
         const attackDefender = Object.values(Game.creeps).filter(c => c.room.name === room.name && c.memory.role === CREEP_ROLE.DEFEND_ATTACKER);
 
-        if (!global.SpawnMissionNum[room.name]) updateSpawnCreepNum(room);
+        if (!global.SpawnCreepNum[room.name]) updateSpawnCreepNum(room);
 
-        let attackQueueNum = global.SpawnMissionNum[room.name][CREEP_ROLE.DEFEND_ATTACKER] || 0;
+        let attackQueueNum = global.SpawnCreepNum[room.name][CREEP_ROLE.DEFEND_ATTACKER] || 0;
         if (attackDefender.length + attackQueueNum < 1) {
             addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.defend_attacker, { home: room.name });
         }
