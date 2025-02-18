@@ -1,9 +1,13 @@
+import { roomInfoUpdate } from "@/controller/room/auto/info";
+
 const roomStrings = {
     cn: {
-        room_illegal: '[房间指令] 房间名不合法。'
+        room_illegal: '[房间指令] 房间名不合法。',
+        room_not_found: `[市场指令] 房间「{0}」未在控制列表或未占领。`,
     },
     us: {
-        room_illegal: ''
+        room_illegal: '',
+        room_not_found: `[市场指令] 房间「{0}」未在控制列表或未占领。`,
     }
 }
 
@@ -81,11 +85,12 @@ export default {
                 if (!Memory.RoomInfo[roomName].OutMineral.energy) {
                     Memory.RoomInfo[roomName].OutMineral.energy = [];
                 }
-
-                if (Memory.RoomInfo[roomName].OutMineral.energy.indexOf(targetRoom) === -1) {
+                const pos = Memory.RoomInfo[roomName].OutMineral.energy.indexOf(targetRoom);
+                if (pos === -1) {
                     console.log(`[指令] 房间 ${targetRoom} 不在房间 ${roomName} 的外矿列表。`);
                     return OK;
                 } else {
+                    Memory.RoomInfo[roomName].OutMineral.energy.splice(pos, 1);
                     console.log(`[指令] 房间 ${targetRoom} 已从房间 ${roomName} 的外矿列表中删除。`);
                     return OK;
                 }
@@ -96,10 +101,12 @@ export default {
                     Memory.RoomInfo[roomName].OutMineral.highway = [];
                 }
 
-                if (Memory.RoomInfo[roomName].OutMineral.highway.indexOf(targetRoom) === -1) {
+                const pos = Memory.RoomInfo[roomName].OutMineral.highway.indexOf(targetRoom);
+                if (pos === -1) {
                     console.log(`[指令] 通道房间 ${targetRoom} 不在房间 ${roomName} 的监控列表。`);
                     return OK;
                 } else {
+                    Memory.RoomInfo[roomName].OutMineral.highway.splice(pos, 1);
                     console.log(`[指令] 通道房间 ${targetRoom} 已存在于房间 ${roomName} 的监控列表中删除。`);
                     return OK;
                 }
@@ -109,15 +116,24 @@ export default {
                 if (!Memory.RoomInfo[roomName].OutMineral.center) {
                     Memory.RoomInfo[roomName].OutMineral.center = [];
                 }
-
-                if (Memory.RoomInfo[roomName].OutMineral.center.indexOf(targetRoom) === -1) {
+                const pos = Memory.RoomInfo[roomName].OutMineral.center.indexOf(targetRoom);
+                if (pos === -1) {
                     console.log(`[指令] 中央房间 ${targetRoom} 不在房间 ${roomName} 的外矿列表。`);
                     return OK;
                 } else {
+                    Memory.RoomInfo[roomName].OutMineral.center.splice(pos, 1);
                     console.log(`[指令] 中央房间 ${targetRoom} 已从房间 ${roomName} 的外矿列表中删除。`);
                     return OK;
                 }
             }
+        },
+        update: (roomName: string) => {
+            const lang = Memory.lang || 'cn';
+            const room = Game.rooms[roomName];
+            if (!room || !room.my) {
+                return roomStrings[lang].room_not_found.format(roomName);
+            }
+            roomInfoUpdate(room, true);
         }
     }
 }

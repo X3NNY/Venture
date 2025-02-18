@@ -1,6 +1,7 @@
 import { roomMarketAddOrder } from "@/controller/room/component/market";
 import { getRoomList } from "@/controller/room/function/get";
 import { drawTable } from "@/util/chart";
+import { gerOrderPrice } from "@/util/market";
 
 const marketStrings = {
     cn: {
@@ -42,6 +43,7 @@ const marketStrings = {
         update_dsell_order: '[市场指令] 已修改房间「{0}」中资源「{1}」自动卖出出售阈值为「{2}」，价格限制：「{3}」',
         order_remove: '[市场指令] 房间「{0}」中资源「{1}」全部订单已清除，成功清理「{2}」个订单。',
         order_remove_type: '[市场指令] 房间「{0}」中资源「{1}」订单类型「{2}」已清除。',
+        resource_price: '[市场指令] 资源「{0}」订单「{1}」类型最近均价为「{2}」。'
     },
     
     us: {
@@ -83,6 +85,7 @@ const marketStrings = {
         update_dsell_order: '[市场指令] 已修改房间「{0}」中资源「{1}」自动卖出出售阈值为「{2}」，价格限制：「{3}」',
         order_remove: '[市场指令] 房间「{0}」中资源「{1}」全部订单已清除，成功清理「{2}」个订单。',
         order_remove_type: '[市场指令] 房间「{0}」中资源「{1}」类型「{2}」订单已清除。',
+        resource_price: '[市场指令] 资源「{0}」订单「{1}」类型最近均价为「{2}」。'
     }
 }
 
@@ -168,6 +171,12 @@ export default {
                 return marketStrings[lang].order_remove.format(roomName, rType, count);
             }
                         
+        },
+        get_price: (rType: ResourceConstant, type?: ORDER_BUY | ORDER_SELL) => {
+            const lang = Memory.lang || 'cn';
+            const price = gerOrderPrice(rType, type);
+
+            return marketStrings[lang].resource_price.format(rType, type, price);
         },
         help: (func?: string) => {
             const lang = Memory.lang || 'cn';
