@@ -12,7 +12,7 @@ const spawnMissionCheck = {
         if (room.memory.defend) return false;
         
         // 前期要双倍的矿工
-        if (room.level < 3) return current < room.source.length * 2;
+        // if (room.level < 3) return current < room.source.length * 2;
         return current < room.source.length;
     },
     /**
@@ -36,6 +36,8 @@ const spawnMissionCheck = {
         // 后期最多一只就够了
         if (current >= 1) return false;
 
+        // 有矿
+        if (room.mineral?.mineralAmount > 0) return true;
         // 容器快满了
         if (room.container?.some(c => c.store.getUsedCapacity() > 1500)) return true;
         // 捡垃圾
@@ -59,8 +61,8 @@ const spawnMissionCheck = {
         // 有资源后可以多造点
         if (room.level < 4 && room.source.length >= 2 && current < 3 && countMission(room, MISSION_TYPE.BUILD) > 5) return true;
 
-        // 后续的话任务多孵化两个，否则一个就够了
-        if (countMission(room, MISSION_TYPE.BUILD) > 5 && current < 2) return true;
+        // 后续的话任务多且有能量孵化两个，否则一个就够了
+        if (countMission(room, MISSION_TYPE.BUILD) > 5 && room.storage?.store[RESOURCE_ENERGY] > 30000 && current < 2) return true;
         if (countMission(room, MISSION_TYPE.BUILD) && current < 1) return true;
     },
 
@@ -71,9 +73,12 @@ const spawnMissionCheck = {
         if (room.level < 2) return false;
 
         // 冲级
-        if (room.level < 8 && (room.storage?.store[RESOURCE_ENERGY]||0) > 100000) {
+        if (room.level < 8 && (room.storage?.store[RESOURCE_ENERGY]||0) > 150000) {
             return current < maxNum+1;
         }
+
+        // 高等级后没能量说明有其他事，先暂停升级
+        if (room.level >= 6 && room.storage.store[RESOURCE_ENERGY] < 20000 && room.controller.ticksToDowngrade > 20000) return false;
 
         // 建造任务太多了 少造一个
         if (countMission(room, MISSION_TYPE.BUILD) > 10) return current < maxNum -1;
@@ -100,7 +105,7 @@ const spawnMissionCheck = {
         if (room.level < 3) return false;
 
         // 低能量时 最多一个
-        if ((room.storage?.store[RESOURCE_ENERGY]||0) < 100000 && current >= 1) return false;
+        if ((room.storage?.store[RESOURCE_ENERGY]||0) < 120000 && current >= 1) return false;
 
         // 紧急任务大于5个
         if (countMission(room, MISSION_TYPE.REPAIR, m => m.type === REPAIRE_MISSION.urgent_structure.type || m.type === REPAIRE_MISSION.urgent_wall.type) > 5) return current < maxNum;

@@ -77,6 +77,12 @@ export const SPAWN_MISSION = {
         level: 10,
         role: 'claimer'
     },
+    sweeper: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'SW',
+        level: 11,
+        role: 'sweeper'
+    },
 
     defend_attacker: {
         type: MISSION_TYPE.SPAWN,

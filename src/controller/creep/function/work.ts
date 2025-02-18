@@ -11,7 +11,7 @@ export const creepGoHarvest = (creep: Creep, target: Source, harvestPos?: any) =
     if (!target) return ;
     if (harvestPos && !creep.pos.isEqualTo(harvestPos.x, harvestPos.y)) {
         // 检测一下还有爬爬没
-        if (harvestPos.isLock && Game.time % 100 === 0) {
+        if (harvestPos.isLock && Game.time % 50 === 0) {
             if ((new RoomPosition(harvestPos.x, harvestPos.y, creep.room.name)).lookFor(LOOK_CREEPS).length === 0) {
                 harvestPos.isLock = false;
             }
@@ -103,7 +103,7 @@ export const creepGoRepair = (creep: Creep, target: Structure) => {
     } else if (res === ERR_NOT_IN_RANGE) {
         creepMoveTo(creep, target, {
             maxRooms: 1,
-            range: 3
+            range: 2
         })
     }
     return false;

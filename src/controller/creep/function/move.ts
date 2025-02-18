@@ -1,4 +1,4 @@
-import { creepGetRangePos } from "./position";
+import { creepGetRangePos, creepIsOnEdge } from "./position";
 
 export const creepMoveToRoom = (creep: Creep, roomName: string, options = {}) => {
     if (creep.fatigue > 0) return ERR_TIRED;
@@ -88,7 +88,7 @@ export const creepMoveToRoomBypass = (creep: Creep, roomName: string, options = 
 
 export const creepMoveToHome = (creep: Creep, options = {}) => {
     if (!creep.memory.home) return true;
-    if (creep.room.name == creep.memory.home) return true;
+    if (creep.room.name == creep.memory.home && !creepIsOnEdge(creep)) return true;
     creepMoveToRoom(creep, creep.memory.home, options);
     return false;
 }

@@ -36,7 +36,8 @@ export const roomFindClosestSource = (room: Room, creep: Creep) => {
     }
 
     let cs = room.container.filter(c => c.pos.isNearTo(targetSource) && c.pos.lookFor(LOOK_CREEPS).length === 0);
-    let harvestPos = cs.length > 0 ? cs[0].pos : null;
+    const containerPos = cs.find(c => c.pos.lookFor(LOOK_STRUCTURES).some(s => s.structureType === STRUCTURE_CONTAINER))?.pos
+    const harvestPos = cs.length > 0 ? (containerPos ?? cs[0].pos) : null;
 
     return {
         source: targetSource,

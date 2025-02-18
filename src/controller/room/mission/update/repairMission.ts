@@ -60,7 +60,7 @@ export const updateRepairMission = (room: Room) => {
 export const updateWallRepairMission = (room: Room) => {
     const WALL_MAX_THRESHOLD = .5;
 
-    if ((room.storage?.store[RESOURCE_ENERGY]||0) < 50000) return ;
+    if (room.level < 5 || (room.storage?.store[RESOURCE_ENERGY]||0) < 100000) return ;
 
     const layout = Memory.Layout[room.name] || {};
     const ramparts = []
@@ -99,7 +99,7 @@ export const updateWallRepairMission = (room: Room) => {
             s.hits < s.hitsMax &&
             (
                 (s.structureType === STRUCTURE_WALL && walls.includes(coordCompress([s.pos.x, s.pos.y]))) ||
-                (s.structureType === STRUCTURE_RAMPART && ramparts.includes(coordCompress([s.pos.x, s.pos.y])))
+                (s.structureType === STRUCTURE_RAMPART && room.level >= 6 && ramparts.includes(coordCompress([s.pos.x, s.pos.y])))
             )
     })
 

@@ -42,5 +42,9 @@ export const eventLoop = (room: Room) => {
     roomDefendCheck(room);                  // 防御检测
     roomAutoTransaction(room);              // 自动交易
     roomOutMine(room);                      // 外矿采集
-    roomInfoUpdate(room);                   // 更新房间信息
+    
+    if (Memory.gamemode === 'auto') {
+        roomInfoUpdate(room);               // 更新房间信息
+    }
+    
 }

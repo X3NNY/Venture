@@ -32,7 +32,7 @@ export const calcCreepBodyEnergy = (body: string[]) => {
 }
 
 const PART_LEVEL = {
-    'tough': 0, 'work': 1, 'attack': 2, 'ranged_attack': 5, 'carry': 3, 'move': 4, 'heal': 6, 'claim': 7
+    'tough': 0, 'work': 1, 'attack': 4, 'carry': 2, 'move': 3, 'ranged_attack': 5, 'heal': 6, 'claim': 7
 }
 
 const getCreepRoleMoveCount = (allRoad: boolean, bodyCount: number, moveType: string = 'normal') => {
@@ -42,10 +42,12 @@ const getCreepRoleMoveCount = (allRoad: boolean, bodyCount: number, moveType: st
     return allRoad ? Math.ceil(bodyCount/2) : bodyCount;
 }
 
-export const getCreepRoleBody = (room: Room, role: string, now: boolean = false) => {
+export const getCreepRoleBody = (room: Room, role: string, options?: any) => {
+    if (!options) options = {}
     let level = room.level;
     let body: any[];
-    const maxEnergy = now ? room.energyAvailable : room.energyCapacityAvailable;
+    let moveParts: number; 
+    const maxEnergy = options.now ? room.energyAvailable : room.energyCapacityAvailable;
 
     if (room.level > 2 && room.source.length < 2 && (room.storage?.store[RESOURCE_ENERGY]||0) < 30000) {
         level -= 1;
@@ -56,15 +58,14 @@ export const getCreepRoleBody = (room: Room, role: string, now: boolean = false)
     if (CreepRoleBody[role]) {
         while (level >= 1) {
             body = CreepRoleBody[role][level].body;
-            const moveCost = getCreepRoleMoveCount(allRoad, body.length, CreepRoleBody[role][level].move) * 50;
-            if (maxEnergy >= calcCreepBodyEnergy(body) + moveCost) break;
+            moveParts = getCreepRoleMoveCount(allRoad, body.length, options.move || CreepRoleBody[role][level].move);
+            if (maxEnergy >= calcCreepBodyEnergy(body) + moveParts * 50) break;
             level --;
         }
         if (level === 0) return [];
     }
 
     body = Object.assign([], body);
-    const moveParts = getCreepRoleMoveCount(allRoad, body.length, CreepRoleBody[role][level].move);
     if (moveParts > 2) {
         for (let i = 0; i < moveParts-2; i++) {
             body.push(MOVE);

@@ -10,6 +10,8 @@ interface CreepMemory {
     targetRoom?: string,
     dontPullMe?: boolean,
     
+    boostCount: number,             // 强化尝试次数
+    
     sign?: string,
 
     lastTargetPos?: {
@@ -35,6 +37,7 @@ interface MarketOrder {
 interface Memory {
     gamemode: 'auto' | 'manual',                                // 游戏模式：自动/手动
     lang: 'cn' | 'us',                                          // 语言选择
+    log: 'info' | 'debug',                                                // 消息级别 info/debug
     Layout: {                                                   // 布局信息
         [roomName: string]: {
             [structure: StructureConstant]: number[]            // 建筑名：坐标数组
@@ -80,15 +83,14 @@ interface Memory {
                 state: number,                                  // 工作阶段
                 labA?: Id<StructureLab>,                        // 底物化工厂A
                 labB?: Id<StructureLab>,                        // 底物化工厂B
-                labAType?: MineralConstant | MineralCompoundConstant,                     // 底物B类型
-                labBType?: MineralConstant | MineralCompoundConstant,                     // 底物B类型
+                labAType?: MineralConstant | MineralCompoundConstant,                        // 底物B类型
+                labBType?: MineralConstant | MineralCompoundConstant,                        // 底物B类型
                 labAmount?: number,                             // 底物数量
                 nextRunTime?: number,                           // 下次运行时间
                 BOOST?: {
                     [labId: Id<StructureLab>]: {                // 化工厂ID
-                        type: MineralBoostConstant,             // 生产化合物类型
                         mineral: MineralBoostConstant,          // 实际化合物类型
-                        amount: number                          // 数量
+                        amount: number                          // 强化数量
                     }
                 },
                 boostQueue?: {                                  // 强化队列
@@ -97,7 +99,7 @@ interface Memory {
                 autoQueue?: {                                   // 合成队列
                     target: MineralCompoundConstant,            // 化合物类型
                     amount: number,                             // 合成阈值
-                    manual?: boolean,                            // 是否手动设置（不会被自动清理）
+                    manual?: boolean,                           // 是否手动设置（不会被自动清理）
                 }[]
             },
         }

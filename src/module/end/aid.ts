@@ -41,11 +41,17 @@ export const endAidCheck = () => {
             if (!sourceRoom) sourceRoom = spawnRoomName;
             let rType = flag.match(/-R\[.+?\]/)?.[1];
             if (!rType) rType = RESOURCE_ENERGY;
+            
+            let opts = {}
+            if (Game.rooms[targetRoom] && Game.rooms[targetRoom].road.length > 20) {
+                opts = { move: 'normal' }
+            }
             addMission(spawnRoom, MISSION_TYPE.SPAWN, SPAWN_MISSION.aid_carrier, {
                 home: spawnRoom.name,
                 sourceRoom: sourceRoom,
                 targetRoom: targetRoom,
-                rType: rType
+                rType: rType,
+                opts: opts
             })
             Game.flags[flag].memory['lastTime'] = Game.time;
         }

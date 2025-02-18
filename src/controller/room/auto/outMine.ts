@@ -143,10 +143,20 @@ const outCenterMine = (room: Room) => {
             continue;
         }
 
-        if (room.level <= 6) createOutProtectorCreep(room, targetRoom);
-
         // 有敌人暂时不采集
-        if (sourceKeeper.length > 0 && out_attacker < 1) continue;
+        if (sourceKeeper.length > 0 && out_attacker < 1) {
+            const tasks = filterMission(room, MISSION_TYPE.SPAWN,
+                m => m.data.role === SPAWN_MISSION.out_harvester.role ||
+                    m.data.role === SPAWN_MISSION.out_carrier.role ||
+                    m.data.role === SPAWN_MISSION.out_builder.role ||
+                    m.data.role === SPAWN_MISSION.out_reserver.role
+            )
+            // 删除已在队列的其他爬爬
+            for (const task of tasks) {
+                deleteMission(room, MISSION_TYPE.SPAWN, task.id);
+            }
+            continue;
+        }
 
         const sources = targetRoom.source?.length || targetRoom.find(FIND_SOURCES).length || 0;
         if (sources === 0) continue;
@@ -184,7 +194,7 @@ const outHighwayMine = (room: Room) => {
             outRoomDepositCheck(targetRoom);
             if ((targetRoom.memory.depositMineral?.count||0) > 0) {
                     // 检查商品采集爬爬数量
-                    const dhs = (creeps[CREEP_ROLE.DEPOSIT_HARVESTER] || []).filter(c => c.spawning || c.ticksToLive > 200).length;
+                    const dhs = (creeps[CREEP_ROLE.DEPOSIT_HARVESTER] || []).filter(c => c.spawning || c.ticks > 200).length;
                     const dhspawns = global.spawnCreepNum[room.name][CREEP_ROLE.DEPOSIT_HARVESTER] || 0
                     if (dhs + dhspawns < targetRoom.memory.depositMineral.count) {
                         addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.deposit_harvester, {
@@ -192,7 +202,7 @@ const outHighwayMine = (room: Room) => {
                         })
                     }
 
-                    const dcs = (creeps[CREEP_ROLE.DEPOSIT_CARRIER] || []).filter(c => c.spawning || c.ticksToLive > 200).length;
+                    const dcs = (creeps[CREEP_ROLE.DEPOSIT_CARRIER] || []).filter(c => c.spawning || c.ticks > 200).length;
                     const dcspawns = global.spawnCreepNum[room.name][CREEP_ROLE.DEPOSIT_CARRIER] || 0
                     if (dcs + dcspawns < targetRoom.memory.depositMineral.count) {
                         addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.deposit_carrier, {
@@ -244,11 +254,10 @@ export const roomOutMine = (room: Room) => {
 // 外房攻击者
 const createOutAttackerCreep = (room: Room, targetRoom: Room) => {
     const creeps = getRoomTargetCreepNum(targetRoom.name);
-    const out_attacker = (creeps[CREEP_ROLE.OUT_ATTACKER]||[]).filter(c => c.ticksToLive > 300 || c.spawning);
+    const out_attacker = (creeps[CREEP_ROLE.OUT_ATTACKER]||[]).filter(c => c.ticks > 300 || c.spawning);
 
     const spawns = global.SpawnCreepNum[room.name][CREEP_ROLE.OUT_ATTACKER] || 0;
-    
-    if ((out_attacker?.length||0) + spawns >= 1) return false;
+    if (out_attacker.length + spawns >= 1) return false;
 
     addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.out_attacker, {
         home: room.name,
@@ -259,7 +268,7 @@ const createOutAttackerCreep = (room: Room, targetRoom: Room) => {
 // 外房守护者
 const createOutProtectorCreep = (room: Room, targetRoom: Room) => {
     const creeps = getRoomTargetCreepNum(targetRoom.name);
-    const out_protector = (creeps[CREEP_ROLE.OUT_PROTECTOR]||[]).filter(c => c.ticksToLive > 300 || c.spawning);
+    const out_protector = (creeps[CREEP_ROLE.OUT_PROTECTOR]||[]).filter(c => c.ticks > 300 || c.spawning);
 
     const spawns = global.SpawnCreepNum[room.name][CREEP_ROLE.OUT_PROTECTOR] || 0;
 
@@ -289,14 +298,14 @@ const createOutBuilderCreep = (room: Room, targetRoom: Room) => {
         filter: s => s.structureType === STRUCTURE_ROAD
     });
 
-    if (site.length === 0) return false;
+    if (site.length < 10) return false;
 
     const creeps = getRoomTargetCreepNum(targetRoom.name);
     const out_builder = (creeps[CREEP_ROLE.OUT_BUILDER] || []).length;
     const spawns = global.SpawnCreepNum[room.name][CREEP_ROLE.OUT_BUILDER] || 0;
 
     let num = 1;
-    if (site.length > 10) num = 2;
+    // if (site.length > 10) num = 2;
     if (out_builder + spawns >= num) return false;
 
     addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.out_builder, {
