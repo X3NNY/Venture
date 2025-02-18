@@ -4,12 +4,16 @@ import layout from "./global/layout";
 import market from "./global/market";
 import room from './global/room';
 import lab from "./structure/lab";
+import spawn from "./structure/spawn";
+import terminal from "./structure/terminal";
 
 const plugins = [
     layout,
+    market,
     room,
     lab,
-    market,
+    spawn,
+    terminal,
 ]
 
 const func = [
