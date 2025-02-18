@@ -102,7 +102,7 @@ const labWork = (room: Room) => {
 
         // 如果化工厂分配的BOOST类型和产物不一样，跳过
         if (memory.BOOST && memory.BOOST[lab.id] &&
-            memory.BOOST[lab.id].type !== product) continue;
+            memory.BOOST[lab.id].mineral !== product) continue;
         
         // 如果存在与产物不同的资源，跳过
         if (lab.mineralType && lab.mineralType !== product) continue;
@@ -158,7 +158,6 @@ const labTakeResource = (room: Room) => {
 }
 
 export const roomStructureLab = {
-
     setTarget: (room: Room, update: boolean = false) => {
         const memory = Memory.RoomInfo[room.name];
         if (memory.lab.autoQueue && !update) return ;
@@ -230,6 +229,53 @@ export const roomStructureLab = {
                     break;
             }
         }
+    },
+    // 指定boost任务化工厂
+    setBoost: (room: Room, mineral: MineralBoostConstant, amount: number) => {
+        const labInfo = Memory.RoomInfo[room.name].lab;
+        if (!labInfo.BOOST) labInfo.BOOST = {}
+
+        // 查看是否已设置该类型任务
+        const lab = room.lab.find(lab => labInfo.BOOST[lab.id]?.mineral === mineral);
+
+        if (lab) {
+            labInfo.BOOST[lab.id].amount = amount;
+            return true;
+        }
+
+        // 寻找没有BOOST任务的非底物lab
+        const labs = room.lab.filter(lab => !labInfo.BOOST[lab.id] && lab.id !== labInfo.labA && lab.id !== labInfo.labB);
+
+        if (labs.length) {
+            const lab = labs[0];
+            labInfo.BOOST[lab.id] = {
+                mineral: mineral,
+                amount: amount
+            }
+            return true;
+        } else {
+            // 添加到队列
+            if (!labInfo.boostQueue) labInfo.boostQueue = {};
+            labInfo.boostQueue[mineral] = Math.max(labInfo.boostQueue[mineral]||0, amount);
+            return false;
+        }
+    },
+    // 提交boost已完成数
+    submitBoost: (room: Room, mineral: MineralBoostConstant, amount: number) => {
+        const labInfo = Memory.RoomInfo[room.name].lab;
+        if (!labInfo.BOOST) labInfo.BOOST = {}
+
+        const lab = room.lab.find(lab => labInfo.BOOST[lab.id]?.mineral === mineral);
+
+        if (!lab) return true;
+
+        labInfo.BOOST[lab.id].amount -= amount;
+
+        // boost资源用完清除BOOST指定
+        if (labInfo.BOOST[lab.id].amount <= 0) {
+            delete labInfo.BOOST[lab.id];
+        }
+        return true;
     },
     open: (room: Room) => {
         const memory = Memory.RoomInfo[room.name];

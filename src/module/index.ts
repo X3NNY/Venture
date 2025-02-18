@@ -10,8 +10,9 @@ import { endGeneratePixel } from './end/pixel';
 import { getCpuConsumption } from '@/util/function';
 import { endClaimCheck } from './end/claim';
 import { endAidCheck } from './end/aid';
+import { drawTable } from '@/util/chart';
 
-// let _cachedMemory: Memory;
+let _cachedMemory: Memory;
 let _isFirstCreate = true;
 
 export const globalInitialize = () => {
@@ -25,15 +26,15 @@ const onFirstCreate = () => {
 }
 
 const onCreate = () => {
-    // if (_cachedMemory) {
-    //     // @ts-ignore
-    //     delete global.Memory;
-    //     // @ts-ignore
-    //     global.Memory = _cachedMemory;
-    // } else {
-    //     // @ts-ignore
-    //     _cachedMemory = global.Memory;
-    // }
+    if (_cachedMemory) {
+        // @ts-ignore
+        delete global.Memory;
+        // @ts-ignore
+        global.Memory = _cachedMemory;
+    } else {
+        // @ts-ignore
+        _cachedMemory = global.Memory;
+    }
     if (_isFirstCreate) onFirstCreate();
 }
 
@@ -42,11 +43,35 @@ const onStart = () => {
 }
 
 const onProcess = () => {
+    const roomCPUMap = {};
+    const creepCPUMap = {};
     // 房间动作
-    Object.values(Game.rooms).forEach(room => roomController.eventLoop(room));
-
+    Object.values(Game.rooms).forEach(room => {
+        if (Memory.log === 'debug') {
+            const start = Game.cpu.getUsed();
+            roomController.eventLoop(room);
+            roomCPUMap[room.name] = (creepCPUMap[room.name]||0) + Game.cpu.getUsed()-start;
+        } else {
+            roomController.eventLoop(room)
+        }
+    });
+    
+    
     // 爬动作
-    Object.values(Game.creeps).forEach(creep => creepController.eventLoop(creep))
+    Object.values(Game.creeps).forEach(creep => {
+        if (Memory.log === 'debug') {
+            const start = Game.cpu.getUsed();
+            creepController.eventLoop(creep)
+            creepCPUMap[creep.memory.role] = (creepCPUMap[creep.memory.role]||0) + Game.cpu.getUsed()-start;
+        } else {
+            creepController.eventLoop(creep);
+        }
+    });
+    if (Memory.log === 'debug') {
+        console.log('房间总消耗：', Object.values<number>(roomCPUMap).reduce((a,b)=>a+b,0).toFixed(2), '爬爬总消耗：', Object.values<number>(creepCPUMap).reduce((a,b)=>a+b,0).toFixed(2))
+        console.log(drawTable([Object.values(roomCPUMap).map((v:number)=>v.toFixed(2))], Object.keys(roomCPUMap)));
+        console.log(drawTable([Object.values(creepCPUMap).map((v:number)=>v.toFixed(2))], Object.keys(creepCPUMap)));
+    }
 }
 
 const onEnd = () => {
@@ -58,7 +83,7 @@ const onEnd = () => {
 
 const onDestory = () => {
     // @ts-ignore
-    // RawMemory._parsed = global.Memory;
+    RawMemory._parsed = global.Memory;
 }
 
 export const botLoop = () => {

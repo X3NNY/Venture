@@ -23,6 +23,10 @@ export const roomStructureTerminal = {
 
         const { targetRoom, rType, amount } = task.data;
 
+        if (!targetRoom || !rType) {
+            return deleteMission(room, MISSION_TYPE.TERMINAL, task.id);
+        }
+
         if (amount <= 0) {
             return deleteMission(room, MISSION_TYPE.TERMINAL, task.id);
         }

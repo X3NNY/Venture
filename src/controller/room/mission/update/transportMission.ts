@@ -52,6 +52,21 @@ const updateEnergyMission = (room: Room) => {
     }
 
     if (energy < 10000) return ;
+
+    if (Game.time % 50 === 0 && room.level >= 6 && room.lab) {
+        const labs = room.lab.filter(lab => lab && lab.store.getFreeCapacity(RESOURCE_ENERGY) > 0);
+        labs.forEach(lab => {
+            if (energy < lab.store.getFreeCapacity(RESOURCE_ENERGY)) return ;
+            energy -= lab.store.getFreeCapacity(RESOURCE_ENERGY);
+            addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab_energy, {
+                source: source.id,
+                target: lab.id,
+                pos: { x: lab.pos.x, y: lab.pos.y, roomName: lab.pos.roomName },
+                rType: RESOURCE_ENERGY,
+                amount: lab.store.getFreeCapacity(RESOURCE_ENERGY)
+            })
+        })
+    }
 } 
 
 const updateLabMission = (room: Room) => {
@@ -157,41 +172,24 @@ const updateLabBoostMission = (room: Room) => {
     if (Object.keys(memory.boostQueue).length) {
         // 筛选没有分配boost的lab
         room.lab
-        .filter(lab => lab && !memory.BOOST[lab.id] &&
+            .filter(lab => lab && !memory.BOOST[lab.id] &&
                 lab.id !== memory.labA && lab.id !== memory.labB)
-        .forEach(lab => {
-            const mType = Object.keys(memory.boostQueue)[0] as MineralBoostConstant;
-            memory.BOOST[lab.id] = {
-                type: memory.BOOST[lab.id].type,
-                mineral: mType,
-                amount: memory.boostQueue[mType]
-            };
-            delete memory.boostQueue[mType];
-        })
+            .forEach(lab => {
+                const mType = Object.keys(memory.boostQueue)[0] as MineralBoostConstant;
+                memory.BOOST[lab.id] = {
+                    mineral: mType,
+                    amount: memory.boostQueue[mType]
+                };
+                delete memory.boostQueue[mType];
+            })
     }
+
+    if (!memory.BOOST) return ;
 
     // 根据boost类型填充lab
     room.lab.forEach(lab => {
         if (!lab) return ;
         let mType = memory.BOOST[lab.id]?.mineral;
-        if (mType) {
-            // 化工厂不能是底物化工厂
-            if (lab.id === memory.labA || lab.id === memory.labB) {
-                delete memory.BOOST[lab.id];
-                return ;
-            }
-            // 没有boost任务了
-            if ((memory.BOOST[lab.id].amount||0) <= 0) {
-                return ;
-            }
-            // 没有资源了
-            const totalAmount = room.storage.store[mType] + room.terminal.store[mType] + room.lab.reduce((a,b) => a + (b.store[mType]||0), 0) + room.find(FIND_MY_CREEPS).reduce((a, b) => a + (b.store[mType]||0), 0);
-            if (memory.BOOST[lab.id].amount > totalAmount) {
-                memory.BOOST[lab.id].amount = totalAmount;
-            }
-        } else {
-            mType = memory.BOOST[lab.id].type;
-        }
 
         // 没有设置boost类型
         if (!mType) return;
@@ -206,6 +204,24 @@ const updateLabBoostMission = (room: Room) => {
                 amount: lab.store[lab.mineralType]
             });
             return ;
+        }
+
+        if (mType) {
+            // 化工厂不能是底物化工厂
+            if (lab.id === memory.labA || lab.id === memory.labB) {
+                delete memory.BOOST[lab.id];
+                return ;
+            }
+            // boost数量完成了
+            if ((memory.BOOST[lab.id].amount||0) <= 0) {
+                delete memory.BOOST[lab.id];
+                return ;
+            }
+            // 没有资源了
+            const totalAmount = room.storage.store[mType] + room.terminal.store[mType] + room.lab.reduce((a,b) => a + (b.store[mType]||0), 0) + room.find(FIND_MY_CREEPS).reduce((a, b) => a + (b.store[mType]||0), 0);
+            if (memory.BOOST[lab.id].amount > totalAmount) {
+                memory.BOOST[lab.id].amount = totalAmount;
+            }
         }
 
         let totalAmount = 3000;
@@ -225,7 +241,6 @@ const updateLabBoostMission = (room: Room) => {
             });
         }
     })
-
 }
 
 export const updateTransportMission = (room: Room) => {
@@ -234,5 +249,5 @@ export const updateTransportMission = (room: Room) => {
 
     updateEnergyMission(room);
     // updateLabMission(room);
-    // updateLabBoostMission(room);
+    updateLabBoostMission(room);
 }

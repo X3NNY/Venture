@@ -43,9 +43,6 @@ const spawnCreep = (room: Room) => {
     const result = spawn.spawnCreep(task.body, task.name, {memory: task.memory})
     const role = task.memory.role;
 
-    // if (role === CREEP_ROLE.AID_BUILDER || role === CREEP_ROLE.OUT_HARVESTER) {
-    //     console.log(role, 'spawn', Game.time, JSON.stringify(task));
-    // }
 
     // 如果创建成功
     if (result == OK) {
@@ -82,7 +79,7 @@ const spawnCreep = (room: Room) => {
             return ;
         }
 
-        const body = getCreepRoleBody(room, CREEP_ROLE.UNIVERSAL, true);
+        const body = getCreepRoleBody(room, CREEP_ROLE.UNIVERSAL, {now: true});
         spawn.spawnCreep(
             body,
             generateCreepName(SPAWN_MISSION.universal.code),
