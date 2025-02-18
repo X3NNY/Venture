@@ -1,9 +1,5 @@
-import { creepChargeEnergy } from "../../function/charge";
+import { creepChargeBoost, creepChargeEnergy } from "../../function/charge";
 import { creepMoveTo, creepMoveToHome } from "../../function/move";
-
-const sign = () => {
-
-}
 
 const creepUpgraderActions = {
     withdraw: (creep: Creep) => {
@@ -43,7 +39,7 @@ const creepUpgraderActions = {
         if (link && !creep.pos.inRangeTo(link, 1)) {
             creepMoveTo(creep, creep.room.controller.pos, {
                 maxRooms: 1,
-                range: 2,
+                range: 1,
             })
         }
         else if (!link && !creep.pos.inRangeTo(creep.room.controller, 2)) {
@@ -75,7 +71,7 @@ const creepUpgraderActions = {
 export default {
     prepare: (creep: Creep) => {
         creep.memory.action = 'withdraw';
-        return true;
+        return creepChargeBoost(creep, ['XGH2O', 'GH2O', 'GH']);
     },
     action: (creep: Creep) => {
         switch(creep.memory.action) {

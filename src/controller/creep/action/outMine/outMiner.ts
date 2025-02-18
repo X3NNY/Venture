@@ -14,10 +14,10 @@ const creepMinerActions = {
 
         const mineral = Game.getObjectById(creep.memory.targetSourceId);
 
-        creepGoMine(creep, mineral as any, creep.memory.targetHarvestPos);
+        const result = creepGoMine(creep, mineral as any, creep.memory.targetHarvestPos);
 
         // 没有采集点
-        if (!creep.memory.targetHarvestPos) {
+        if (result && !creep.memory.targetHarvestPos) {
             // 继续找一遍有没有Container
             const containers = mineral.pos.findInRange(FIND_STRUCTURES, 1, {
                 filter: s => s.structureType === STRUCTURE_CONTAINER && s.pos.lookFor(LOOK_CREEPS).length === 0
@@ -37,7 +37,7 @@ const creepMinerActions = {
                 }
 
                 // 建一个工地
-                else {
+                else if (creep.pos.isNearTo(mineral)){
                     creep.room.createConstructionSite(creep.pos, STRUCTURE_CONTAINER);
                     creep.memory.targetHarvestPos = creep.pos;
                     return ;
@@ -75,7 +75,7 @@ export default {
         if (!creep.memory.cache) creep.memory.cache = {};
         if (creep.room.name != creep.memory.targetRoom || creepIsOnEdge(creep)) {
             creepMoveToRoom(creep, creep.memory.targetRoom);
-            return ;
+            return false;
         }
 
         creep.memory.action = 'mine';

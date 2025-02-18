@@ -10,7 +10,7 @@ const creepAidBuilderActions = {
             return ;
         }
 
-        if (creep.memory.sourceRoom && creep.room.name !== creep.memory.sourceRoom) {
+        if (creep.memory.sourceRoom && (creep.room.name !== creep.memory.sourceRoom || creepIsOnEdge(creep))) {
             creepMoveToRoom(creep, creep.memory.sourceRoom);
             return ;
         }

@@ -1,5 +1,5 @@
 import { MISSION_TYPE } from "@/constant/mission";
-import { deleteMission, doneMission, getMission, getMissionByDist, lockMission } from "@/controller/room/mission/pool";
+import { deleteMission, doneMission, getMission, getMissionByDist, lockMission, unlockMission } from "@/controller/room/mission/pool";
 import { creepMoveTo } from "../../function/move";
 import { creepGoTransfer } from "../../function/work";
 
@@ -39,6 +39,10 @@ const creepCourierActions = {
                 creepMoveTo(creep, storage, { maxRooms: 1, range: 1 });
             }
             return ;
+        }
+
+        if (creep.ticksToLive < 30 && creep.memory.cache.missionId) {
+            unlockMission(creep.room, MISSION_TYPE.TRANSPORT, creep.memory.cache.missionId)
         }
 
         const source = Game.getObjectById(creep.memory.cache.source as Id<AnyStoreStructure>);

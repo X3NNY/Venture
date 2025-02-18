@@ -13,14 +13,16 @@ const creepOutBuilderActions = {
 
         // 寻找可用的容器
         if (!target) {
-            const containers = creep.room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_CONTAINER &&
+            const containers = creep.room.container.filter(s => 
                 s.store.getUsedCapacity() > s.store.getCapacity() * 0.5
-            });
+            );
 
             if (containers.length > 0) {
                 target = creep.pos.findClosestByRange(containers);
             }
-
+            if (!target) {
+                target = [creep.room.storage].find(s => s && s.store[RESOURCE_ENERGY] > 0)
+            }
             if (target) {
                 creep.memory.cache.targetId = target.id;
             }
@@ -34,7 +36,7 @@ const creepOutBuilderActions = {
                 return ;
             }
             if (target.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
-                creep.memory.cache = {};
+                delete creep.memory.cache.targetId
                 return ;
             }
         }
@@ -63,6 +65,7 @@ const creepOutBuilderActions = {
     build: (creep: Creep) => {
         if (creep.store.getUsedCapacity() === 0) {
             creep.memory.action = 'withdraw';
+            delete creep.memory.cache.targetId;
             return ;
         }
 
@@ -103,13 +106,17 @@ export default {
         
         if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
             creepMoveToRoom(creep, creep.memory.targetRoom);
-            return ;
+            return false;
         }
 
         creep.memory.action = 'withdraw';
         return true;
     },
     action: (creep: Creep) => {
+        if (creep.hits < creep.hitsMax * 0.66) {
+            creep.memory.ready = false;
+            return creepMoveToRoom(creep, creep.memory.home);
+        }
         switch(creep.memory.action) {
             case 'withdraw':            creepOutBuilderActions.withdraw(creep); break;
             case 'build':               creepOutBuilderActions.build(creep); break;

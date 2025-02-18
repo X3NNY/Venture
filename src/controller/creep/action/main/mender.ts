@@ -1,8 +1,9 @@
 import { MISSION_TYPE } from "@/constant/mission";
 import { deleteMission, getMission, getMissionByDist, lockMission, unlockMission } from "@/controller/room/mission/pool";
 import { creepGoRepair } from "../../function/work";
-import { creepMoveTo } from "../../function/move";
+import { creepMoveTo, creepMoveToHome } from "../../function/move";
 import { creepChargeEnergy } from "../../function/charge";
+import { creepIsOnEdge } from "../../function/position";
 
 const creepMenderActions = {
     withdraw: (creep: Creep) => {
@@ -31,7 +32,7 @@ const creepMenderActions = {
                 return ;
             }
 
-            if (task.level > 10 && (creep.room.storage?.store[RESOURCE_ENERGY]||0) < 50000) {
+            if (task.level > 10 && (creep.room.storage?.store[RESOURCE_ENERGY]||0) < 100000) {
                 return deleteMission(creep.room, MISSION_TYPE.REPAIR, task.id);
             }
 
@@ -47,6 +48,15 @@ const creepMenderActions = {
 
         const task = creep.memory.cache.task;
         const target = Game.getObjectById(task.data.target) as Structure;
+        
+
+        // 刷墙任务刷一会就算了，均衡一点
+        if (task.level > 10 && Game.time % 200 === 1) {
+            deleteMission(creep.room, MISSION_TYPE.REPAIR, task.id);
+            creep.memory.cache = {};
+            return true;
+        }
+
         // 没有目标||目标已修复到阈值
         if (!target || target.hits >= task.data.hits) {
             deleteMission(creep.room, MISSION_TYPE.REPAIR, task.id);
@@ -91,6 +101,9 @@ export default {
         return true;
     },
     action: (creep: Creep) => {
+        if (creepIsOnEdge(creep)) {
+            return creepMoveToHome(creep);
+        }
         switch(creep.memory.action) {
             case 'withdraw':           creepMenderActions.withdraw(creep); break;
             case 'repair':             creepMenderActions.repair(creep); break;

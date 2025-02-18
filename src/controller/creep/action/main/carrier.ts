@@ -12,63 +12,66 @@ const checkSpawnAndTower = (room: Room) => {
 const creepCarrierActions = {
     // 获取资源
     withdraw: (creep: Creep) => {
+        let source = Game.getObjectById(creep.memory.cache.sourceId) as any;
         const minAmount = Math.min(creep.store.getFreeCapacity(), 500);
-        // 捡垃圾
-        const tombstone = creep.pos.findClosestByRange(FIND_TOMBSTONES, {
-            filter: t => t.store[RESOURCE_ENERGY] >= minAmount || (Object.keys(t.store).length > 1)
-        })
-        if (tombstone && (creep.room.storage || tombstone[RESOURCE_ENERGY] >= minAmount)) {
-            if (creep.withdraw(tombstone, Object.keys(tombstone.store)[0] as ResourceConstant) === ERR_NOT_IN_RANGE) {
-                creepMoveTo(creep, tombstone, { maxRooms: 1, range: 1 });
-            }
-            return ;
+        if ((source?.amount||0) === 0 && (source?.store[RESOURCE_ENERGY]||0) === 0) {
+            delete creep.memory.cache.sourceId;
+            source = null;
         }
+        if (!source && Game.time % 10 === 2) {
+            delete creep.memory.cache.type;
+            delete creep.memory.cache.sourceId;
 
-        const droppedEnergy = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
-            filter: r => (r.resourceType === RESOURCE_ENERGY && r.amount >= minAmount) || (r.resourceType !== RESOURCE_ENERGY && r.amount >= 10)
-        })
-        if (droppedEnergy && (creep.room.storage || droppedEnergy.resourceType === RESOURCE_ENERGY)) {
-            if (creep.pickup(droppedEnergy) === ERR_NOT_IN_RANGE) {
-                creepMoveTo(creep, droppedEnergy, { maxRooms: 1, range: 1 });
+            // 捡垃圾
+            const tombstone = creep.pos.findClosestByRange(FIND_TOMBSTONES, {
+                filter: t => t.store[RESOURCE_ENERGY] >= minAmount || (Object.keys(t.store).length > 1)
+            })
+            if (tombstone && (creep.room.storage || tombstone[RESOURCE_ENERGY] >= minAmount)) {
+                source = tombstone;
             }
-            return ;
+
+            if (!source) {
+                const droppedEnergy = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
+                    filter: r => (r.resourceType === RESOURCE_ENERGY && r.amount >= minAmount) || (r.resourceType !== RESOURCE_ENERGY && r.amount >= 10)
+                })
+                if (droppedEnergy && (creep.room.storage || droppedEnergy.resourceType === RESOURCE_ENERGY)) {
+                    source = tombstone;
+                    creep.memory.cache.type = 'pickup'
+                }
+            }
+            if (!source) {
+                // 收破烂
+                const ruinedEnergy = creep.pos.findClosestByRange(FIND_RUINS, {
+                    filter: r => r.store[RESOURCE_ENERGY] > 50
+                });
+                if (ruinedEnergy) source = ruinedEnergy;
+            }
+            if (source) {
+                creep.memory.cache.sourceId = source.id;
+            }
         }
-
-        let target;
-        // 收破烂
-        const ruinedEnergy = creep.pos.findClosestByRange(FIND_RUINS, {
-            filter: r => r.store[RESOURCE_ENERGY] > 50
-        });
-
-        if (ruinedEnergy) target = ruinedEnergy;
 
         // 从容器获取
-        if (!target) {
+        if (!source) {
             const containers = creep.room.container.filter(s => (creep.room.storage ? s.store.getUsedCapacity() > minAmount : s?.store[RESOURCE_ENERGY] > Math.min(1200, creep.store.getFreeCapacity())) && !s.pos.inRangeTo(creep.room.controller, 1));
-            if (containers) target = creep.pos.findClosestByRange(containers);
+            if (containers) source = creep.pos.findClosestByRange(containers);
         }
+        if (!source && creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY] > 10000) source = creep.room.storage;
+        if (!source && creep.room.terminal) source = creep.room.terminal;
+        if (!source && creep.room.storage) source = creep.room.storage;
 
-        // 从中央链接获取
-        if (!target) {
-            if (creep.room.level >= 5 && creep.room.storage && creep.room.link) {
-                const mLink = creep.room.link.find(l => l.pos.inRangeTo(creep.room.storage, 2))??null;
-                if (mLink && mLink.store[RESOURCE_ENERGY] > 0) target = mLink;
-            } 
-        }
-
-        if (!target && creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY] > 10000) target = creep.room.storage;
-        if (!target && creep.room.terminal) target = creep.room.terminal;
-
-        if (!target && creep.room.storage) target = creep.room.storage;
-
-        if (target) {
-            const resourceType = (creep.room.storage && target.id !== creep.room.storage.id) ? Object.keys(target.store)[0] : RESOURCE_ENERGY;
-            if (creep.withdraw(target, resourceType as ResourceConstant) === ERR_NOT_IN_RANGE) {
-                creepMoveTo(creep, target, { maxRooms: 1, range: 1 });
+        if (source) {
+            let result;
+            if (!source.store) {
+                result = creep.pickup(source);
+            } else {
+                const resourceType = (creep.room.storage && source.id !== creep.room.storage.id) ? Object.keys(source.store)[0] : RESOURCE_ENERGY;
+                result = creep.withdraw(source, resourceType as ResourceConstant);
+            }
+            if (result === ERR_NOT_IN_RANGE) {
+                creepMoveTo(creep, source, { maxRooms: 1, range: 1 });
             }
         }
-        return ;
-
     },
     transfer: (creep: Creep) => {
         let target = Game.getObjectById(creep.memory.cache.targetId as Id<AnyStoreStructure>);
@@ -143,7 +146,7 @@ const creepCarrierActions = {
 export default {
     prepare: (creep: Creep) => {
         if (!creepMoveToHome(creep)) return false;
-        if (!creep.memory.cache) creep.memory.cache = {};
+        if (!creep.memory.cache) creep.memory.cache = { };
 
         creep.memory.action = 'withdraw'
         return true;

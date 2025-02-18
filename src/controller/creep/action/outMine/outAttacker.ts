@@ -1,13 +1,14 @@
 import { CREEP_ROLE } from "@/constant/creep";
 import { creepMoveTo, creepMoveToRoom } from "../../function/move";
 import { creepIsOnEdge } from "../../function/position";
+import { creepChargeBoost } from "../../function/charge";
 
 export default {
     prepare: (creep: Creep) => {
-        if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
-            creepMoveToRoom(creep, creep.memory.targetRoom);
-            return false;
-        }
+        // if (!creep.memory['BOOST']) {
+        //     creep.memory['BOOST'] = ['UH'];
+        // }
+        // return creepChargeBoost(creep, creep.memory['BOOST']);
         return true;
     },
     action: (creep: Creep) => {
@@ -16,32 +17,19 @@ export default {
             return ;
         }
         const hostiles = creep.room.find(FIND_HOSTILE_CREEPS, {
-            filter: c => c.owner.username === 'Source Keeper'
+            filter: c => c.owner.username === 'Source Keeper' ||
+                (c.getActiveBodyparts(ATTACK) || c.getActiveBodyparts(RANGED_ATTACK))
         });
 
         // 清理敌军
         if (hostiles.length > 0) {
-            // 优先攻击治疗者
-            const target = creep.pos.findClosestByRange(hostiles, {
-                filter: (c: Creep) => c.getActiveBodyparts(HEAL) > 0
-            });
-            if (target) {
-                if (!creep.pos.isNearTo(target)) {
-                    creepMoveTo(creep, target);
-                } else {
-                    creep.attack(target);
-                    creepMoveTo(creep, target);
-                    return ;
-                }
-            } else {
-                const target = creep.pos.findClosestByRange(hostiles);
-                if (!creep.pos.isNearTo(target)) {
-                    creepMoveTo(creep, target);
-                } else {
-                    creep.attack(target);
-                    creepMoveTo(creep, target);
-                    return ;
-                }
+            const target = creep.pos.findClosestByRange(hostiles);
+            if (!creep.pos.isNearTo(target)) {
+                creepMoveTo(creep, target);
+            } else if (target.body.every((part) => part.type !== ATTACK)){
+                creep.attack(target);
+                creepMoveTo(creep, target);
+                return ;
             }
 
             if (creep.hits < creep.hitsMax) creep.heal(creep);
@@ -50,7 +38,7 @@ export default {
 
         // 寻找受伤的爬爬
         const myCreeps = creep.room.find(FIND_MY_CREEPS, {
-            filter: c => c.hits < c.hitsMax && c.id !== creep.id && c.memory.role !== CREEP_ROLE.OUT_CARRIER
+            filter: c => c.hits < c.hitsMax && c.id !== creep.id && (c.memory.role === CREEP_ROLE.OUT_HARVESTER || c.memory.role === CREEP_ROLE.OUT_MINER)
         });
         if (myCreeps.length > 0) {
             const target = creep.pos.findClosestByRange(myCreeps);
@@ -71,7 +59,7 @@ export default {
             const target = lairs.reduce((l, r) => l.ticksToSpawn < r.ticksToSpawn ? l : r);
 
             if (!creep.pos.isNearTo(target)) {
-                creepMoveTo(creep, target);
+                creepMoveTo(creep, target, { range: 1, maxRooms: 1 });
             }
             if (creep.hits < creep.hitsMax) creep.heal(creep);
             return 

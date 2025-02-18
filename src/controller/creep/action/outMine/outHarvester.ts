@@ -104,8 +104,28 @@ const creepOutHarvesterActions = {
 
         // 如果有采集点且建好了也就只管采
         if (creep.memory.targetHarvestPos) {
-            let structs = creep.room.lookForAt(LOOK_STRUCTURES, creep.memory.targetHarvestPos.x, creep.memory.targetHarvestPos.y);
-            if (structs.length > 0) return ;
+            if (creep.memory.cache.targetContainerId) {
+                const container = Game.getObjectById(creep.memory.cache.targetContainerId as Id<StructureContainer>);
+                if (container) {
+                    if (container.hits < container.hitsMax * 0.8) {
+                        creep.memory.action = 'repair';
+                        return ;
+                    }
+                    return ;
+                }
+                delete creep.memory.cache.targetContainerId;
+            }
+            const structs = creep.room.lookForAt(LOOK_STRUCTURES, creep.memory.targetHarvestPos.x, creep.memory.targetHarvestPos.y);
+            const container = structs.find(s => s.structureType === STRUCTURE_CONTAINER);
+
+            if (container) {
+                creep.memory.cache.targetContainerId = container.id;
+                if (container.hits < container.hitsMax * 0.8) {
+                    creep.memory.action = 'repair';
+                    return ;
+                }
+                return ;
+            }
         } else {
             // 继续找一遍有没有Container
             const containers = target.pos.findInRange(FIND_STRUCTURES, 1, {
@@ -126,7 +146,7 @@ const creepOutHarvesterActions = {
                 }
 
                 // 开采了，建一个工地
-                else if (result && target.pos.findInRange(FIND_STRUCTURES, 1, {filter: s => s.structureType === STRUCTURE_CONTAINER}).length === 0) {
+                else if (result && target.pos.findInRange(FIND_STRUCTURES, 1, {filter: s => s.structureType === STRUCTURE_CONTAINER}).length === 0 && creep.pos.isNearTo(target)) {
                     creep.room.createConstructionSite(creep.pos, STRUCTURE_CONTAINER);
                     // addMission(creep.room, MISSION_TYPE.BUILD, BUILD_MISSION, {
                     //     pos: creep.pos,
@@ -139,6 +159,21 @@ const creepOutHarvesterActions = {
         }
 
         if (creep.store.getFreeCapacity() === 0) creep.memory.action = 'transfer';
+    },
+    repair: (creep: Creep) => {
+        const container = Game.getObjectById(creep.memory.cache.targetContainerId as Id<StructureContainer>);
+
+        if (creep.store.getUsedCapacity() === 0) {
+            creep.memory.action = 'harvest';
+            return ;
+        }
+
+        if (container.hits < container.hitsMax * 0.8) {
+            creep.repair(container);
+            return ;
+        }
+        creep.memory.action = 'harvest';
+        return ;
     },
     transfer: (creep: Creep) => {
         if (creep.store.getUsedCapacity() === 0) {
@@ -154,6 +189,9 @@ const creepOutHarvesterActions = {
                 return ;
             }
         }
+        // 不处理算了，省一点CPU
+        creep.memory.action = 'harvest';
+        return ;
 
         // 传给其他传输爬爬
         const carrier = creep.pos.findInRange(FIND_MY_CREEPS, 1, {
@@ -179,6 +217,7 @@ export default {
         switch(creep.memory.action) {
             case 'build':               creepOutHarvesterActions.build(creep); break;
             case 'harvest':             creepOutHarvesterActions.harvest(creep); break;
+            case 'repair':              creepOutHarvesterActions.repair(creep); break;
             case 'transfer':            creepOutHarvesterActions.transfer(creep); break;
         }
     },

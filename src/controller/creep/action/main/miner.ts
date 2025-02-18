@@ -39,7 +39,7 @@ const creepMinerActions = {
             // 如果没有采矿容器且没有工地
             if (!mContainer &&
                 creep.pos.inRangeTo(creep.room.mineral, 1) &&
-                creep.pos.findInRange(FIND_CONSTRUCTION_SITES, 1).filter(c => c.structureType === STRUCTURE_CONTAINER).length === 0
+                creep.pos.findInRange(FIND_CONSTRUCTION_SITES, 1, {filter: c => c.structureType === STRUCTURE_CONTAINER}).length === 0
             ) {
                 creep.room.createConstructionSite(creep.pos, STRUCTURE_CONTAINER);
                 return ;
