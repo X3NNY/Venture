@@ -9,6 +9,7 @@ import creepManagerAction from './main/manager';
 import creepMinerAction from './main/miner';
 
 import creepClaimerAction from './claim/claimer';
+import creepSweeperAction from './special/sweeper';
 
 import creepDefendAttackerAction from './defend/defendAttacker';
 
@@ -41,6 +42,7 @@ const actions = {
     miner: creepMinerAction,
 
     claimer: creepClaimerAction,
+    sweeper: creepSweeperAction,
 
     defend_attacker: creepDefendAttackerAction,
 
