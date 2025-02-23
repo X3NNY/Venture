@@ -2,7 +2,7 @@
 
 * 适用于「[Screeps](https://screeps.com/a/#!/map)」的自动化机器人。
 
-    **【待完善】**
+    设计文档及使用说明请参考「[Venture——Screeps Bot 设计文档](https://xenny.wiki/posts/note/game/screeps.html)」
 
 ## 使用
 
