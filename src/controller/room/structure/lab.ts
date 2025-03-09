@@ -48,17 +48,31 @@ const labGetResource = (room: Room) => {
 
     const labA = Game.getObjectById(memory.labA) as StructureLab;
     const labB = Game.getObjectById(memory.labB) as StructureLab;
+
+    // 检查是否留有其他物料
+    [[labA, labAType], [labB, labBType]].forEach(([lab, rType]: [StructureLab, MineralConstant]) => {
+        if (lab.mineralType && lab.mineralType !== rType) {
+            if (countMission(room, MISSION_TYPE.TRANSPORT, m => m.data.source === lab.id && m.data.target === room.terminal.id) === 0) {
+                addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
+                    source: lab.id,
+                    target: room.terminal.id,
+                    pos: lab.pos,
+                    rType: lab.mineralType,
+                    amount: lab.store[lab.mineralType]
+                })
+            }
+            return ;
+        }
+    })
+
     if (labA.mineralType && labB.mineralType) {
         memory.state = LAB_STATE.WORK;
         return ;
     }
 
     // 检查底物是否足够
-    const targetResource = Memory.RoomInfo[room.name].lab.autoQueue[memory.index].target
-    const { rct1, rct2 } = CompoundMineral[targetResource];
-    
     if (labA.store[labAType] < memory.labAmount && countMission(room, MISSION_TYPE.TRANSPORT, m => m.data.target === labA.id && m.data.rType === labAType) === 0) {
-        if (room.terminal.store[rct1] < memory.labAmount) {
+        if (room.terminal.store[labAType] < memory.labAmount) {
             memory.state = LAB_STATE.IDLE;
             return labIndexUpdate(room);
         }
@@ -71,7 +85,7 @@ const labGetResource = (room: Room) => {
         })
     }
     if (labB.store[labBType] < memory.labAmount && countMission(room, MISSION_TYPE.TRANSPORT, m => m.data.target === labB.id && m.data.rType === labBType) === 0) {
-        if (room.terminal.store[rct2] < memory.labAmount) {
+        if (room.terminal.store[labBType] < memory.labAmount) {
             memory.state = LAB_STATE.IDLE;
             return labIndexUpdate(room);
         }
@@ -93,6 +107,13 @@ const labWork = (room: Room) => {
     const labA = Game.getObjectById(memory.labA) as StructureLab;
     const labB = Game.getObjectById(memory.labB) as StructureLab;
 
+    if (!labA.mineralType || labA.mineralType !== memory.labAType ||
+        !labB.mineralType || labB.mineralType !== memory.labBType
+    ) {
+        memory.state = LAB_STATE.LOAD;
+        return ;
+    }
+
     const labs = room.lab.filter(lab => lab.id !== labA.id && lab.id !== labB.id);
     if (!labs || labs.length === 0) return ;
 
@@ -105,7 +126,18 @@ const labWork = (room: Room) => {
             memory.BOOST[lab.id].mineral !== product) continue;
         
         // 如果存在与产物不同的资源，跳过
-        if (lab.mineralType && lab.mineralType !== product) continue;
+        if (lab.mineralType && lab.mineralType !== product) {
+            if (!countMission(room, MISSION_TYPE.TRANSPORT, m => m.data.target === room.terminal.id && m.data.source == lab.id)) {
+                addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
+                    source: lab.id,
+                    target: room.terminal.id,
+                    pos: lab.pos,
+                    rType: lab.mineralType,
+                    amount: lab.store[lab.mineralType]
+                });
+            }
+            continue;
+        }
 
         // 如果已满，跳过
         if (lab.store.getFreeCapacity(product) === 0) {
@@ -140,7 +172,10 @@ const labTakeResource = (room: Room) => {
     // 检查资源有没有全部转移出去
     for (const lab of labs) {
         const product = lab.mineralType;
-        if (lab.mineralType === product && lab.store[product] > 0) {
+        if (memory.BOOST && memory.BOOST[lab.id] &&
+            memory.BOOST[lab.id].mineral !== product) continue;
+
+        if (lab.mineralType && lab.store[product] > 0) {
             return addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
                 source: lab.id,
                 target: room.terminal.id,
