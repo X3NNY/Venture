@@ -67,10 +67,10 @@ export const getCreepRoleBody = (room: Room, role: string, options?: any) => {
 
     body = Object.assign([], body);
     if (moveParts > 2) {
-        for (let i = 0; i < moveParts-2; i++) {
-            body.push(MOVE);
-        }
         body = body.sort((a, b) => PART_LEVEL[a] - PART_LEVEL[b]);
+        for (let i = 0; i < moveParts-2; i++) {
+            body.splice(i*2, 0, MOVE);
+        }
         body.push(...[MOVE, MOVE]);
     } else {
         for (let i = 0; i < moveParts; i++) {

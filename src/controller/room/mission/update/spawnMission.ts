@@ -77,6 +77,8 @@ const spawnMissionCheck = {
             return current < maxNum+1;
         }
 
+        if (room.level == 8 && !Game.flags[`${room.name}/UPGRADE`] && room.controller.ticksToDowngrade >= 150000) return false;
+
         // 高等级后没能量说明有其他事，先暂停升级
         if (room.level >= 6 && room.storage.store[RESOURCE_ENERGY] < 20000 && room.controller.ticksToDowngrade > 20000) return false;
 

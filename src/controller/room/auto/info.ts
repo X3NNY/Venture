@@ -1,5 +1,5 @@
 import { filter } from 'lodash';
-import { BaseMineral } from "@/constant/resource";
+import { BaseMineral, BoostTarget } from "@/constant/resource";
 import { addMission } from "../mission/pool";
 import { MISSION_TYPE, TERMINAL_MISSION } from "@/constant/mission";
 import { roomMarketAddOrder } from "../component/market";
@@ -102,7 +102,14 @@ export const roomInfoUpdate = (room: Room, force?: boolean) => {
     });
 
     // 设置BOOST任务
-    if (room.storage.store['GH'] + room.terminal.store['GH'] >= 1500) {
-        roomStructureLab.setBoost(room, 'GH', 500);
+    // if (room.storage.store['GH'] + room.terminal.store['GH'] >= 1500) {
+    //     roomStructureLab.setBoost(room, 'GH', 500);
+    // }
+
+    for (const rType in BoostTarget) {
+        const item = BoostTarget[rType];
+        if (room.storage.store[rType] + room.terminal.store[rType] >= item.threshold) {
+            roomStructureLab.setBoost(room, rType as MineralBoostConstant, item.amount);
+        }
     }
 }
