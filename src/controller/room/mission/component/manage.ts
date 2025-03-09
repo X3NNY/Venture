@@ -16,6 +16,10 @@ export const addManageMission = (room: Room, mission: MISSION, data: {rType: Res
             source = room.terminal.id;
             target = room.storage.id;
             break;
+        case 'f2s':
+            source = room.factory.id;
+            target = room.storage.id;
+            break;
     }
 
     // 已存在则更新

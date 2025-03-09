@@ -283,6 +283,11 @@ export const MANAGE_MISSION = {
         code: 't2s',
         level: 1
     },
+    f2s: {
+        type: MISSION_TYPE.MANAGE,
+        code: 'f2s',
+        level: 1
+    }
 }
 
 export const TERMINAL_MISSION = {

@@ -73,7 +73,7 @@ interface Memory {
                 }[]
             },
             Factory: {
-                product: string,                                // 生产化合物
+                product: "energy"|MineralConstant|"G"|CommodityConstant, // 生产化合物
                 level: number,                                  // 生产等级
                 
             },
