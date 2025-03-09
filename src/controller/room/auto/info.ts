@@ -39,6 +39,10 @@ export const roomInfoUpdate = (room: Room, force?: boolean) => {
         } else if (r !== RESOURCE_ENERGY && room.storage.store[r] > 50000) {
             roomMarketAddOrder(room.name, r, ORDER_SELL, 50000);
         }
+
+        if (r !== RESOURCE_ENERGY && room.storage.store[r] > 100000) {
+            roomMarketAddOrder(room.name, r, 'deal_sell', 100000);
+        }
     })
 
     // 终端资源共享

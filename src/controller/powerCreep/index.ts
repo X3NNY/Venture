@@ -7,7 +7,7 @@ export const eventLoop = (pc: PowerCreep) => {
         if (Game.time % 20) return; // 每20tick检查一次
         if (pc.spawnCooldownTime > Date.now()) return;
         const pcMem = pc.memory;
-        const powerSpawn = Game.rooms[pcMem['spawnRoom']]?.powerSpawn;
+        const powerSpawn = Game.rooms[pcMem.spawnRoom]?.powerSpawn;
 
         if (powerSpawn) {
             const result = pc.spawn(powerSpawn);
