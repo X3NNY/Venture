@@ -25,6 +25,17 @@ export default {
             });
             if (structs.length > 0) target = creep.pos.findClosestByRange(structs);
 
+            if (!target) {
+                const flags = creep.room.find(FIND_FLAGS, { filter: flag => flag.name.startsWith('SWEEP')});
+                if (flags.length > 0) {
+                    for (const flag of flags) {
+                        target = flag.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType !== STRUCTURE_ROAD && !creep.memory.cache.exclude?.includes(s.id));
+
+                        if (target) break;
+                    }
+                }
+            }
+
             if (target) {
                 const result = creep.moveTo(target, { maxRooms: 1, range: 1 });
                 if (result === ERR_NO_PATH) {

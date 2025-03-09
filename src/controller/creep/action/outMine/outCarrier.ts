@@ -77,7 +77,7 @@ const creepOutCarrierActions = {
         if (target) {
             creep.memory.cache.sourceId = target.id;
             creep.memory.cache.sourceType = STRUCTURE_CONTAINER;
-            creepMoveTo(creep, target, { maxRooms: 1, range: 1 });
+            creepMoveTo(creep, target, { maxRooms: 1, range: 1, plainCost: 2, swampCost: 10 });
             return ;
         }
 
@@ -94,7 +94,7 @@ const creepOutCarrierActions = {
             });
             creep.memory.cache.sourceId = resource.id;
             creep.memory.cache.sourceType = 'dropped';
-            creepMoveTo(creep, resource, { maxRooms: 1, range: 1 });
+            creepMoveTo(creep, resource, { maxRooms: 1, range: 1, plainCost: 2, swampCost: 10 });
             return ;
         }
 
@@ -128,6 +128,7 @@ const creepOutCarrierActions = {
                 creepMoveTo(creep, miner, {
                     range: 1,
                     maxRooms: 1,
+                    plainCost: 2, swampCost: 10
                 })
             }
             return ;
@@ -138,6 +139,7 @@ const creepOutCarrierActions = {
             creepMoveTo(creep, source, {
                 range: 3,
                 maxRooms: 1,
+                plainCost: 2, swampCost: 10
             })
         }
     },
@@ -164,7 +166,7 @@ const creepOutCarrierActions = {
                 }
                 if (result === OK) return true;
                 if (result === ERR_NOT_IN_RANGE) {
-                    creepMoveTo(creep, road);
+                    creepMoveTo(creep, road, {plainCost: 2, swampCost: 10});
                     return true;
                 }
             }
@@ -188,20 +190,20 @@ const creepOutCarrierActions = {
             // }
 
             // 找工地
-            // const sites = creep.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 3);
-            // if (sites.length > 0) {
-            //     if (creepIsOnEdge(creep)) {
-            //         creepMoveToRoom(creep, creep.room.name, { plainCost: 2, swampCost: 10 });
-            //         return true;
-            //     }
-            //     const site = creep.pos.findClosestByRange(sites);
-            //     const result = creep.build(site);
-            //     if (result === OK) return true;
-            //     if (result === ERR_NOT_IN_RANGE) {
-            //         creepMoveTo(creep, site);
-            //         return true;
-            //     }
-            // }
+            const sites = creep.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 3);
+            if (sites.length > 0) {
+                if (creepIsOnEdge(creep)) {
+                    creepMoveToRoom(creep, creep.room.name, { plainCost: 2, swampCost: 10 });
+                    return true;
+                }
+                const site = creep.pos.findClosestByRange(sites);
+                const result = creep.build(site);
+                if (result === OK) return true;
+                if (result === ERR_NOT_IN_RANGE) {
+                    creepMoveTo(creep, site, { plainCost: 2, swampCost: 10 });
+                    return true;
+                }
+            }
         }
 
         // 沿途也修复一下
@@ -230,7 +232,7 @@ const creepOutCarrierActions = {
 
                 if (result === OK) return true;
                 if (result === ERR_NOT_IN_RANGE) {
-                    creepMoveTo(creep, site);
+                    creepMoveTo(creep, site, { plainCost: 2, swampCost: 10 });
                     return true;
                 }
             }
@@ -238,7 +240,7 @@ const creepOutCarrierActions = {
 
         // 否则先走回去存仓库
         if(creep.room.name !== creep.memory.home || creepIsOnEdge(creep)) {
-            creepMoveToRoom(creep, creep.memory.home, { visualizePathStyle: {stroke: '#00ff00'}});
+            creepMoveToRoom(creep, creep.memory.home, { visualizePathStyle: {stroke: '#00ff00', plainCost: 2, swampCost: 10 }});
             return ;
         }
 

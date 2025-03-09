@@ -35,7 +35,7 @@ const creepCarrierActions = {
                     filter: r => (r.resourceType === RESOURCE_ENERGY && r.amount >= minAmount) || (r.resourceType !== RESOURCE_ENERGY && r.amount >= 10)
                 })
                 if (droppedEnergy && (creep.room.storage || droppedEnergy.resourceType === RESOURCE_ENERGY)) {
-                    source = tombstone;
+                    source = droppedEnergy;
                     creep.memory.cache.type = 'pickup'
                 }
             }
@@ -69,7 +69,7 @@ const creepCarrierActions = {
                 result = creep.withdraw(source, resourceType as ResourceConstant);
             }
             if (result === ERR_NOT_IN_RANGE) {
-                creepMoveTo(creep, source, { maxRooms: 1, range: 1 });
+                creepMoveTo(creep, source, { maxRooms: 1, range: 1, visualizePathStyle: {stroke: '#00ff00'} });
             }
         }
     },

@@ -11,14 +11,22 @@ const creepUpgraderActions = {
         if (link && link.store[RESOURCE_ENERGY] > 0) {
             res = creep.withdraw(link, RESOURCE_ENERGY);
             if (res === ERR_NOT_IN_RANGE) {
-                creepMoveTo(creep, link, { maxRooms: 1, range: 1 });
+                if (container && container.pos.lookFor(LOOK_CREEPS).length === 0) {
+                    creepMoveTo(creep, container, { maxRooms: 1 });
+                } else {
+                    creepMoveTo(creep, link, { maxRooms: 1, range: 1 });
+                }
             }
         } 
         // 控制器旁边有容器
         else if (container && container.store[RESOURCE_ENERGY] > 0) {
-            res = creep.withdraw(container, RESOURCE_ENERGY);
-            if (res === ERR_NOT_IN_RANGE) {
-                creepMoveTo(creep, container, { maxRooms: 1, range: 1 });
+            if (!container.pos.isEqualTo(creep.pos) && container.pos.lookFor(LOOK_CREEPS).length === 0) {
+                creepMoveTo(creep, container, { maxRooms: 1 });
+            } else {
+                res = creep.withdraw(container, RESOURCE_ENERGY);
+                if (res === ERR_NOT_IN_RANGE) {
+                    creepMoveTo(creep, container, { maxRooms: 1, range: 1 });
+                }
             }
         }
         

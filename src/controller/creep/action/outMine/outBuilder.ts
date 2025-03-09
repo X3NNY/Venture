@@ -21,7 +21,7 @@ const creepOutBuilderActions = {
                 target = creep.pos.findClosestByRange(containers);
             }
             if (!target) {
-                target = [creep.room.storage].find(s => s && s.store[RESOURCE_ENERGY] > 0)
+                target = [creep.room.storage, ...creep.room.container].find(s => s && s.store[RESOURCE_ENERGY] > 0)
             }
             if (target) {
                 creep.memory.cache.targetId = target.id;
@@ -49,7 +49,7 @@ const creepOutBuilderActions = {
 
             const result = creep.pickup(resource);
             if (result === ERR_NOT_IN_RANGE) {
-                creepMoveTo(creep, resource, { maxRooms: 1, range: 1, plainCost: 2, swampCost: 10 });
+                creepMoveTo(creep, resource, { maxRooms: 1, range: 1 });
             }
             return ;
         }
@@ -65,6 +65,7 @@ const creepOutBuilderActions = {
     build: (creep: Creep) => {
         if (creep.store.getUsedCapacity() === 0) {
             creep.memory.action = 'withdraw';
+            delete creep.memory.cache.siteId;
             delete creep.memory.cache.targetId;
             return ;
         }

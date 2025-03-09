@@ -1,5 +1,5 @@
 import { MISSION_TYPE } from "@/constant/mission";
-import { deleteMission, getMission } from "@/controller/room/mission/pool";
+import { deleteMission, getMission, getMissionByDist } from "@/controller/room/mission/pool";
 import { creepGoBuild, creepGoRepair } from "../../function/work";
 import { creepChargeEnergy } from "../../function/charge";
 import { creepMoveTo } from "../../function/move";
@@ -31,7 +31,7 @@ const creepBuilderActions = {
         }
 
         if (!creep.memory.cache.taskId) {
-            const task = getMission(creep.room, MISSION_TYPE.BUILD);
+            const task = getMissionByDist(creep.room, MISSION_TYPE.BUILD, creep.pos);
 
             // 没活了，去升级算了
             if (!task) {

@@ -24,7 +24,7 @@ const creepOutHarvesterActions = {
         creep.room.memory.road = [];
         
         // 寻找路径
-        const path = [];
+        const path = [creep.pos];
         const sources = creep.room.find(FIND_SOURCES);
         const pos = sources.map(s => s.pos);
 
