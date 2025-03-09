@@ -12,13 +12,25 @@ export const addManageMission = (room: Room, mission: MISSION, data: {rType: Res
             source = room.storage.id;
             target = room.terminal.id;
             break;
-        case 's2t':
+        case 's2f':
+            source = room.storage.id;
+            target = room.factory.id;
+            break;
+        case 't2s':
             source = room.terminal.id;
             target = room.storage.id;
+            break;
+        case 't2f':
+            source = room.terminal.id;
+            target = room.factory.id;
             break;
         case 'f2s':
             source = room.factory.id;
             target = room.storage.id;
+            break;
+        case 'f2t':
+            source = room.factory.id;
+            target = room.terminal.id;
             break;
     }
 

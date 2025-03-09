@@ -73,6 +73,7 @@ interface Memory {
                 }[]
             },
             Factory: {
+                open: boolean,                                  // 是否工作
                 product: "energy"|MineralConstant|"G"|CommodityConstant, // 生产化合物
                 level: number,                                  // 生产等级
                 

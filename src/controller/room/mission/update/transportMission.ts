@@ -182,8 +182,7 @@ const updatePowerMission = (room: Room) => {
 }
 
 export const updateTransportMission = (room: Room) => {
-    const storage = room.storage;
-    if (!storage) return ;
+    if (!room.storage) return ;
 
     updateEnergyMission(room);
     updatePowerMission(room);

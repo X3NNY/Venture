@@ -35,7 +35,7 @@ export const getRoomTargetCreepNum = (roomName: string) => {
  * @param room 
  * @param rType
  */
-export const getRoomResourceAmount = (room: Room, rType: ResourceConstant) => {
+export const getRoomResourceAmount = (room: Room, rType: ResourceConstant | string) => {
     let amount = 0;
     if (room.storage)  amount += room.storage.store[rType];
     if (room.terminal) amount += room.terminal.store[rType];

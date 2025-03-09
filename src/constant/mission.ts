@@ -278,16 +278,31 @@ export const MANAGE_MISSION = {
         code: 's2t',
         level: 1
     },
+    s2f: {
+        type: MISSION_TYPE.MANAGE,
+        code: 's2f',
+        level: 1
+    },
     t2s: {
         type: MISSION_TYPE.MANAGE,
         code: 't2s',
+        level: 1
+    },
+    t2f: {
+        type: MISSION_TYPE.MANAGE,
+        code: 't2f',
         level: 1
     },
     f2s: {
         type: MISSION_TYPE.MANAGE,
         code: 'f2s',
         level: 1
-    }
+    },
+    f2t: {
+        type: MISSION_TYPE.MANAGE,
+        code: 'f2t',
+        level: 1
+    },
 }
 
 export const TERMINAL_MISSION = {
