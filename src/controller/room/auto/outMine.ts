@@ -91,7 +91,7 @@ const outEnergyMine = (room: Room) => {
         ) continue;
 
         createOutHarvesterCreep(room, targetRoom, sources);
-        createOutCarrierCreep(room, targetRoom, sources*2);
+        createOutCarrierCreep(room, targetRoom, sources);
         createOutBuilderCreep(room, targetRoom);
     }
 }

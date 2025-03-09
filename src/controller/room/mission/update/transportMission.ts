@@ -193,11 +193,10 @@ const updateLabBoostMission = (room: Room) => {
 
         // 没有设置boost类型
         if (!mType) return;
-
         // 如果存在其他资源，先搬走
-        if (lab.mineralType !== mType && lab.store[lab.mineralType] > 0) {
+        if (lab.mineralType && lab.mineralType !== mType && lab.store[lab.mineralType] > 0) {
             addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.boost, {
-                source: lab.store,
+                source: lab.id,
                 target: room.storage.id,
                 pos: lab.pos,
                 rType: lab.mineralType,

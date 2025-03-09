@@ -116,3 +116,19 @@ export const LabTarget = {
         { target: RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, amount: 4000 },
     ]
 }
+
+
+export const BoostTarget = {
+    [RESOURCE_GHODIUM_HYDRIDE]: {
+        threshold: 1500,
+        amount: 600,
+    },
+    [RESOURCE_GHODIUM_ACID]: {
+        threshold: 2000,
+        amount: 600,
+    },
+    [RESOURCE_CATALYZED_GHODIUM_ACID]: {
+        threshold: 3000,
+        amount: 600,
+    }
+}
