@@ -67,96 +67,6 @@ const updateEnergyMission = (room: Room) => {
             })
         })
     }
-} 
-
-const updateLabMission = (room: Room) => {
-    if (!room.lab || room.lab.length === 0) return ;
-
-    const memory = Memory.RoomInfo[room.name].lab;
-    if (!memory) return ;
-    if (!memory.BOOST) memory.BOOST = {};
-
-    // 化工厂不工作时候取走资源
-    if (!memory || !memory.labA || !memory.labB ||
-        !memory.labAType || !memory.labBType
-    ) {
-        room.lab.forEach(lab => {
-            if (memory.BOOST[lab.id]) return ;
-
-            if (!lab.store[lab.mineralType] || lab.store[lab.mineralType] === 0) return ;
-            addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
-                source: lab.id,
-                target: room.storage.id,
-                pos: lab.pos,
-                rType: lab.mineralType,
-                amount: lab.store[lab.mineralType]
-            })
-        })
-        return ;
-    }
-
-    const labA = Game.getObjectById(memory.labA);
-    const labB = Game.getObjectById(memory.labB);
-    const labAType = memory.labAType;
-    const labBType = memory.labBType;
-
-    // 转走不正确的资源
-    [[labA, labAType], [labB, labBType]].forEach(([lab, rType]: [StructureLab, MineralConstant]) => {
-        if (!lab.mineralType || lab.mineralType === rType) return ;
-        if (!lab.store[lab.mineralType] || lab.store[lab.mineralType] === 0) return ;
-
-        addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
-            source: lab.id,
-            target: room.storage.id,
-            pos: lab.pos,
-            rType: lab.mineralType,
-            amount: lab.store[lab.mineralType]
-        });
-    });
-
-    // 检查化工厂是否需要添加资源
-    [[labA, labAType], [labB, labBType]].forEach(([lab, rType]: [StructureLab, MineralConstant]) => {
-        if (lab.mineralType && lab.mineralType !== rType) return ;
-        if (lab.store.getFreeCapacity(rType) < 1000) return ;
-        if (getRoomResourceAmount(room, rType) < 1000) return ;
-
-        const target = [room.storage, room.terminal].find(s => s.store[rType] > 0);
-        addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
-            source: target.id,
-            target: lab.id,
-            pos: lab.pos,
-            rType,
-            amount: Math.min(lab.store.getFreeCapacity(rType), target.store[rType])
-        });
-    });
-
-    room.lab.forEach(lab => {
-        if (!lab) return ;
-        if (lab.id === labA.id || lab.id === labB.id ||
-            memory.BOOST[lab.id]
-        ) return ;
-        if (!lab.store[lab.mineralType] || lab.store[lab.mineralType] === 0) return ;
-        // 从已满的化工厂取走产物
-        if (lab.store.getFreeCapacity(lab.mineralType) < 100) {
-            addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
-                source: lab.id,
-                target: room.storage.id,
-                pos: lab.pos,
-                rType: lab.mineralType,
-                amount: lab.store[lab.mineralType]
-            });
-        }
-        // 如果lab的资源与产物不同，则取走
-        else if (lab.mineralType !== REACTIONS[labAType][labAType]) {
-            addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
-                source: lab.id,
-                target: room.storage.id,
-                pos: lab.pos,
-                rType: lab.mineralType,
-                amount: lab.store[lab.mineralType]
-            });
-        }
-    })
 }
 
 const updateLabBoostMission = (room: Room) => {
@@ -242,11 +152,40 @@ const updateLabBoostMission = (room: Room) => {
     })
 }
 
+const updatePowerMission = (room: Room) => {
+    if (room.level < 8 || !room.powerSpawn) return ;
+
+    const center = Memory.RoomInfo[room.name].center;
+    let pos;
+    if (center) pos = new RoomPosition(center.x, center.y, room.name);
+    if (center && room.powerSpawn.pos.inRangeTo(pos, 1)) return 1;
+
+    const powerSpawn = room.powerSpawn;
+    const needAmount = 100 - powerSpawn.store[RESOURCE_POWER];
+    if (needAmount < 50) return ;
+
+    const target = [room.storage, room.terminal].reduce((a, b) => {
+        if (!a || !b) return a || b;
+        if (a.store[RESOURCE_POWER] < b.store[RESOURCE_POWER]) return b;
+        return a;
+    }, null);
+
+    if (!target || target.store[RESOURCE_POWER] === 0) return ;
+
+    addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.power_spawn, {
+        source: target.id,
+        target: powerSpawn.id,
+        pos: powerSpawn.pos,
+        rType: RESOURCE_POWER,
+        amount: Math.min(needAmount, target.store[RESOURCE_POWER])
+    });
+}
+
 export const updateTransportMission = (room: Room) => {
     const storage = room.storage;
     if (!storage) return ;
 
     updateEnergyMission(room);
-    // updateLabMission(room);
+    updatePowerMission(room);
     updateLabBoostMission(room);
 }
