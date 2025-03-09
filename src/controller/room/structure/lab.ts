@@ -1,4 +1,3 @@
-import lab from "@/console/structure/lab";
 import { CompoundMineral, LabTarget } from "@/constant/resource";
 import { LAB_STATE } from "@/constant/structure";
 import { addMission, countMission } from "../mission/pool";

@@ -72,13 +72,17 @@ interface Memory {
                     manual?: boolean,                           // 是否手动设置（不会被自动清理）
                 }[]
             },
-            Factory: {
+            Factory?: {
                 open: boolean,                                  // 是否工作
-                product: "energy"|MineralConstant|"G"|CommodityConstant, // 生产化合物
+                product: "energy"|MineralConstant|"G"|CommodityConstant|null, // 生产化合物
                 level: number,                                  // 生产等级
-                
+                amount: number|null,                                 // 生产数量
+                autoQueue: {                                  // 自动生产
+                    product: "energy"|MineralConstant|"G"|CommodityConstant,
+                    amount: number|null,
+                }[]
             },
-            powerSpawn: {
+            powerSpawn?: {
                 open: boolean,                                  // 是否工作
             }
         }
