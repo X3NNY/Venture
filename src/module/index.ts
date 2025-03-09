@@ -1,6 +1,7 @@
 
 import * as roomController from '@/controller/room';
 import * as creepController from '@/controller/creep';
+import * as powerCreepController from '@/controller/powerCreep';
 import { errorMapper } from './errorMapper';
 import { globalInit } from './init/global';
 import { memoryInit } from './init/memory';
@@ -45,6 +46,7 @@ const onStart = () => {
 const onProcess = () => {
     const roomCPUMap = {};
     const creepCPUMap = {};
+    const pcCPUMap = {};
     // 房间动作
     Object.values(Game.rooms).forEach(room => {
         if (Memory.log === 'debug') {
@@ -67,10 +69,22 @@ const onProcess = () => {
             creepController.eventLoop(creep);
         }
     });
+
+    // 超爬
+    Object.values(Game.powerCreeps).forEach(pc => {
+        if (Memory.log === 'debug') {
+            const start = Game.cpu.getUsed();
+            powerCreepController.eventLoop(pc)
+            pcCPUMap[pc.memory.role] = (creepCPUMap[pc.memory.role]||0) + Game.cpu.getUsed()-start;
+        } else {
+            powerCreepController.eventLoop(pc);
+        }
+    })
     if (Memory.log === 'debug') {
-        console.log('房间总消耗：', Object.values<number>(roomCPUMap).reduce((a,b)=>a+b,0).toFixed(2), '爬爬总消耗：', Object.values<number>(creepCPUMap).reduce((a,b)=>a+b,0).toFixed(2))
+        console.log('房间总消耗：', Object.values<number>(roomCPUMap).reduce((a,b)=>a+b,0).toFixed(2), '爬爬总消耗：', Object.values<number>(creepCPUMap).reduce((a,b)=>a+b,0).toFixed(2), '超爬总消耗：', Object.values<number>(pcCPUMap).reduce((a,b)=>a+b,0).toFixed(2))
         console.log(drawTable([Object.values(roomCPUMap).map((v:number)=>v.toFixed(2))], Object.keys(roomCPUMap)));
         console.log(drawTable([Object.values(creepCPUMap).map((v:number)=>v.toFixed(2))], Object.keys(creepCPUMap)));
+        console.log(drawTable([Object.values(pcCPUMap).map((v:number)=>v.toFixed(2))], Object.keys(pcCPUMap)));
     }
 }
 

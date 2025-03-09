@@ -1,33 +1,3 @@
-interface CreepMemory {
-    role: string,
-    home: string,
-    ready: boolean,
-    action: string,
-    union?: bool,
-    cache: any,
-    rType?: ResourceConstant,
-    sourceRoom?: string,
-    targetRoom?: string,
-    dontPullMe?: boolean,
-    
-    boostCount: number,             // 强化尝试次数
-    
-    sign?: string,
-
-    lastTargetPos?: {
-        x: number,
-        y: number,
-        roomName: string
-    },
-
-    targetSourceId?: Id<Source>,
-    targetHarvestPos?: {
-        x: number,
-        y: number,
-        roomName: string
-    },
-}
-
 interface MarketOrder {
     orderType: ORDER_BUY | ORDER_SELL | 'deal_buy' | 'deal_sell',
     amount: number,
@@ -102,6 +72,14 @@ interface Memory {
                     manual?: boolean,                           // 是否手动设置（不会被自动清理）
                 }[]
             },
+            Factory: {
+                product: string,                                // 生产化合物
+                level: number,                                  // 生产等级
+                
+            },
+            powerSpawn: {
+                open: boolean,                                  // 是否工作
+            }
         }
     },
     Whitelist: string[]                                         // 白名单房间列表
