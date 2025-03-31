@@ -6,6 +6,8 @@ import room from './global/room';
 import lab from "./structure/lab";
 import spawn from "./structure/spawn";
 import terminal from "./structure/terminal";
+import powerSpawn from "./structure/powerSpawn";
+import factory from "./structure/factory";
 
 const plugins = [
     layout,
@@ -14,6 +16,8 @@ const plugins = [
     lab,
     spawn,
     terminal,
+    powerSpawn,
+    factory
 ]
 
 const func = [

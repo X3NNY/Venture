@@ -49,6 +49,15 @@ export const BaseMineral = [
     RESOURCE_CATALYST
 ]
 
+export const BaseBar = [
+    RESOURCE_UTRIUM_BAR, RESOURCE_KEANIUM_BAR, RESOURCE_LEMERGIUM_BAR, RESOURCE_ZYNTHIUM_BAR,
+    RESOURCE_OXIDANT, RESOURCE_REDUCTANT,
+    RESOURCE_PURIFIER,
+    // RESOURCE_GHODIUM_MELT,
+    // RESOURCE_BATTERY
+]
+
+
 export const LabTarget = {
     // 基础
     OH: [
@@ -60,10 +69,10 @@ export const LabTarget = {
     G: [
         // XGH2O 生产线，强化 WORK 的 upgrade
         { target: RESOURCE_GHODIUM_HYDRIDE, amount: 2000 }, 
-        { target: RESOURCE_GHODIUM_ACID, amount: 3000 }, 
+        { target: RESOURCE_GHODIUM_ACID, amount: 3500 }, 
         { target: RESOURCE_CATALYZED_GHODIUM_ACID, amount: 4000 }, 
         // XGHO2 生产线，强化 TOUGH
-        { target: RESOURCE_GHODIUM_OXIDE, amount: 200 }, 
+        { target: RESOURCE_GHODIUM_OXIDE, amount: 3500 }, 
         { target: RESOURCE_GHODIUM_ALKALIDE, amount: 3000 }, 
         { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, amount: 4000 },
     ],
@@ -71,8 +80,8 @@ export const LabTarget = {
         { target: RESOURCE_UTRIUM_LEMERGITE, amount: 2000 },
         { target: RESOURCE_GHODIUM, amount: 5000 },
         // XUH2O 生产线，强化 ATTACK
-        { target: RESOURCE_UTRIUM_HYDRIDE, amount: 2000 },
-        { target: RESOURCE_UTRIUM_ACID, amount: 3000 },
+        { target: RESOURCE_UTRIUM_HYDRIDE, amount: 3500 },
+        { target: RESOURCE_UTRIUM_ACID, amount: 3500 },
         { target: RESOURCE_CATALYZED_UTRIUM_ACID, amount: 4000 },
         // XUHO2 生产线，强化 HARVEST
         { target: RESOURCE_UTRIUM_OXIDE, amount: 2000 },
@@ -99,7 +108,7 @@ export const LabTarget = {
         { target: RESOURCE_LEMERGIUM_ACID, amount: 3000 }, 
         { target: RESOURCE_CATALYZED_LEMERGIUM_ACID, amount: 4000 }, 
         // XLHO2 生产线，强化 HEAL
-        { target: RESOURCE_LEMERGIUM_OXIDE, amount: 2000 }, 
+        { target: RESOURCE_LEMERGIUM_OXIDE, amount: 3500 }, 
         { target: RESOURCE_LEMERGIUM_ALKALIDE, amount: 3000 }, 
         { target: RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE, amount: 4000 },
     ],
@@ -117,6 +126,49 @@ export const LabTarget = {
     ]
 }
 
+export const HighWayLabTarget = [
+    { target: RESOURCE_LEMERGIUM_OXIDE, amount: 3500},
+    { target: RESOURCE_GHODIUM_OXIDE, amount: 3500},
+    { target: RESOURCE_UTRIUM_HYDRIDE, amount: 3500},
+    { target: RESOURCE_GHODIUM_ACID, amount: 3500},
+    { target: RESOURCE_UTRIUM_ACID, amount: 3500},
+]
+
+export const FactoryTarget = {
+    [RESOURCE_MIST]: {
+        0: [
+            { product: RESOURCE_CONDENSATE, amount: 1000},     // 0
+        ],
+        1: [
+            { product: RESOURCE_CONCENTRATE, amount: 30},      // 1
+        ],
+        2: [
+            { product: RESOURCE_CRYSTAL, amount: 120},         // crystal
+            { product: RESOURCE_EXTRACT, amount: 20},          // 2
+        ],
+        3: [
+            { product: RESOURCE_SPIRIT, amount: 10},           // 3
+        ],
+        4: [
+            { product: RESOURCE_EMANATION, amount: 4},         // 4
+        ],
+        5: [
+            { product: RESOURCE_ESSENCE, amount: 1},           // 5
+        ]
+    }
+}
+
+export const ResourceBarMap = {
+    [RESOURCE_KEANIUM]: RESOURCE_KEANIUM_BAR,
+    [RESOURCE_LEMERGIUM]: RESOURCE_LEMERGIUM_BAR,
+    [RESOURCE_GHODIUM]: RESOURCE_GHODIUM_MELT,
+    [RESOURCE_ZYNTHIUM]: RESOURCE_ZYNTHIUM_BAR,
+    [RESOURCE_UTRIUM]: RESOURCE_UTRIUM_BAR,
+    [RESOURCE_OXYGEN]: RESOURCE_OXIDANT,
+    [RESOURCE_HYDROGEN]: RESOURCE_REDUCTANT,
+    [RESOURCE_CATALYST]: RESOURCE_PURIFIER,
+    [RESOURCE_ENERGY]: RESOURCE_BATTERY
+}
 
 export const BoostTarget = {
     [RESOURCE_GHODIUM_HYDRIDE]: {
@@ -140,4 +192,16 @@ export const Goods = [
     RESOURCE_FRAME, RESOURCE_MUSCLE, RESOURCE_MICROCHIP, RESOURCE_SPIRIT,
     RESOURCE_HYDRAULICS, RESOURCE_ORGANOID, RESOURCE_CIRCUIT, RESOURCE_EMANATION,
     RESOURCE_MACHINE, RESOURCE_ORGANISM, RESOURCE_DEVICE, RESOURCE_ESSENCE,
+]
+
+export const factoryBlacklist = [
+    RESOURCE_ENERGY,
+    RESOURCE_HYDROGEN,
+    RESOURCE_OXYGEN,
+    RESOURCE_UTRIUM,
+    RESOURCE_KEANIUM,
+    RESOURCE_LEMERGIUM,
+    RESOURCE_ZYNTHIUM,
+    RESOURCE_CATALYST,
+    RESOURCE_GHODIUM
 ]

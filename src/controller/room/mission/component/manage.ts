@@ -47,6 +47,6 @@ export const addManageMission = (room: Room, mission: MISSION, data: {rType: Res
         time: Game.time,
         type: mission.type,
         level: mission.level,
-        data: { source, target, rType: data.rType, amount: data.amount}
+        data: { code: mission.code, source, target, rType: data.rType, amount: data.amount}
     }, 'level')
 }

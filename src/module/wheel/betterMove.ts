@@ -1599,7 +1599,7 @@ if(!Creep.prototype.$moveTo) {
             this.memory.lastPos = {x: this.pos.x, y: this.pos.y, time: 0};
         }
 
-        this.memory.dontPullMe = isNearEdge || isStuckTooLong;
+        this.memory.dontPullMe = (isNearEdge || isStuckTooLong) && this.memory.role !== 'out_carrier';
         // this.say(this.memory.lastPos.time)
         return this.$moveTo(target, ...e)
     };

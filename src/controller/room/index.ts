@@ -1,7 +1,9 @@
 import { roomAutoBuild } from "./auto/build";
 import { roomDefendCheck } from "./auto/defend";
+import { roomDiscard } from "./auto/discard";
 import { roomInfoUpdate } from "./auto/info";
 import { roomOutMine } from "./auto/outMine";
+import { roomResourceCheck } from "./auto/resource";
 import { roomAutoTransaction } from "./auto/transaction";
 import { roomMissionUpdate, roomMissionInit } from "./mission";
 import { roomStructureWork } from "./structure";
@@ -26,8 +28,15 @@ export const eventLoop = (room: Room) => {
         if (Memory.gamemode === 'auto') {
             Memory.RoomInfo[room.name] = {
                 autobuild: true,
+                
             }
         } else return ;
+    }
+
+    // 如果不要这个房了
+    if (room.memory.discard) {
+        roomDiscard(room);
+        return ;
     }
 
     if (Game.time % 100 == 0) {
@@ -42,6 +51,7 @@ export const eventLoop = (room: Room) => {
     roomDefendCheck(room);                  // 防御检测
     roomAutoTransaction(room);              // 自动交易
     roomOutMine(room);                      // 外矿采集
+    roomResourceCheck(room);                // 资源管理
     
     if (Memory.gamemode === 'auto') {
         roomInfoUpdate(room);               // 更新房间信息

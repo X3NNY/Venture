@@ -1,3 +1,7 @@
+import { MISSION_TYPE } from "@/constant/mission";
+import { countMission } from "../room/mission/pool";
+import { CREEP_ROLE } from "@/constant/creep";
+
 export const powerCreepOperateStorage = (pc: PowerCreep) => {
     if (!pc.powers[PWR_OPERATE_STORAGE]) return false;
 
@@ -78,11 +82,11 @@ export const powerCreepOperateFactory = (pc: PowerCreep) => {
     if (pc.store[RESOURCE_OPS] < 100) return false;
 
     // factory等级不匹配时不处理
-    if (!factory.level && (!memory.Factory?.level || memory.Factory.level <= 0))
-        return false;
+    // if (!factory.level && (!memory.Factory?.level || memory.Factory.level <= 0))
+    //     return false;
 
     // 化合物等级不匹配时不处理
-    if (COMMODITIES[memory.Factory.product].level!== (factory.level || memory.Factory.level))
+    if (COMMODITIES[memory.Factory.product].level !== (factory.level || memory.Factory.level))
         return false;
 
     // 资源不充足时不处理
@@ -116,12 +120,12 @@ export const powerCreepOperateExtension = (pc: PowerCreep) => {
 
     // ops不足时不处理
     if (pc.store[RESOURCE_OPS] < 2) return false;
-
-    // 能量不足时不处理
-    if (pc.room.energyAvailable > pc.room.energyCapacityAvailable / 2) return false;
-
+    
     // 冷却未结束时不处理
     if (pc.powers[PWR_OPERATE_EXTENSION].cooldown > 0) return false;
+
+    // 能量足够时不处理
+    if (pc.room.energyAvailable > pc.room.energyCapacityAvailable * 0.6) return false;
 
     const target = pc.room.storage;
 
@@ -151,9 +155,9 @@ export const powerCreepOperateTower = (pc: PowerCreep) => {
     if (!towers) return false;
 
     const tower = towers.find(t => {
-        if (t.effects) return false;
-        if (t.effects.some(e => e.effect === PWR_OPERATE_TOWER && e.ticksRemaining > 0)) return false;
-        return true;
+        if (!t.effects) return true;
+        if (!t.effects.some(e => e.effect === PWR_OPERATE_TOWER && e.ticksRemaining > 0)) return true;
+        return false;
     });
     if (!tower) return false;
 
@@ -176,10 +180,19 @@ export const powerCreepOperateSpawn = (pc: PowerCreep) => {
     // ops不足时不处理
     if (pc.store[RESOURCE_OPS] < 100) return false;
 
-    const roles = ['powerAttacker', 'powerHealer', 'powerCarrier', 'powerDefender', 'powerHarvester', 'depositHarvester', 'depositCarrier'];
+    const roles = [
+        CREEP_ROLE.POWER_ATTACKER,
+        CREEP_ROLE.POWER_HEALER,
+        CREEP_ROLE.POWER_ARCHER,
+        CREEP_ROLE.POWER_CARRIER,
+        CREEP_ROLE.DEPOSIT_HARVESTER,
+        CREEP_ROLE.DEPOSIT_CARRIER,
+    ];
 
     if (!pc.memory.upspawn &&
-        (Memory.RoomInfo[pc.room.name].OutMineral.highway.length === 0)
+        (Object.keys(pc.room.memory.depositTarget || {}).length === 0) &&
+        (Object.keys(pc.room.memory.powerTarget || {}).length === 0) &&
+        countMission(pc.room, MISSION_TYPE.SPAWN, t => roles.includes(t.data.role)) < 1
     ) {
         return false;
     }
@@ -187,9 +200,9 @@ export const powerCreepOperateSpawn = (pc: PowerCreep) => {
     if (pc.powers[PWR_OPERATE_SPAWN].cooldown > 0) return false;
 
     const spawn = spawns.find(s => {
-        if (s.effects) return false;
-        if (s.effects.some(e => e.effect === PWR_OPERATE_SPAWN && e.ticksRemaining > 0)) return false;
-        return true;
+        if (!s.effects) return true;
+        if (!s.effects.some(e => e.effect === PWR_OPERATE_SPAWN && e.ticksRemaining > 0)) return true;
+        return false;
     });
 
     if (!spawn) return false;
@@ -231,11 +244,10 @@ export const powerCreepRegenSource = (pc: PowerCreep) => {
 
     const sources = pc.room.source;
     if (!sources) return false;
-
     const source = sources.find(s => {
-        if (s.effects) return false;
-        if (s.effects.some(e => e.effect === PWR_REGEN_SOURCE && e.ticksRemaining > 0)) return false;
-        return true;  
+        if (!s.effects) return true;
+        if (!s.effects.some(e => e.effect === PWR_REGEN_SOURCE && e.ticksRemaining > 0)) return true;
+        return false;  
     })
     if (!source) return false;
 
@@ -248,7 +260,7 @@ export const powerCreepRegenSource = (pc: PowerCreep) => {
 }
 
 export const powerCreepTransferPower = (pc: PowerCreep) => {
-    const mem = Memory['RoomInfo'][pc.room.name];
+    const mem = Memory.RoomInfo[pc.room.name];
     if (!mem ||!mem.powerSpawn?.open) return false;
     
     const powerSpawn = pc.room.powerSpawn;

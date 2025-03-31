@@ -42,6 +42,13 @@ interface Memory {
             defend?: boolean,                                   // 是否处于防御模式
             center?: { x: number, y: number },                  // 布局中心
             Market?: MarketOrder[],                             // 市场订单任务
+            Resource?: {
+                [r: ResourceConstant]: {
+                    amount: number,                             // 资源数量
+                    order?: boolean,                            // 是否需要市场下单
+                    price?: number,                             // 下单价格限制
+                }
+            },
             OutMineral?: {
                 energy?: string[],                              // 能量外矿房
                 center?: string[],                              // 中央九房
@@ -59,8 +66,9 @@ interface Memory {
                 nextRunTime?: number,                           // 下次运行时间
                 BOOST?: {
                     [labId: Id<StructureLab>]: {                // 化工厂ID
-                        mineral: MineralBoostConstant,          // 实际化合物类型
-                        amount: number                          // 强化数量
+                        mineral: MineralBoostConstant,          // 化合物类型
+                        amount: number,                         // 强化数量
+                        time: number,                           // 任务添加时间
                     }
                 },
                 boostQueue?: {                                  // 强化队列
@@ -73,13 +81,17 @@ interface Memory {
                 }[]
             },
             Factory?: {
+                state: number,                                  // 工作阶段
                 open: boolean,                                  // 是否工作
-                product: "energy"|MineralConstant|"G"|CommodityConstant|null, // 生产化合物
+                wakeup?: number,                                // 唤醒时间
+                produceCheck?: boolean,                         // 是否开启生产检测
+                product: CommodityConstant,                     // 生产化合物
                 level: number,                                  // 生产等级
-                amount: number|null,                                 // 生产数量
-                autoQueue: {                                  // 自动生产
-                    product: "energy"|MineralConstant|"G"|CommodityConstant,
-                    amount: number|null,
+                amount: number,                                 // 生产数量
+                autoQueue: {                                    // 自动生产
+                    product: CommodityConstant,
+                    amount: number,
+                    manual?: boolean                            // 是否手动设置（不会被自动清理）
                 }[]
             },
             powerSpawn?: {
@@ -87,5 +99,15 @@ interface Memory {
             }
         }
     },
+    FactoryTask: FactoryTask[],
     Whitelist: string[]                                         // 白名单房间列表
+}
+
+interface FactoryTask {
+    id: string,                                                 // 任务ID
+    product: CommodityConstant,                                 // 生产产物
+    amount: number,                                             // 生产数量
+    priority: number,                                           // 优先级
+    status: number,                                             // 任务状态
+    room?: string                                               // 任务房间
 }

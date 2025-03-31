@@ -39,9 +39,20 @@ const creepAidBuilderActions = {
             return ;
         }
 
+        // 收破烂
+        const ruinedEnergy = creep.pos.findClosestByRange(FIND_RUINS, {
+            filter: r => r.store[RESOURCE_ENERGY] > 50
+        });
+        if (ruinedEnergy) {
+            if (creep.withdraw(ruinedEnergy, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                creepMoveTo(creep, ruinedEnergy, { maxRooms: 1, range: 1 });
+            }
+            return ;
+        }
+
         const targets = []
         creep.room.container.forEach(c => {
-            if (c.store[RESOURCE_ENERGY] > 0) {
+            if (c.store[RESOURCE_ENERGY] > 1000) {
                 targets.push(c);
             }
         });

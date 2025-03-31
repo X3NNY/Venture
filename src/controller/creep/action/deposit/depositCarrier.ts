@@ -16,7 +16,7 @@ const creepDepositCarrierActions = {
         // 快死了也先放置货物
         else if (creep.ticksToLive < 200 && creep.store.getUsedCapacity() > 0) {
             creep.memory.action = 'transfer';
-                return ;
+            return ;
         }
 
         if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {

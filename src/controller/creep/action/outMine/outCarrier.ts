@@ -152,11 +152,12 @@ const creepOutCarrierActions = {
         // 找有要修的
         if (creep.getActiveBodyparts(WORK) > 0 && creep.room.name === creep.memory.targetRoom) {
             // 修路
-            const roads = creep.room.road.filter(r => {
-                if (!r || r.hits >= r.hitsMax * 0.8) return false;
-                if (!creep.pos.inRangeTo(r.pos, 1)) return false;
-                return true;
-            });
+            // const roads = creep.room.road.filter(r => {
+            //     if (!r || r.hits >= r.hitsMax * 0.8) return false;
+            //     if (!creep.pos.inRangeTo(r.pos, 1)) return false;
+            //     return true;
+            // });
+            const roads = creep.pos.findInRange(FIND_STRUCTURES, 1, { filter: s => s.structureType === STRUCTURE_ROAD && s.hits < s.hitsMax * 0.8});
 
             if (roads.length > 0) {
                 const road = creep.pos.findClosestByRange(roads);
@@ -190,7 +191,7 @@ const creepOutCarrierActions = {
             // }
 
             // 找工地
-            const sites = creep.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 3);
+            const sites = creep.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 2);
             if (sites.length > 0) {
                 if (creepIsOnEdge(creep)) {
                     creepMoveToRoom(creep, creep.room.name, { plainCost: 2, swampCost: 10 });
@@ -205,9 +206,8 @@ const creepOutCarrierActions = {
                 }
             }
         }
-
         // 沿途也修复一下
-        if (creep.getActiveBodyparts(WORK) > 0 && creep.room.name !== creep.memory.targetRoom && creep.room.name !== creep.memory.home) {
+        else if (creep.getActiveBodyparts(WORK) > 0 && creep.room.name !== creep.memory.targetRoom && creep.room.name !== creep.memory.home) {
             const roads = creep.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType === STRUCTURE_ROAD && s.hits < s.hitsMax * 0.8);
 
             if (roads.length > 0) {

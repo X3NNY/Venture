@@ -4,7 +4,7 @@ import { addBuildMission } from './component/build';
 import { insertSorted } from '@/util/function';
 import { addRepairMission } from "./component/repair";
 import { addTransportMission, doneTransportMission } from './component/transport';
-import { getPosDistance } from "../function/calc";
+import { calcPosDistance } from "../function/calc";
 import { addTerminalMission, doneTerminalMission } from "./component/terminal";
 import { addManageMission } from "./component/manage";
 
@@ -50,8 +50,8 @@ export const getMissionByDist = (room: Room, type: string, pos?: RoomPosition) =
     return tasks.reduce((prev, curr) => {
         if (prev.level !== curr.level && !pos) return prev.level <= curr.level ? prev : curr;
         if (!prev.data.pos || !curr.data.pos) return prev;
-        const prevDist = getPosDistance(prev.data.pos, pos);
-        const currDist = getPosDistance(curr.data.pos, pos);
+        const prevDist = calcPosDistance(prev.data.pos, pos);
+        const currDist = calcPosDistance(curr.data.pos, pos);
         return prevDist <= currDist ? prev : curr;
     })
 }

@@ -1,6 +1,7 @@
 import { MISSION_TYPE, SPAWN_MISSION } from "@/constant/mission";
 import { getRoomList } from "@/controller/room/function/get";
 import { addMission } from "@/controller/room/mission/pool";
+import { roomStructureFactory } from "@/controller/room/structure/factory";
 import { drawTable } from "@/util/chart";
 
 const factoryStrings = {
@@ -42,7 +43,7 @@ const factoryStrings = {
 
 export default {
     factory: {
-        open: (roomName: string) => {
+        open: (roomName: string, level: number = 0) => {
             const lang = Memory.lang || 'cn';
             const room = Game.rooms[roomName];
             const mem = Memory.RoomInfo[roomName];
@@ -50,7 +51,8 @@ export default {
                 return factoryStrings[lang].room_not_found.format(roomName);
             }
 
-            mem.Factory.open = true;
+            // mem.Factory.open = true;
+            roomStructureFactory.open(room, level);
             return factoryStrings[lang].open_ok.format(roomName);
         },
         stop: (roomName: string) => {
@@ -105,7 +107,7 @@ export default {
             return factoryStrings[lang].set_level_ok.format(roomName, level);
         },
 
-        set_auto: (roomName: string, product: CommodityConstant | MineralConstant | RESOURCE_GHODIUM | RESOURCE_ENERGY, amount?: number) => {
+        set_auto: (roomName: string, product: CommodityConstant, amount?: number) => {
             const lang = Memory.lang || 'cn';
             const room = Game.rooms[roomName];
             const mem = Memory.RoomInfo[roomName];
@@ -129,7 +131,8 @@ export default {
                 mem.Factory.autoQueue = [];
             }
             mem.Factory.autoQueue.push({
-                product, amount
+                product, amount,
+                manual: true
             })
 
             return factoryStrings[lang].set_auto_ok.format(roomName, product);

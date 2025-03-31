@@ -1,3 +1,4 @@
+import { CREEP_ROLE } from "@/constant/creep";
 import { creepActionRun } from "./action";
 
 export const eventLoop = (creep: Creep) => {

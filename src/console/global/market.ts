@@ -1,4 +1,4 @@
-import { roomMarketAddOrder } from "@/controller/room/component/market";
+import { roomMarketAddOrder, roomMarketRemoveOrder } from "@/controller/room/component/market";
 import { getRoomList } from "@/controller/room/function/get";
 import { drawTable } from "@/util/chart";
 import { gerOrderPrice } from "@/util/market";
@@ -157,20 +157,14 @@ export default {
             if (!Memory.RoomInfo[roomName].Market) {
                 Memory.RoomInfo[roomName].Market = [];
             }
-            let count = 0;
-            Memory.RoomInfo[roomName].Market = Memory.RoomInfo[roomName].Market.filter(order => {
-                if (order.rType === rType && (!type || order.orderType === type)) {
-                    count += 1;
-                    return false;
-                }
-                return true;
-            });
+
+            const count = roomMarketRemoveOrder(roomName, rType, type);
+            
             if (type) {
                 return marketStrings[lang].order_remove_type.format(roomName, rType, type);
             } else {
                 return marketStrings[lang].order_remove.format(roomName, rType, count);
             }
-                        
         },
         get_price: (rType: ResourceConstant, type?: ORDER_BUY | ORDER_SELL) => {
             const lang = Memory.lang || 'cn';

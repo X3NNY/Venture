@@ -6,14 +6,14 @@ import { creepMoveTo } from "./move";
  * @param creep 
  * @param pickup 
  */
-export const creepChargeEnergy = (creep: Creep, pickup: boolean = true) => {
+export const creepChargeEnergy = (creep: Creep, pickup: boolean = true, minAmount: number = 50) => {
     if (!creep.memory.cache) creep.memory.cache = {};
     if (!creep.memory.cache.chargeTarget) {
         let target;
 
         // 捡垃圾
         if (pickup) {
-            const resources = creep.room.find(FIND_DROPPED_RESOURCES, {filter: r => r.resourceType === RESOURCE_ENERGY && r.amount >= 50});
+            const resources = creep.room.find(FIND_DROPPED_RESOURCES, {filter: r => r.resourceType === RESOURCE_ENERGY && r.amount >= minAmount});
             target = creep.pos.findClosestByRange(resources);
 
             if (target) {
@@ -88,6 +88,29 @@ export const creepChargeEnergy = (creep: Creep, pickup: boolean = true) => {
     return true;
 }
 
+export const creepChargeUnboost = (creep: Creep) => {
+    if (!creep.body.some(part => part.boost)) return false;
+
+    const mem = Memory.RoomInfo[creep.room.name].lab;
+    if (!mem) return false;
+
+    const lab = creep.room.lab.find(l => {
+        if (!l) return false;
+        if (l.cooldown > 0 || l.mineralType) return false;
+        if (l.id === mem.labA || l.id === mem.labB) return false;
+        return true;
+    });
+
+    if (!lab) return false;
+
+    if (creep.pos.isNearTo(lab)) {
+        return lab.unboostCreep(creep) === OK;
+    } else {
+        creepMoveTo(creep, lab, { maxRooms: 1, range: 1 });
+        return false;
+    }
+}
+
 export const creepChargeBoost = (creep: Creep, boosts: string[], must: boolean = false) => {
     // 所有部件已强化
     if (creep.body.every(part => !boosts.some(bType => BOOSTS[part.type] && bType in BOOSTS[part.type]) || part.boost)) {
@@ -129,7 +152,7 @@ export const creepChargeBoost = (creep: Creep, boosts: string[], must: boolean =
         return false;
     }
     creep.memory.boostCount = (creep.memory.boostCount||0)+1;
-    if (creep.memory.boostCount >= 5) {
+    if (creep.memory.boostCount >= 5 || !must) {
         delete creep.memory.boostCount;
         return true;
     }

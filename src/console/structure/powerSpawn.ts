@@ -21,7 +21,13 @@ export default {
                 return powerSpawnStrings[lang].room_not_found.format(roomName);
             }
 
-            mem.powerSpawn.open = true;
+            if (!mem.powerSpawn) {
+                mem.powerSpawn = {
+                    open: true,
+                }
+            } else {
+                mem.powerSpawn.open = true;
+            }
             return powerSpawnStrings[lang].open_ok.format(roomName);
         },
         stop: (roomName: string) => {

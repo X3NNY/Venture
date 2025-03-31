@@ -49,7 +49,7 @@ export const getCreepRoleBody = (room: Room, role: string, options?: any) => {
     let moveParts: number; 
     const maxEnergy = options.now ? room.energyAvailable : room.energyCapacityAvailable;
 
-    if (room.level > 2 && room.source.length < 2 && (room.storage?.store[RESOURCE_ENERGY]||0) < 30000) {
+    if (room.level > 2 && room.source.length < 2 && (room.storage?.store[RESOURCE_ENERGY]||0) < 10000) {
         level -= 1;
     }
 
@@ -72,7 +72,7 @@ export const getCreepRoleBody = (room: Room, role: string, options?: any) => {
             body.splice(i*2, 0, MOVE);
         }
         body.push(...[MOVE, MOVE]);
-    } else {
+    } else if (moveParts > 0) {
         for (let i = 0; i < moveParts; i++) {
             body.push(MOVE);
         }

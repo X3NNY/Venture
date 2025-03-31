@@ -105,6 +105,9 @@ const creepCourierActions = {
         } else if (result === ERR_NOT_IN_RANGE) {
             creepMoveTo(creep, target, { maxRooms: 1, range: 1 });
         }
+    },
+    withdraw: (creep: Creep) => {
+        
     }
 }
 
@@ -117,6 +120,7 @@ export default {
     action: (creep: Creep) => {
         switch (creep.memory.action) {
             case 'transport':             creepCourierActions.transport(creep); break;
+            case 'withdraw':              creepCourierActions.withdraw(creep); break;
         }
     },
     done: (creep: Creep, res: any) => {

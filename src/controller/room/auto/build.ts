@@ -43,11 +43,11 @@ export const roomBuildCheckSkip = (room: Room, structureType: string, structures
                 structures.some(s => s.structureType !== STRUCTURE_RAMPART && s.structureType !== STRUCTURE_ROAD)) return true;
             
             // 6级之前不修矿旁边的容器
-            if (room.level <= 6 && room.mineral?.pos.isNearTo(pos)) return  true;
+            if (room.level < 6 && room.mineral?.pos.isNearTo(pos)) return true;
             if (room.level <= 7) return false;
 
-            // 等级高无需建控制器旁边的容器
-            if (pos.inRangeTo(room.controller, 2)) return true;
+            // 等级高无需容器
+            return true;
             break;
         case STRUCTURE_LINK:
             // 有非墙非路建筑，跳过

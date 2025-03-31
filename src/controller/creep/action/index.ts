@@ -27,8 +27,17 @@ import creepOutAttackerAction from './outMine/outAttacker';
 import creepOutMinerAction from './outMine/outMiner';
 import creepOutProtectorAction from './outMine/outProtector';
 
+import creepDoubleAttackerAction from './double/doubleAttacker';
+import creepDoubleDismantlerAction from './double/doubleDismantler';
+import creepDoubleHealerAction from './double/doubleHealer';
+
 import creepDepositHarvesterAction from './deposit/depositHarvester';
 import creepDepositCarrierAction from './deposit/depositCarrier';
+
+import creepPowerAttackerAction from './power/powerAttacker';
+import creepPowerHealerAction from './power/powerHealer';
+import creepPowerCarrierAction from './power/powerCarrier';
+import creepPowerArcherAction from './power/powerArcher';
 
 const actions = {
     harvester: creepHarvesterAction,
@@ -62,9 +71,20 @@ const actions = {
     out_reserver: creepOutReserverAction,
     out_protector: creepOutProtectorAction,
 
+    // 双人队
+    double_attacker: creepDoubleAttackerAction,
+    double_dismantler: creepDoubleDismantlerAction,
+    double_healer: creepDoubleHealerAction,
+
     // 商品采集
     deposit_harvester: creepDepositHarvesterAction,
     deposit_carrier: creepDepositCarrierAction,
+
+    // 超能采集
+    power_attacker: creepPowerAttackerAction,
+    power_healer: creepPowerHealerAction,
+    power_carrier: creepPowerCarrierAction,
+    power_archer: creepPowerArcherAction,
 }
 
 export const creepActionRun = (creep: Creep) => {

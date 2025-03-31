@@ -53,12 +53,16 @@ const creepCarrierActions = {
 
         // 从容器获取
         if (!source) {
-            const containers = creep.room.container.filter(s => (creep.room.storage ? s.store.getUsedCapacity() > minAmount : s?.store[RESOURCE_ENERGY] > Math.min(1200, creep.store.getFreeCapacity())) && !s.pos.inRangeTo(creep.room.controller, 1));
+            const containers = creep.room.container.filter(s => (creep.room.storage ? s.store.getUsedCapacity() > minAmount : s?.store[RESOURCE_ENERGY] > Math.min(1200, creep.store.getFreeCapacity())) && !s.pos.inRangeTo(creep.room.controller, 2));
             if (containers) source = creep.pos.findClosestByRange(containers);
         }
         if (!source && creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY] > 10000) source = creep.room.storage;
-        if (!source && creep.room.terminal) source = creep.room.terminal;
+        if (!source && creep.room.terminal && creep.room.terminal.store[RESOURCE_ENERGY] > 10000) source = creep.room.terminal;
         if (!source && creep.room.storage) source = creep.room.storage;
+
+        if (source) {
+            creep.memory.cache.sourceId = source.id;
+        }
 
         if (source) {
             let result;
@@ -97,12 +101,20 @@ const creepCarrierActions = {
 
                 // 检查控制器旁边的容器是否有Link
                 if (!target) {
-                    const cContainer = creep.room.container.find(c => c.pos.inRangeTo(creep.room.controller, 1));
-                    const cLink = creep.room.link.find(l => l.pos.inRangeTo(creep.room.controller, 2));
+                    const cContainer = creep.room.container.find(c => c.pos.inRangeTo(creep.room.controller, 2));
+                    
 
-                    if (creep.store[RESOURCE_ENERGY] > 0 && !cLink && cContainer && cContainer.store.getFreeCapacity() > 0) {
-                        target = cContainer;
+                    if (creep.room.level >= 6) {
+                        const cLink = creep.room.link.find(l => l.pos.inRangeTo(creep.room.controller, 2));
+                        if (!cLink && cContainer && cContainer.store.getFreeCapacity() > 0) {
+                            target = cContainer;
+                        }
+                    } else {
+                        if (cContainer && cContainer.store.getFreeCapacity() > 0) {
+                            target = cContainer;
+                        }
                     }
+                    
                 }
 
                 if (target) {

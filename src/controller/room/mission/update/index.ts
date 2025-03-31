@@ -12,7 +12,7 @@ import { updateTransportMission } from './transportMission';
 const roomMissionClean = (room: Room) => {
     let count = 0;
     for (const mType in room.memory.missions) {
-        const tasks = filterMission(room, mType, m => Game.time - m.time > 1000);
+        const tasks = filterMission(room, mType, m => Game.time - m.time > 2000);
         count += tasks.length
         tasks.forEach(task => deleteMission(room, mType, task.id))
     }
@@ -25,7 +25,7 @@ export const roomMissionUpdate = (room: Room) => {
     if (Game.time % 20 === 0) updateTransportMission(room);
     
     // 中央搬运任务
-    if (Game.time % 30 === 1) updateManageMission(room);
+    if (Game.time % 30 === 0) updateManageMission(room);
 
     // 建造&修复任务
     if (Game.time % 50 === 1) {
@@ -34,5 +34,5 @@ export const roomMissionUpdate = (room: Room) => {
     }
 
     if (Game.time % 100 === 2) updateWallRepairMission(room);
-    if (Game.time % 700 === 11) roomMissionClean(room);
+    if (Game.time % 1100 === 11) roomMissionClean(room);
 }

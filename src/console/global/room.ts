@@ -1,4 +1,5 @@
 import { roomInfoUpdate } from "@/controller/room/auto/info";
+import { coordCompress } from "@/util/coord";
 
 const roomStrings = {
     cn: {
@@ -9,6 +10,29 @@ const roomStrings = {
         room_illegal: '',
         room_not_found: `[市场指令] 房间「{0}」未在控制列表或未占领。`,
     }
+}
+
+const rampartDFS = (roomName: string, start: [number, number], walls: number[]) => {
+    const queue = [start];
+    while (queue.length > 0) {
+        const [x, y] = queue.pop();
+
+        for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                if (i === 0 && j === 0) continue;
+                const [nx, ny] = [x + i, y + j];
+                if (nx < 1 || nx >= 49 || ny < 1 || ny >= 49) continue;
+    
+                if (walls.indexOf(coordCompress([nx, ny]) as number) !== -1) continue;
+    
+                if (new RoomPosition(nx, ny, roomName).lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_WALL)) {
+                    walls.push(coordCompress([nx, ny]) as number);
+                    queue.push([nx, ny]);
+                }
+            }
+        }
+    }
+    
 }
 
 export default {
@@ -134,6 +158,41 @@ export default {
                 return roomStrings[lang].room_not_found.format(roomName);
             }
             roomInfoUpdate(room, true);
+        },
+        update_structure: (roomName: string, remove: boolean = false) => {
+            const lang = Memory.lang || 'cn';
+            const room = Game.rooms[roomName];
+            if (!room || !room.my) {
+                return roomStrings[lang].room_not_found.format(roomName);
+            }
+
+            if (remove) {
+                Memory.Layout[roomName] = {};
+                if (room.spawn) Memory.Layout[roomName]['spawn'] = coordCompress(room.spawn.map<any>(s => [s.pos.x, s.pos.y]));
+                if (room.extension) Memory.Layout[roomName]['extension'] = coordCompress(room.extension.map<any>(e => [e.pos.x, e.pos.y]));
+                if (room.rampart) Memory.Layout[roomName]['rampart'] = coordCompress(room.rampart.map<any>(r => [r.pos.x, r.pos.y]));
+                if (room.tower) Memory.Layout[roomName]['tower'] = coordCompress(room.tower.map<any>(t => [t.pos.x, t.pos.y]));
+                if (room.lab) Memory.Layout[roomName]['lab'] = coordCompress(room.lab.map<any>(l => [l.pos.x, l.pos.y]));
+                if (room.link) Memory.Layout[roomName]['link'] = coordCompress(room.link.map<any>(l => [l.pos.x, l.pos.y]));
+                if (room.road) Memory.Layout[roomName]['road'] = coordCompress(room.road.map<any>(r => [r.pos.x, r.pos.y]));
+                if (room.rampart) Memory.Layout[roomName]['rampart'] = coordCompress(room.rampart.map<any>(r => [r.pos.x, r.pos.y]));
+
+                if (room.terminal) Memory.Layout[roomName]['terminal'] = [coordCompress([room.terminal.pos.x, room.terminal.pos.y])];
+                if (room.observer) Memory.Layout[roomName]['observer'] = [coordCompress([room.observer.pos.x, room.observer.pos.y])];
+                if (room.storage) Memory.Layout[roomName]['storage'] = [coordCompress([room.storage.pos.x, room.storage.pos.y])];
+                if (room.nuker) Memory.Layout[roomName]['nuker'] = [coordCompress([room.nuker.pos.x, room.nuker.pos.y])];
+                if (room.powerSpawn) Memory.Layout[roomName]['powerSpawn'] = [coordCompress([room.powerSpawn.pos.x, room.powerSpawn.pos.y])];
+                if (room.extractor) Memory.Layout[roomName]['extractor'] = [coordCompress([room.extractor.pos.x, room.extractor.pos.y])];
+                if (room.factory) Memory.Layout[roomName]['factory'] = [coordCompress([room.factory.pos.x, room.factory.pos.y])];
+
+                const walls = [];
+
+                for (const r of room.rampart) {
+                    rampartDFS(roomName, [r.pos.x, r.pos.y], walls);
+                }
+                Memory.Layout[roomName]['rampart'].push(...walls);
+            }
+            
         }
     }
 }

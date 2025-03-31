@@ -1,4 +1,4 @@
-import { MANAGE_MISSION, MISSION_TYPE } from "@/constant/mission";
+import { MANAGE_MISSION, MISSION_TYPE, TERMINAL_MISSION } from "@/constant/mission";
 import { addMission, deleteMission, filterMission, getMission, getMissionByFilter } from "../pool";
 import { getRoomResourceAmount } from "../../function/get";
 
@@ -14,10 +14,10 @@ const getTerminalMissionTotal = (room: Room) => {
 
 const roomTerminalManageChcek = (room: Room) => {
     if (!room.storage || !room.terminal) return false;
-    if (!room.storage.pos.inRangeTo(room.terminal.pos, 1)) return false;
+    if (!room.storage.pos.inRangeTo(room.terminal.pos, 2)) return false;
 
-    const missions = filterMission(room, MISSION_TYPE.TERMINAL);
-    const sends:{[k: string]: number} = {};
+    const missions = filterMission(room, MISSION_TYPE.TERMINAL, t => t.data.code === TERMINAL_MISSION.send.code);
+    const sends: Partial<Record<ResourceConstant, number>> = {};
     for (const task of missions) {
         const totalResource = (room.terminal?.store[task.data.rType]||0) + (room.storage?.store[task.data.rType]||0);
         if (totalResource < Math.min(task.data.amount, 10000)) {
@@ -95,7 +95,7 @@ const roomFactoryManageCheck = (room: Room) => {
     // 停止工作时，清空工厂
     if (!mem.Factory.open || !product) {
         for (const rType in room.factory.store) {
-            addMission(room, MISSION_TYPE.MANAGE, MANAGE_MISSION.f2s, { rType, amount: room.factory.store[rType] });
+            addMission(room, MISSION_TYPE.MANAGE, MANAGE_MISSION.f2t, { rType, amount: room.factory.store[rType] });
         }
         return ;
     }
@@ -106,7 +106,7 @@ const roomFactoryManageCheck = (room: Room) => {
     for (const rType in components) {
         if (components[rType]) continue;
         if (rType === product) continue;
-        addMission(room, MISSION_TYPE.MANAGE, MANAGE_MISSION.f2s, { rType, amount: room.factory.store[rType] });
+        addMission(room, MISSION_TYPE.MANAGE, MANAGE_MISSION.f2t, { rType, amount: room.factory.store[rType] });
     }
 
     // 补充材料
@@ -115,11 +115,11 @@ const roomFactoryManageCheck = (room: Room) => {
         if (room.factory.store[rType] >= 1000) continue;
         const amount = 3000 - room.factory.store[rType];
 
-        addMission(room, MISSION_TYPE.MANAGE, MANAGE_MISSION.s2f, { rType, amount });
+        addMission(room, MISSION_TYPE.MANAGE, MANAGE_MISSION.t2f, { rType, amount });
 
         // 检查仓库是否有足够的资源
-        if (room.storage.store[rType] < amount) {
-            addMission(room, MISSION_TYPE.MANAGE, MANAGE_MISSION.t2f, { rType, amount: Math.min(amount - room.storage.store[rType],
+        if (room.terminal.store[rType] < amount) {
+            addMission(room, MISSION_TYPE.MANAGE, MANAGE_MISSION.s2f, { rType, amount: Math.min(amount - room.storage.store[rType],
                 room.terminal?.store[rType]||0) });
         }
     }
@@ -138,6 +138,6 @@ export const updateManageMission = (room: Room) => {
     // 检查终端资源数量
     roomTerminalManageChcek(room);
     // 检查工厂资源数量
-    roomFactoryManageCheck(room);
+    // roomFactoryManageCheck(room);
 
 }

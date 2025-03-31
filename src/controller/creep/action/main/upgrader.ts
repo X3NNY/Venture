@@ -4,7 +4,7 @@ import { creepMoveTo, creepMoveToHome } from "../../function/move";
 const creepUpgraderActions = {
     withdraw: (creep: Creep) => {
         const link = creep.room.link.find(l => l.pos.inRangeTo(creep.room.controller, 2));
-        let container = creep.room.container.find(c => c.pos.inRangeTo(creep.room.controller, 1)) ?? null;
+        let container = creep.room.container.find(c => c.pos.inRangeTo(creep.room.controller, 2)) ?? null;
         let res;
 
         // 有控制器链接

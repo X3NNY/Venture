@@ -6,17 +6,18 @@ import { creepMoveTo } from "../../function/move";
 
 const creepBuilderActions = {
     withdraw: (creep: Creep) => {
-        if (creepChargeEnergy(creep)) {
-            creep.memory.cache = {}
-        } else {
-            const source = creep.pos.findClosestByRange(creep.room.source.filter(s => s && s.energy > 0));
-            if (source) {
-                const result = creep.harvest(source);
-                if (result === ERR_NOT_IN_RANGE) {
-                    creepMoveTo(creep, source, { maxRooms: 1, range: 1});
-                }
-            }
-        }
+        creepChargeEnergy(creep, true, creep.store.getFreeCapacity())
+        // if (creepChargeEnergy(creep, true, creep.store.getFreeCapacity())) {
+        //     creep.memory.cache = {}
+        // } else {
+        //     const source = creep.pos.findClosestByRange(creep.room.source.filter(s => s && s.energy > 0));
+        //     if (source) {
+        //         const result = creep.harvest(source);
+        //         if (result === ERR_NOT_IN_RANGE) {
+        //             creepMoveTo(creep, source, { maxRooms: 1, range: 1});
+        //         }
+        //     }
+        // }
 
         if (creep.store.getFreeCapacity() === 0) {
             creep.memory.action = 'build';
@@ -70,7 +71,9 @@ const creepBuilderActions = {
         }
 
         if (!creep.memory.cache.rampart) {
-            const rampart = creep.room.rampart.find(s => s && s.hits < 5000);
+            const rampart = creep.room.rampart.find(s => s && s.hits < 10000) || creep.room.find<StructureRampart>(FIND_STRUCTURES, {
+                filter: s => s.structureType === STRUCTURE_RAMPART && s.hits < 10000
+            })?.[0];
             if (rampart) {
                 creep.memory.cache.rampart = rampart.id;
             } else {
@@ -82,7 +85,7 @@ const creepBuilderActions = {
 
         const rampart = Game.getObjectById(creep.memory.cache.rampart) as StructureRampart;
 
-        if (!rampart || rampart.hits >= 5000) {
+        if (!rampart || rampart.hits >= 10000) {
             delete creep.memory.cache.rampart;
             return ;
         }
@@ -101,6 +104,9 @@ const creepBuilderActions = {
             creepMoveTo(creep, creep.room.controller, { maxRooms: 1, range: 2 });
         }
         
+        if (Game.time % 20 === 0) {
+            creep.memory.action = 'repair';
+        }
         // 成功升级一次就切回去看看有没有任务
         // else if (res === OK) {
         //     creep.memory.action = 'build';

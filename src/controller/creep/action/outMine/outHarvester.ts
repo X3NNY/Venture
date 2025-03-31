@@ -1,6 +1,6 @@
 import { coordCompress } from "@/util/coord";
 import { creepMoveToRoom } from "../../function/move";
-import { creepIsOnEdge } from "../../function/position";
+import { creepIsNearEdge, creepIsOnEdge } from "../../function/position";
 import { roomFindClosestSource } from "@/controller/room/function/find";
 import { creepGoHarvest } from "../../function/work";
 import { CREEP_ROLE } from "@/constant/creep";
@@ -28,7 +28,7 @@ const creepOutHarvesterActions = {
         const sources = creep.room.find(FIND_SOURCES);
         const pos = sources.map(s => s.pos);
 
-        const isCenterRoom = /^[EW]\d*[456][NS]\d*456/.test(creep.room.name);
+        const isCenterRoom = /^[EW]\d*[456][NS]\d*[456]/.test(creep.room.name);
 
         // 中间房间找一下矿
         if (isCenterRoom) {
@@ -79,7 +79,7 @@ const creepOutHarvesterActions = {
         creep.memory.action = 'harvest';
     },
     harvest: (creep: Creep) => {
-        if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
+        if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep) || creepIsNearEdge(creep)) {
             creepMoveToRoom(creep, creep.memory.targetRoom, {
                 plainCost: 2, swampCost: 10
             })

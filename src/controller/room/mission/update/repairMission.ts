@@ -14,6 +14,9 @@ export const updateRepairMission = (room: Room) => {
 
     for (const struct of structures) {
         const { hits, hitsMax } = struct;
+        if (struct.structureType === STRUCTURE_CONTAINER && room.level === 8) {
+            if (!struct.pos.isNearTo(room.mineral?.pos)) continue;
+        }
         if (struct.structureType !== STRUCTURE_WALL && struct.structureType !== STRUCTURE_RAMPART) {
             // 建筑紧急维修
             if (hits < hitsMax * URGENT_THRESHOLD) {

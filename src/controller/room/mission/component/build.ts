@@ -21,7 +21,8 @@ export const addBuildMission = (room: Room, mission: MISSION, data: {pos: RoomPo
         type: mission.type,
         level: 9999,
         data: {
-            siteId: site.id
+            siteId: site.id,
+            code: mission.code
         }
     })
 }

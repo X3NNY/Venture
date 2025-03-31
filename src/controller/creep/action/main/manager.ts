@@ -51,24 +51,23 @@ const creepManagerActions = {
 
         if (!mLink) {
             creep.memory.cache.mLink = null;
-            return;
+            return false;
         }
 
         // 如果控制器链接需要能量
         if (cLink && cLink.store[RESOURCE_ENERGY] < 400) {
             if (mLink.store.getFreeCapacity(RESOURCE_ENERGY) < 100) {
-                return ;
+                return false;
             }
 
             if (mLink.store.getFreeCapacity(RESOURCE_ENERGY) > 100 && creep.store[RESOURCE_ENERGY] > 100) {
                 creep.transfer(mLink, RESOURCE_ENERGY);
                 return true;
             }
-
-            // 身上有其他资源先放入仓库/终端
-            if (transferOtherResources(creep, RESOURCE_ENERGY)) return true;
-
             if (creep.room.storage.store[RESOURCE_ENERGY] > 0) {
+                // 身上有其他资源先放入仓库/终端
+                if (transferOtherResources(creep, RESOURCE_ENERGY)) return true;
+
                 creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
                 return true;
             }
@@ -76,7 +75,7 @@ const creepManagerActions = {
         // 其他链接缺少能量
         else if (creep.memory.cache.nLink.some((linkId: Id<StructureLink>) => (Game.getObjectById(linkId)?.store[RESOURCE_ENERGY]||0) < 400)) {
             if (mLink.store.getFreeCapacity(RESOURCE_ENERGY) < 100) {
-                return ;
+                return false;
             }
 
             if (mLink.store.getFreeCapacity(RESOURCE_ENERGY) > 100 && creep.store[RESOURCE_ENERGY] > 100) {
@@ -84,10 +83,10 @@ const creepManagerActions = {
                 return true;
             }
 
-            // 身上有其他资源先放入仓库/终端
-            if (transferOtherResources(creep, RESOURCE_ENERGY)) return true;
-
             if (creep.room.storage.store[RESOURCE_ENERGY] > 0) {
+                // 身上有其他资源先放入仓库/终端
+                if (transferOtherResources(creep, RESOURCE_ENERGY)) return true;
+
                 creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
                 return true;
             }
@@ -96,8 +95,8 @@ const creepManagerActions = {
             if (transferOtherResources(creep, RESOURCE_ENERGY)) return true;
             if (creep.store.getFreeCapacity() > 0) {
                 creep.withdraw(mLink, RESOURCE_ENERGY);
+                return true;
             }
-            return true;
         }
         return false;
     },
@@ -189,6 +188,16 @@ export default {
         return true;
     },
     action: (creep: Creep) => {
+        if (Game.time % 50 === 0) {
+            const center = Memory.RoomInfo[creep.room.name]?.center;
+            if (center) {
+                const pos = new RoomPosition(center.x, center.y, creep.room.name);
+                if (!creep.pos.isEqualTo(pos)) {
+                    creepMoveTo(creep, pos, { ignoreCreeps: false });
+                    return false;
+                }
+            }
+        }
         if (creepManagerActions.transfer(creep)) return ;
         if (creepManagerActions.manage(creep)) return ;
 

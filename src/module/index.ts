@@ -2,6 +2,7 @@
 import * as roomController from '@/controller/room';
 import * as creepController from '@/controller/creep';
 import * as powerCreepController from '@/controller/powerCreep';
+import * as flagController from '@/controller/flag';
 import { errorMapper } from './errorMapper';
 import { globalInit } from './init/global';
 import { memoryInit } from './init/memory';
@@ -12,6 +13,7 @@ import { getCpuConsumption } from '@/util/function';
 import { endClaimCheck } from './end/claim';
 import { endAidCheck } from './end/aid';
 import { drawTable } from '@/util/chart';
+import { endAttackCheck } from './end/attack';
 
 let _cachedMemory: Memory;
 let _isFirstCreate = true;
@@ -80,6 +82,10 @@ const onProcess = () => {
             powerCreepController.eventLoop(pc);
         }
     })
+
+    Object.values(Game.flags).forEach(flag => {
+        flagController.eventLoop(flag);
+    })
     if (Memory.log === 'debug') {
         console.log('房间总消耗：', Object.values<number>(roomCPUMap).reduce((a,b)=>a+b,0).toFixed(2), '爬爬总消耗：', Object.values<number>(creepCPUMap).reduce((a,b)=>a+b,0).toFixed(2), '超爬总消耗：', Object.values<number>(pcCPUMap).reduce((a,b)=>a+b,0).toFixed(2))
         console.log(drawTable([Object.values(roomCPUMap).map((v:number)=>v.toFixed(2))], Object.keys(roomCPUMap)));
@@ -91,8 +97,9 @@ const onProcess = () => {
 const onEnd = () => {
     endClean();
     endGeneratePixel();
-    endClaimCheck();
-    endAidCheck();
+    // endClaimCheck();
+    // endAidCheck();
+    // endAttackCheck();
 }
 
 const onDestory = () => {

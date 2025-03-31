@@ -112,3 +112,98 @@ export const creepMoveToCoord= (creep: Creep, x: number, y: number, options: any
     // }
     return creep.moveTo(x, y, options);
 }
+
+export const creepDoubleMoveTo = (creep: Creep, target: RoomPosition, color: string = '#ffffff', ignoreCreeps: boolean = false) => {
+    const bindCreep = Game.getObjectById(creep.memory.bindCreep);
+
+    if (!bindCreep) return false;
+
+    const ops = {
+        visualizePathStyle: { stroke: color },
+        ignoreCreeps: ignoreCreeps
+    }
+    if (creep.pos.isNearTo(bindCreep.pos)) {
+        if (creep.fatigue > 0) return false;
+
+        const result = creepMoveTo(creep, target, ops);
+        if (result === OK) {
+            creep.pull(bindCreep);
+            bindCreep.move(creep);
+            return true;
+        }
+    } else {
+        if (creepIsOnEdge(creep)) creepMoveTo(creep, target, ops);
+        bindCreep.moveTo(creep);
+        return true;
+    }
+    return false;
+}
+
+export const getDirection = (fromPos: RoomPosition, toPos: RoomPosition) => {
+    if (fromPos.roomName == toPos.roomName) {
+        if (toPos.x > fromPos.x) {    // 下一步在右边
+            if (toPos.y > fromPos.y) {    // 下一步在下面
+                return BOTTOM_RIGHT;
+            } else if (toPos.y == fromPos.y) { // 下一步在正右
+                return RIGHT;
+            }
+            return TOP_RIGHT;   // 下一步在上面
+        } else if (toPos.x == fromPos.x) { // 横向相等
+            if (toPos.y > fromPos.y) {    // 下一步在下面
+                return BOTTOM;
+            } else if (toPos.y < fromPos.y) {
+                return TOP;
+            }
+        } else {  // 下一步在左边
+            if (toPos.y > fromPos.y) {    // 下一步在下面
+                return BOTTOM_LEFT;
+            } else if (toPos.y == fromPos.y) {
+                return LEFT;
+            }
+            return TOP_LEFT;
+        }
+    } else {  // 房间边界点
+        if (fromPos.x == 0 || fromPos.x == 49) {  // 左右相邻的房间，只需上下移动（左右边界会自动弹过去）
+            if (toPos.y > fromPos.y) {   // 下一步在下面
+                return BOTTOM;
+            } else if (toPos.y < fromPos.y) { // 下一步在上
+                return TOP
+            } // else 正左正右
+            return fromPos.x ? RIGHT : LEFT;
+        } else if (fromPos.y == 0 || fromPos.y == 49) {    // 上下相邻的房间，只需左右移动（上下边界会自动弹过去）
+            if (toPos.x > fromPos.x) {    // 下一步在右边
+                return RIGHT;
+            } else if (toPos.x < fromPos.x) {
+                return LEFT;
+            }// else 正上正下
+            return fromPos.y ? BOTTOM : TOP;
+        }
+    }
+}
+
+
+export const creepDoubleMoveToRoom = (creep: Creep, roomName: string) => {
+    const bindCreep = Game.getObjectById(creep.memory.bindCreep);
+    if (!bindCreep) return false;
+
+    if (creep.room.name !== roomName) {
+        creepDoubleMoveTo(creep, new RoomPosition(25, 25, roomName), '#ff0000')
+        return true;
+    } else if (creepIsOnEdge(creep)) {
+        creep.move(getDirection(creep.pos, new RoomPosition(25, 25, roomName)))
+        bindCreep.moveTo(creep);
+        return true;
+    } else if (creep.room.name === bindCreep.room.name && creepIsOnEdge(bindCreep)) {
+        const terrain = creep.room.getTerrain();
+        const pos = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]].find(pos => {
+            const [nx, ny] = [creep.pos.x+pos[0], creep.pos.y+pos[1]];
+            if (nx <= 0 || nx >= 49 || ny <= 0 || ny >= 49) return false;
+            if (!bindCreep.pos.isNearTo(nx, ny)) return false;
+            if (terrain.get(nx, ny) === TERRAIN_MASK_WALL) return false;
+            return true;
+        });
+        const toPos = new RoomPosition(creep.pos.x+pos[0], creep.pos.y+pos[1], roomName);
+        bindCreep.move(getDirection(bindCreep.pos, toPos));
+    }
+    return false;
+}

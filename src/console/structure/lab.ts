@@ -118,6 +118,15 @@ export default {
             else memory.lab.open = false;
             return labStrings[lang].stop_ok.format(roomName);
         },
+        update: (roomName: string) => {
+            const lang = Memory.lang || 'cn';
+            const room = Game.rooms[roomName];
+            const memory = Memory.RoomInfo[roomName];
+            if (!room || !room.my || !memory) {
+                return labStrings[lang].room_not_found.format(roomName);
+            }
+            roomStructureLab.setTarget(room, true);
+        },
         // 设置底物和数量
         set: (roomName: string, product: MineralCompoundConstant, amount: number = 0) => {
             const lang = Memory.lang || 'cn';

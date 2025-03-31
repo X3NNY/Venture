@@ -18,8 +18,10 @@ const creepMenderActions = {
             const task = getMissionByDist(creep.room, MISSION_TYPE.REPAIR, creep.pos);
 
             if (!task) {
-                creep.memory.action = 'upgrade';
-                creepMenderActions.upgrade(creep);
+                if (creep.room.level < 8) {
+                    creep.memory.action = 'upgrade';
+                    creepMenderActions.upgrade(creep);
+                }
                 return ;
             }
 
@@ -51,7 +53,7 @@ const creepMenderActions = {
         
 
         // 刷墙任务刷一会就算了，均衡一点
-        if (task.level > 10 && Game.time % 200 === 1) {
+        if (task.level > 10 && Game.time % 50 === 1) {
             deleteMission(creep.room, MISSION_TYPE.REPAIR, task.id);
             creep.memory.cache = {};
             return true;

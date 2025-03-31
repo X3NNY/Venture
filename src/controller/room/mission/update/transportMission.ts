@@ -1,6 +1,6 @@
 import { MISSION_TYPE, TRANSPORT_MISSION } from "@/constant/mission";
 import { addMission } from "../pool";
-import { getRoomResourceAmount } from "../../function/get";
+import { getRoomPowerCreepCount, getRoomResourceAmount } from "../../function/get";
 
 // 能量运输任务
 const updateEnergyMission = (room: Room) => {
@@ -20,8 +20,12 @@ const updateEnergyMission = (room: Room) => {
 
     if (room.spawn && room.energyAvailable < room.energyCapacityAvailable) {
         let spawns = room.spawn.filter(s => s?.store.getFreeCapacity(RESOURCE_ENERGY) > 0);
-        let extensions = room.extension.filter(s => s?.store.getFreeCapacity(RESOURCE_ENERGY) > 0);
-        const targets = spawns.concat(extensions as any[]);
+        let targets;
+        if (getRoomPowerCreepCount(room, pc => !!pc.powers[PWR_OPERATE_EXTENSION]) > 0) {
+            targets = spawns;
+        } else {
+            targets = spawns.concat(room.extension.filter(s => s?.store.getFreeCapacity(RESOURCE_ENERGY) > 0) as any[])
+        }
         targets.forEach(s => {
             if (energy < s.store.getFreeCapacity(RESOURCE_ENERGY)) return ;
             energy -= s.store.getFreeCapacity(RESOURCE_ENERGY);
@@ -67,6 +71,39 @@ const updateEnergyMission = (room: Room) => {
             })
         })
     }
+
+    if (Game.time % 30 === 0 && room.level === 8 && room.powerSpawn) {
+        const powerSpawn = room.powerSpawn;
+        const amount = powerSpawn.store.getFreeCapacity(RESOURCE_ENERGY);
+
+        if (powerSpawn && powerSpawn.store.getFreeCapacity(RESOURCE_ENERGY) > 400 && energy >= amount) {
+            energy -= amount;
+            addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.power_spawn, {
+                source: room.storage.id,
+                target: powerSpawn.id,
+                pos: { x: powerSpawn.pos.x, y: powerSpawn.pos.y, roomName: powerSpawn.pos.roomName },
+                rType: RESOURCE_ENERGY,
+                amount: amount
+            })
+        }
+    }
+
+    if (energy < 100000) return ;
+
+    if (Game.time % 30 === 0 && room.level === 8 && room.nuker) {
+        const nuker = room.nuker;
+        const amount = Math.min(nuker.store.getFreeCapacity(RESOURCE_ENERGY), 3000);
+        if (nuker && amount > 0 && energy >= amount) {
+            energy -= amount;
+            addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.power_spawn, {
+                source: room.storage.id,
+                target: nuker.id,
+                pos: { x: nuker.pos.x, y: nuker.pos.y, roomName: nuker.pos.roomName },
+                rType: RESOURCE_ENERGY,
+                amount: amount
+            });
+        }
+    }
 }
 
 const updateLabBoostMission = (room: Room) => {
@@ -88,7 +125,8 @@ const updateLabBoostMission = (room: Room) => {
                 const mType = Object.keys(memory.boostQueue)[0] as MineralBoostConstant;
                 memory.BOOST[lab.id] = {
                     mineral: mType,
-                    amount: memory.boostQueue[mType]
+                    amount: memory.boostQueue[mType],
+                    time: Game.time
                 };
                 delete memory.boostQueue[mType];
             })
@@ -141,13 +179,15 @@ const updateLabBoostMission = (room: Room) => {
         // 补充资源
         if (lab.store[mType] < totalAmount) {
             const target = [room.storage, room.terminal].find(s => s.store[mType] > 0);
-            addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.boost, {
-                source: target.id,
-                target: lab.id,
-                pos: lab.pos,
-                rType: mType,
-                amount: Math.min(totalAmount - lab.store[mType], target.store[mType])
-            });
+            if (target) {
+                addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.boost, {
+                    source: target.id,
+                    target: lab.id,
+                    pos: lab.pos,
+                    rType: mType,
+                    amount: Math.min(totalAmount - lab.store[mType], target.store[mType])
+                });
+            }
         }
     })
 }
@@ -181,10 +221,38 @@ const updatePowerMission = (room: Room) => {
     });
 }
 
+const updateNukerMission = (room: Room) => {
+    if (Game.time % 70) return ;
+    if (room.level < 8 || !room.nuker) return ;
+
+    if (!room.terminal) return ;
+
+    if (room.nuker.store[RESOURCE_GHODIUM] === 5000) return ;
+
+    const amount = 5000 - room.nuker.store[RESOURCE_GHODIUM];
+    let source;
+    if (room.storage.store[RESOURCE_GHODIUM] > 0) {
+        source = room.storage;
+    } else if (room.terminal.store[RESOURCE_GHODIUM] > 0) {
+        source = room.terminal;
+    } else {
+        return ;
+    }
+
+    addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.nuker, {
+        source: source.id,
+        target: room.nuker.id,
+        pos: room.nuker.pos,
+        rType: RESOURCE_GHODIUM,
+        amount: Math.min(amount, source.store[RESOURCE_GHODIUM])
+    })
+}
+
 export const updateTransportMission = (room: Room) => {
     if (!room.storage) return ;
 
     updateEnergyMission(room);
     updatePowerMission(room);
     updateLabBoostMission(room);
+    updateNukerMission(room)
 }

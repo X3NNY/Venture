@@ -40,14 +40,38 @@ interface Room {
     my: boolean;
 
     memory: {
-        missions: {
+        missions: {                                       // 任务列表
             [taskType: string]: Task[]
         },
-        depositMineral?: {
-            [roomName: string]: any
+        depositTarget?: {                                 // 商品采集目标
+            [depositId: string]: {
+                num: number,                              // 采集点数
+                open: boolean                             // 采集开关
+            }
+            [roomName: string]: {
+                num: number,                              // 采集点数
+                open: boolean                             // 采集开关
+            }
         },
-        sourceHarvestPos?: any,
-        index?: number,
+        powerTarget?: {                                   // 超能采集目标
+            [roomName: string]: {
+                creep: number,                            // 能量采集爬爬预计数量
+                count?: number,                           // 能量采集爬爬已有数量
+                max: number,                              // 能量采集爬爬最大数量
+                boostLevel: number,                       // 强化等级
+                rCreep: number,                           // 远程爬爬预计数量
+                rCount?: number,                          // 远程爬爬已有数量
+                rMax: number,                             // 远程爬爬最大数量
+            }
+        },
+        depositMineral?: {
+            [depositId: Id<Deposit>]: number              // 矿点采集点数
+        },
+        powerMineral?: {
+            [powerBankId: Id<StructurePowerBank>]: number // 矿点采集点数
+        },
+        sourceHarvestPos?: any,                           // 采集点
+        index?: number,                                   // 耗时任务执行tick
         [key: string]: any
     };
     

@@ -13,7 +13,7 @@ export const doneTerminalMission = (room: Room, task: Task, amount: number) => {
     task.data.amount = amount;
 }
 
-export const addTerminalMission = (room: Room, mission: MISSION, data: {target: string, rType: ResourceConstant, amount: number}) => {
+export const addTerminalMission = (room: Room, mission: MISSION, data: {target: string, rType: ResourceConstant, amount: number, code?: string}) => {
 if (!room.memory.missions[MISSION_TYPE.TERMINAL]) room.memory.missions[MISSION_TYPE.TERMINAL] = []
     let pos = room.memory.missions[MISSION_TYPE.TERMINAL].findIndex(m => m.data.code === mission.code && m.data.rType === data.rType && m.data.target === data.target);
 
@@ -22,6 +22,8 @@ if (!room.memory.missions[MISSION_TYPE.TERMINAL]) room.memory.missions[MISSION_T
         room.memory.missions[MISSION_TYPE.TERMINAL][pos].data.amount = data.amount;
         return ;
     }
+
+    data.code = mission.code;
 
     const id = generateMissionId(MISSION_TYPE.TERMINAL);
 

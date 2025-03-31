@@ -59,7 +59,7 @@ const creepDepositHarvesterActions = {
         }
 
         if (creep.store.getUsedCapacity() === 0) {
-            creep.memory.action = 'transfer'
+            creep.memory.action = 'harvest'
         }
     }
 }

@@ -129,7 +129,11 @@ export default {
             creep.memory.targetHarvestPos = target.harvestPos;
         }
 
-        creep.memory.action = 'build';
+        if (creep.room.level === 8) {
+            creep.memory.action = 'harvest';
+        } else {
+            creep.memory.action = 'build';
+        }
         return true;
     },
     action: (creep: Creep) => {

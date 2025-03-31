@@ -14,6 +14,7 @@ const enabledPower = (pc: PowerCreep) => {
 const opsGenerate = (pc: PowerCreep) => {
     if (!pc.powers[PWR_GENERATE_OPS]) return false;
     if (pc.powers[PWR_GENERATE_OPS].cooldown > 0) return false;
+    if (pc.store.getFreeCapacity() === 0) return false;
     pc.usePower(PWR_GENERATE_OPS);
     return true;
 }
@@ -131,6 +132,7 @@ export const powerCreepActionRun = (pc: PowerCreep) => {
         if (powerCreepTransferPower(pc)) return true;    // 填充PS
     } else if (pc.memory.role === 'O') {
         if (powerCreepRegenSource(pc)) return true;      // 生成能量
+        if (powerCreepOperateFactory(pc)) return true;   // 操作工厂
         if (powerCreepOperateTower(pc)) return true;     // 增强炮塔
         if (powerCreepOperateExtension(pc)) return true; // 填充扩展
         if (powerCreepOperateSpawn(pc)) return true;     // 加速孵化

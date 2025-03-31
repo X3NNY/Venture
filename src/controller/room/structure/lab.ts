@@ -1,8 +1,9 @@
-import { CompoundMineral, LabTarget } from "@/constant/resource";
+import { CompoundMineral, HighWayLabTarget, LabTarget } from "@/constant/resource";
 import { LAB_STATE } from "@/constant/structure";
 import { addMission, countMission } from "../mission/pool";
-import { MISSION_TYPE, TRANSPORT_MISSION } from "@/constant/mission";
-import { getRoomCenterLab } from "../function/get";
+import { MISSION_TYPE, TERMINAL_MISSION, TRANSPORT_MISSION } from "@/constant/mission";
+import { getRoomCenterLab, getRoomResourceAmount } from "../function/get";
+import { checkRoomResourceSharable } from "../function/check";
 
 const labIndexUpdate = (room: Room) => {
     Memory.RoomInfo[room.name].lab.index = (Memory.RoomInfo[room.name].lab.index+1) % Memory.RoomInfo[room.name].lab.autoQueue.length;
@@ -20,7 +21,9 @@ const labGetTarget = (room: Room) => {
     // console.log(JSON.stringify(resource))
     // console.log(JSON.stringify(CompoundMineral[resource.target]));
     const {rct1, rct2} = CompoundMineral[resource.target];
-    const minAmount = Math.min(room.terminal.store[rct1], room.terminal.store[rct2]);
+    const rct1Count = room.terminal.store[rct1];
+    const rct2Count = room.terminal.store[rct2];
+    const minAmount = Math.min(rct1Count, rct2Count);
 
     if (minAmount >= 5) {    // 至少需要5个资源
         Memory.RoomInfo[room.name].lab.state = LAB_STATE.LOAD;
@@ -29,6 +32,18 @@ const labGetTarget = (room: Room) => {
         // 这里保持5的倍数，防止底物反应不完
         Memory.RoomInfo[room.name].lab.labAmount = Math.min(minAmount-minAmount%5,LAB_MINERAL_CAPACITY)
     } else {
+        if (rct1Count < 2000 && checkRoomResourceSharable(room, rct1, 2000-rct1Count)) {
+            addMission(room, MISSION_TYPE.TERMINAL, TERMINAL_MISSION.request, {
+                rType: rct1,
+                amount: 2000-rct1Count,
+            })
+        }
+        if (rct2Count < 2000 && checkRoomResourceSharable(room, rct2, 2000-rct2Count)) {
+            addMission(room, MISSION_TYPE.TERMINAL, TERMINAL_MISSION.request, {
+                rType: rct2,
+                amount: 2000-rct2Count,
+            })
+        }
         return labIndexUpdate(room);
     }
 }
@@ -213,7 +228,7 @@ export const roomStructureLab = {
             memory.lab.autoQueue.push(...LabTarget.K);
             memory.lab.autoQueue.push(...LabTarget.Z);
 
-            memory.lab.autoQueue = _.uniq(memory.lab.autoQueue, false, task => task.target);
+            // memory.lab.autoQueue = _.uniq(memory.lab.autoQueue, false, task => task.target);
         }
         // 小于5种 部分合成
         else if (minerals < 5) {
@@ -237,7 +252,7 @@ export const roomStructureLab = {
                     memory.lab.autoQueue.push(...LabTarget.OH);
                     break;
             }
-            memory.lab.autoQueue = _.uniq(memory.lab.autoQueue, false, task => task.target);
+            // memory.lab.autoQueue = _.uniq(memory.lab.autoQueue, false, task => task.target);
         }
         // 分开合成
         else {
@@ -263,9 +278,82 @@ export const roomStructureLab = {
                     break;
             }
         }
+
+        // 如有通道矿房
+        if ((memory.OutMineral.highway?.length||0) > 0) {
+            memory.lab.autoQueue.push(...HighWayLabTarget)
+        }
+
+        memory.lab.autoQueue = Object.values(
+            _.reduce(memory.lab.autoQueue, (result, item) => {
+                const key = item.target;
+                if (!result[key] || result[key].amount < item.amount) {
+                    result[key] = item;
+                }
+                return result;
+            }, {})
+        )
+    },
+    addTarget: (room: Room, rType: MineralCompoundConstant, amount: number) => {
+        const memory = Memory.RoomInfo[room.name];
+        if (!memory.lab?.open) return false;
+
+        if (!memory.lab.autoQueue) {
+            memory.lab.autoQueue = []
+        }
+
+        memory.lab.autoQueue.push({
+            target: rType,
+            amount: amount,
+            manual: true
+        })
+
+        memory.lab.autoQueue = Object.values(
+            _.reduce(memory.lab.autoQueue, (result, item) => {
+                const key = item.target;
+                if (!result[key] || result[key].amount < item.amount) {
+                    result[key] = item;
+                }
+                return result;
+            }, {})
+        )
+    },
+    /**
+     * 根据身体分配boost任务
+     * @param room 
+     * @param body 
+     * @param BOOST 
+     * @returns 
+     */
+    setBoostByBody: (room: Room, body: BodyPartConstant[], BOOST: any) => {
+        const bodyparts: any = {};
+        const tasks = [];
+        for (const part of body) {
+            if (!bodyparts[part]) bodyparts[part] = 0;
+            bodyparts[part]++;
+        }
+        for (const part in bodyparts) {
+            if (!BOOST[part]) continue;
+
+            const amount = bodyparts[part] * 30;
+            let mIdx = 0;
+            while (mIdx < BOOST[part].length) {
+                if (getRoomResourceAmount(room, BOOST[part][mIdx]) >= amount) break;
+                mIdx++;
+            }
+            if (mIdx >= BOOST[part].length) {
+                return false;
+            }
+            tasks.push([BOOST[part][mIdx], amount]);
+            // roomStructureLab.setBoost(room, BOOST[part][mIdx], amount);
+        }
+        for (const task of tasks) {
+            roomStructureLab.setBoost(room, task[0], task[1]);
+        }
+        return true;
     },
     // 指定boost任务化工厂
-    setBoost: (room: Room, mineral: MineralBoostConstant, amount: number) => {
+    setBoost: (room: Room, mineral: MineralBoostConstant, amount: number, increase: boolean = true) => {
         const labInfo = Memory.RoomInfo[room.name].lab;
         if (!labInfo.BOOST) labInfo.BOOST = {}
 
@@ -273,7 +361,9 @@ export const roomStructureLab = {
         const lab = room.lab.find(lab => labInfo.BOOST[lab.id]?.mineral === mineral);
 
         if (lab) {
-            labInfo.BOOST[lab.id].amount = amount;
+            if (increase) labInfo.BOOST[lab.id].amount += amount;
+            else labInfo.BOOST[lab.id].amount = amount;
+            labInfo.BOOST[lab.id].time = Game.time;
             return true;
         }
 
@@ -284,13 +374,18 @@ export const roomStructureLab = {
             const lab = labs[0];
             labInfo.BOOST[lab.id] = {
                 mineral: mineral,
-                amount: amount
+                amount: amount,
+                time: Game.time
             }
             return true;
         } else {
             // 添加到队列
             if (!labInfo.boostQueue) labInfo.boostQueue = {};
-            labInfo.boostQueue[mineral] = Math.max(labInfo.boostQueue[mineral]||0, amount);
+            if (increase) {
+                labInfo.boostQueue[mineral] = (labInfo.boostQueue[mineral]||0) + amount;
+            } else {
+                labInfo.boostQueue[mineral] = amount;
+            }
             return false;
         }
     },

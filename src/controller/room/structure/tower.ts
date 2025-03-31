@@ -1,5 +1,6 @@
 import { filter } from 'lodash';
 import { calcTowerDamageToCreep } from "../function/calc";
+import { coordDecompress } from '@/util/coord';
 
 /**
  * 寻找敌对目标
@@ -143,6 +144,38 @@ const findDamagedStructure = (room: Room) => {
     return false;
 }
 
+
+const findRepairWall = (room: Room) => {
+    // 仅在8级且能量充足进行
+    if (room.level < 8 || (room.storage?.store[RESOURCE_ENERGY]||0) < 100000) return ;
+
+    if (!global.TowerRepair) global.TowerRepair = {};
+
+    if (Game.time % 10 === 0 && (global.TowerRepair[room.name]||[]).length === 0) {
+        global.TowerRepair[room.name] = [];
+
+        for (const pos of (Memory.Layout?.[room.name]['rampart']||[])) {
+            const [x, y] = coordDecompress(pos as any);
+            const wall = room.lookForAt(LOOK_STRUCTURES, x, y).find(s => s.structureType === STRUCTURE_WALL);
+
+            if (wall && wall.hits < wall.hitsMax / 2) {
+                global.TowerRepair[room.name].push(wall.id);
+            }
+        }
+    }
+
+    if ((global.TowerRepair[room.name]||[]).length === 0) return ;
+
+    const target = Game.getObjectById<Structure>(global.TowerRepair[room.name][0]);
+
+    if (!target || (target.hits > target.hitsMax / 2)) {
+        delete global.TowerRepair[room.name][0];
+        return ;
+    }
+    roomStructureTower.repair(room, target, 200);
+    return true;
+}
+
 export const roomStructureTower = {
     attack: (room: Room, hostile: Creep) => {
         room.tower.forEach(tower => {
@@ -174,5 +207,8 @@ export const roomStructureTower = {
 
         // 修复受损建筑
         if (findDamagedStructure(room)) return ;
+
+        // 刷墙
+        // if (findRepairWall(room)) return ;
     }
 }

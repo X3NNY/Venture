@@ -35,10 +35,11 @@ export const getRoomTargetCreepNum = (roomName: string) => {
  * @param room 
  * @param rType
  */
-export const getRoomResourceAmount = (room: Room, rType: ResourceConstant | string) => {
+export const getRoomResourceAmount = (room: Room, rType: ResourceConstant | string, factoryCheck: boolean = false) => {
     let amount = 0;
     if (room.storage)  amount += room.storage.store[rType];
     if (room.terminal) amount += room.terminal.store[rType];
+    if (factoryCheck && room.factory) amount += room.factory.store[rType];
 
     return amount;
 }
@@ -83,4 +84,11 @@ export const getRoomCenterLab = (room: Room) => {
     if (!labA || !labB) return ;
 
     return [labA.id, labB.id]
+}
+
+export const getRoomPowerCreepCount = (room: Room, filter?: (pc: PowerCreep) => boolean) => {
+    if (filter) {
+        return room.find(FIND_MY_POWER_CREEPS, { filter: filter }).length;
+    }
+    return room.find(FIND_MY_POWER_CREEPS).length;
 }

@@ -62,7 +62,7 @@ const spawnMissionCheck = {
         if (room.level < 4 && room.source.length >= 2 && current < 3 && countMission(room, MISSION_TYPE.BUILD) > 5) return true;
 
         // 后续的话任务多且有能量孵化两个，否则一个就够了
-        if (countMission(room, MISSION_TYPE.BUILD) > 5 && room.storage?.store[RESOURCE_ENERGY] > 30000 && current < 2) return true;
+        if (countMission(room, MISSION_TYPE.BUILD) > 10 && room.storage?.store[RESOURCE_ENERGY] > 30000 && current < 2) return true;
         if (countMission(room, MISSION_TYPE.BUILD) && current < 1) return true;
     },
 
@@ -73,11 +73,11 @@ const spawnMissionCheck = {
         if (room.level < 2) return false;
 
         // 冲级
-        if (room.level < 8 && (room.storage?.store[RESOURCE_ENERGY]||0) > 150000) {
+        if (room.level < 8 && (room.storage?.store[RESOURCE_ENERGY]||0) > 100000) {
             return current < maxNum+1;
         }
 
-        if (room.level == 8 && !Game.flags[`${room.name}/UPGRADE`] && room.controller.ticksToDowngrade >= 150000) return false;
+        if (room.level == 8 && !Game.flags[`${room.name}/UPGRADE`] && room.controller.ticksToDowngrade >= 100000) return false;
 
         // 高等级后没能量说明有其他事，先暂停升级
         if (room.level >= 6 && room.storage.store[RESOURCE_ENERGY] < 20000 && room.controller.ticksToDowngrade > 20000) return false;

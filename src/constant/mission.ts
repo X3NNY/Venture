@@ -194,6 +194,32 @@ export const SPAWN_MISSION = {
         role: 'deposit_carrier'
     },
 
+    // 超能采集
+    power_attacker: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'PAT',
+        level: 10,
+        role: 'power_attacker',
+    },
+    power_healer: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'PH',
+        level: 10,
+        role: 'power_healer',
+    },
+    power_carrier: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'PC',
+        level: 9,
+        role: 'power_carrier',
+    },
+    power_archer: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'PAR',
+        level: 11,
+        role: 'power_archer',
+    },
+
     // 小队爬爬
     squad_attacker: {
         type: MISSION_TYPE.SPAWN,
@@ -201,6 +227,33 @@ export const SPAWN_MISSION = {
         level: 10,
         role: 'squad_attacker'
     },
+
+    // 双人队
+    double_attacker: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'DA',
+        level: 10,
+        role:'double_attacker'
+    },
+    double_dismantler: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'DD',
+        level: 10,
+        role:'double_dismantler'
+    },
+    double_healer: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'DH',
+        level: 10,
+        role:'double_healer'
+    },
+
+    aio: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'AIO',
+        level: 10,
+        role: 'aio'
+    }
 }
 
 export const BUILD_MISSION = {
@@ -308,7 +361,12 @@ export const MANAGE_MISSION = {
 export const TERMINAL_MISSION = {
     send: {
         type: MISSION_TYPE.TERMINAL,
-        code: 'send',
+        code: 's',
         level: 0
+    },
+    request: {
+        type: MISSION_TYPE.TERMINAL,
+        code: 'r',
+        level: 1
     }
 }
