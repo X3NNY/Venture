@@ -1,5 +1,6 @@
 import { CREEP_ROLE } from "@/constant/creep";
-import { creepChargeBoost } from "../../function/charge";
+import { creepChargeBoost, creepChargeUnboost } from "../../function/charge";
+import { creepCheckUnboostAvailable } from "../../function/check";
 
 export default {
     prepare: (creep: Creep) => {
@@ -13,7 +14,7 @@ export default {
             const boostLevel = creep.memory.boostLevel;
 
             if (boostLevel >= 1) {
-                creep.memory.cache.boosted = creepChargeBoost(creep, ['LO']);
+                creep.memory.cache.boosted = creepChargeBoost(creep, ['LO'], true);
             } else {
                 creep.memory.cache.boosted = true;
             }
@@ -32,12 +33,32 @@ export default {
         return true;
     },
     action: (creep: Creep) => {
+
+        // if (bindCreep.memory.cache.hostile) {
+        //     const target = Game.getObjectById<Creep>(bindCreep.memory.cache.hostile);
+        //     if (target) {
+        //         // if (creep.pos.isNearTo(target)) {
+        //         //     creep.rangedMassAttack()
+        //         // } else if (creep.pos.inRangeTo(target, 3)) {
+        //         creep.rangedAttack(target)
+        //         // }
+        //     }
+        // }
+
         if (creep.hits < creep.hitsMax) {
             return creep.heal(creep);
         }
-
         const bindCreep = Game.getObjectById(creep.memory.bindCreep);
-        if (!bindCreep) return creep.suicide();
+        if (!bindCreep) {
+            if (creep.room.name === creep.memory.home) {
+                if (creepCheckUnboostAvailable(creep)) {
+                    creepChargeUnboost(creep);
+                } else {
+                    creep.suicide();
+                }
+            }
+            return ;
+        }
 
         if (creep.pos.isNearTo(bindCreep)) {
             creep.heal(bindCreep);

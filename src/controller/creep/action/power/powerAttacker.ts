@@ -1,4 +1,6 @@
+import { creepChargeUnboost } from './../../function/charge';
 import { creepChargeBoost } from "../../function/charge";
+import { creepCheckUnboostAvailable } from "../../function/check";
 import { creepDoubleMoveTo, creepDoubleMoveToRoom, creepMoveTo } from "../../function/move";
 
 export default {
@@ -14,9 +16,9 @@ export default {
         if (boostLevel === 0) {
             return true;
         } else if (boostLevel === 1) {
-            return creepChargeBoost(creep, ['UH', 'GO']);
+            return creepChargeBoost(creep, ['UH', 'GO'], true);
         } else if (boostLevel === 2) {
-            return creepChargeBoost(creep, ['UH2O', 'GHO2']);
+            return creepChargeBoost(creep, ['UH2O', 'GHO2'], true);
         }
     },
     action: (creep: Creep) => {
@@ -49,17 +51,28 @@ export default {
         }
 
         // 如果不在目标房间，移动到目标房间
-        if (creepDoubleMoveToRoom(creep, creep.memory.targetRoom)) return ;
+        if (!creep.memory.cache.unboost && creepDoubleMoveToRoom(creep, creep.memory.targetRoom)) return ;
 
         const powerBank = creep.room.powerBank?.[0] ?? creep.room.find<StructurePowerBank>(FIND_STRUCTURES, {filter: (s) => s.structureType === STRUCTURE_POWER_BANK})[0]
         // 如果没找到，自杀
         if (!powerBank) {
             if (Game.time % 5 === 0) {
-                creep.suicide()
-                bindCreep?.suicide();
+                // creep.suicide()
+                // bindCreep?.suicide();
                 if (Game.rooms[creep.memory.home]?.memory.powerTarget?.[creep.memory.targetRoom]) {
                     delete Game.rooms[creep.memory.home].memory.powerTarget[creep.memory.targetRoom];
                 }
+            }
+            creep.memory.cache.unboost = true;
+
+            if (creepCheckUnboostAvailable(creep, false)) {
+                if (creep.room.name !== creep.memory.home) {
+                    creepDoubleMoveToRoom(creep, creep.memory.home);
+                } else {
+                    creepChargeUnboost(creep);
+                }
+            } else {
+                creep.suicide();
             }
             return ;
         }

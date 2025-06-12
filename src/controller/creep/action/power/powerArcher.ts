@@ -1,6 +1,7 @@
 import { CREEP_ROLE } from "@/constant/creep";
 import { creepMoveToRoom, getDirection } from "../../function/move";
 import { creepIsOnEdge } from "../../function/position";
+import { creepChargeBoost } from "../../function/charge";
 
 export default {
     prepare: (creep: Creep) => {
@@ -9,6 +10,11 @@ export default {
             creep.notifyWhenAttacked(false);
             creep.memory.notified = true; 
         }
+
+        // if (!creep.memory.cache.boosted) {
+        //     creep.memory.cache.boosted = creepChargeBoost(creep, ['KHO2', 'KO'], true);
+        //     return false;
+        // }
 
         if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
             creepMoveToRoom(creep, creep.memory.targetRoom);
