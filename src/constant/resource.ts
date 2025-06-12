@@ -62,82 +62,85 @@ export const LabTarget = {
     // 基础
     OH: [
         { target: RESOURCE_HYDROXIDE, amount: 3000 },
-        { target: RESOURCE_ZYNTHIUM_KEANITE, amount: 300 },
-        { target: RESOURCE_UTRIUM_LEMERGITE, amount: 300 },
+        { target: RESOURCE_ZYNTHIUM_KEANITE, amount: 1000 },
+        { target: RESOURCE_UTRIUM_LEMERGITE, amount: 1000 },
         { target: RESOURCE_GHODIUM, amount: 6000 },
     ],
     G: [
         // XGH2O 生产线，强化 WORK 的 upgrade
-        { target: RESOURCE_GHODIUM_HYDRIDE, amount: 2000 }, 
-        { target: RESOURCE_GHODIUM_ACID, amount: 3500 }, 
+        { target: RESOURCE_GHODIUM_HYDRIDE, amount: 3000 }, 
+        { target: RESOURCE_GHODIUM_ACID, amount: 5000 }, 
         { target: RESOURCE_CATALYZED_GHODIUM_ACID, amount: 4000 }, 
         // XGHO2 生产线，强化 TOUGH
-        { target: RESOURCE_GHODIUM_OXIDE, amount: 3500 }, 
-        { target: RESOURCE_GHODIUM_ALKALIDE, amount: 3000 }, 
+        { target: RESOURCE_GHODIUM_OXIDE, amount: 4000 }, 
+        { target: RESOURCE_GHODIUM_ALKALIDE, amount: 5000 }, 
         { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, amount: 4000 },
     ],
     U: [
-        { target: RESOURCE_UTRIUM_LEMERGITE, amount: 2000 },
+        { target: RESOURCE_UTRIUM_LEMERGITE, amount: 3000 },
         { target: RESOURCE_GHODIUM, amount: 5000 },
         // XUH2O 生产线，强化 ATTACK
-        { target: RESOURCE_UTRIUM_HYDRIDE, amount: 3500 },
-        { target: RESOURCE_UTRIUM_ACID, amount: 3500 },
+        { target: RESOURCE_UTRIUM_HYDRIDE, amount: 4000 },
+        { target: RESOURCE_UTRIUM_ACID, amount: 5000 },
         { target: RESOURCE_CATALYZED_UTRIUM_ACID, amount: 4000 },
         // XUHO2 生产线，强化 HARVEST
-        { target: RESOURCE_UTRIUM_OXIDE, amount: 2000 },
-        { target: RESOURCE_UTRIUM_ALKALIDE, amount: 3000 },
+        { target: RESOURCE_UTRIUM_OXIDE, amount: 3000 },
+        { target: RESOURCE_UTRIUM_ALKALIDE, amount: 5000 },
         { target: RESOURCE_CATALYZED_UTRIUM_ALKALIDE, amount: 4000 },
     ],
     K: [
-        { target: RESOURCE_ZYNTHIUM_KEANITE, amount: 2000 },
+        { target: RESOURCE_ZYNTHIUM_KEANITE, amount: 3000 },
         { target: RESOURCE_GHODIUM, amount: 5000 },
         // XKH2O 生产线，强化 CARRY
-        { target: RESOURCE_KEANIUM_HYDRIDE, amount: 2000 },
-        { target: RESOURCE_KEANIUM_ACID, amount: 3000 },
+        { target: RESOURCE_KEANIUM_HYDRIDE, amount: 3000 },
+        { target: RESOURCE_KEANIUM_ACID, amount: 5000 },
         { target: RESOURCE_CATALYZED_KEANIUM_ACID, amount: 4000 },
         // XKHO2 生产线，强化 RANGE_ATTACK
-        { target: RESOURCE_KEANIUM_OXIDE, amount: 2000 }, 
-        { target: RESOURCE_KEANIUM_ALKALIDE, amount: 3000 }, 
+        { target: RESOURCE_KEANIUM_OXIDE, amount: 3000 }, 
+        { target: RESOURCE_KEANIUM_ALKALIDE, amount: 5000 }, 
         { target: RESOURCE_CATALYZED_KEANIUM_ALKALIDE, amount: 4000 },  
     ],
     L: [
-        { target: RESOURCE_UTRIUM_LEMERGITE, amount: 2000 },
+        { target: RESOURCE_UTRIUM_LEMERGITE, amount: 3000 },
         { target: RESOURCE_GHODIUM, amount: 5000 },
         // XLH2O 生产线，强化 WORK 的 repair/build
-        { target: RESOURCE_LEMERGIUM_HYDRIDE, amount: 2000 }, 
-        { target: RESOURCE_LEMERGIUM_ACID, amount: 3000 }, 
+        { target: RESOURCE_LEMERGIUM_HYDRIDE, amount: 3000 }, 
+        { target: RESOURCE_LEMERGIUM_ACID, amount: 5000 }, 
         { target: RESOURCE_CATALYZED_LEMERGIUM_ACID, amount: 4000 }, 
         // XLHO2 生产线，强化 HEAL
-        { target: RESOURCE_LEMERGIUM_OXIDE, amount: 3500 }, 
-        { target: RESOURCE_LEMERGIUM_ALKALIDE, amount: 3000 }, 
+        { target: RESOURCE_LEMERGIUM_OXIDE, amount: 4000 }, 
+        { target: RESOURCE_LEMERGIUM_ALKALIDE, amount: 5000 }, 
         { target: RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE, amount: 4000 },
     ],
     Z: [
-        { target: RESOURCE_ZYNTHIUM_KEANITE, amount: 2000 },
+        { target: RESOURCE_ZYNTHIUM_KEANITE, amount: 3000 },
         { target: RESOURCE_GHODIUM, amount: 5000 },
         // XZH2O 生产线，强化 WORK 的 dismantle
-        { target: RESOURCE_ZYNTHIUM_HYDRIDE, amount: 2000 }, 
-        { target: RESOURCE_ZYNTHIUM_ACID, amount: 3000 }, 
+        { target: RESOURCE_ZYNTHIUM_HYDRIDE, amount: 3000 }, 
+        { target: RESOURCE_ZYNTHIUM_ACID, amount: 5000 }, 
         { target: RESOURCE_CATALYZED_ZYNTHIUM_ACID, amount: 4000 }, 
         // XZHO2 生产线，强化 MOVE
-        { target: RESOURCE_ZYNTHIUM_OXIDE, amount: 2000 }, 
-        { target: RESOURCE_ZYNTHIUM_ALKALIDE, amount: 3000 }, 
+        { target: RESOURCE_ZYNTHIUM_OXIDE, amount: 3000 }, 
+        { target: RESOURCE_ZYNTHIUM_ALKALIDE, amount: 5000 }, 
         { target: RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, amount: 4000 },
     ]
 }
 
 export const HighWayLabTarget = [
-    { target: RESOURCE_LEMERGIUM_OXIDE, amount: 3500},
-    { target: RESOURCE_GHODIUM_OXIDE, amount: 3500},
-    { target: RESOURCE_UTRIUM_HYDRIDE, amount: 3500},
-    { target: RESOURCE_GHODIUM_ACID, amount: 3500},
-    { target: RESOURCE_UTRIUM_ACID, amount: 3500},
+    { target: RESOURCE_LEMERGIUM_OXIDE, amount: 18000},
+    { target: RESOURCE_GHODIUM_OXIDE, amount: 6000},
+    { target: RESOURCE_UTRIUM_HYDRIDE, amount: 9000},
+    
+    { target: RESOURCE_GHODIUM_HYDRIDE, amount: 6000},
+    { target: RESOURCE_HYDROXIDE, amount: 6000},
+    { target: RESOURCE_GHODIUM_ALKALIDE, amount: 9000},
+    { target: RESOURCE_UTRIUM_ACID, amount: 18000},
 ]
 
 export const FactoryTarget = {
     [RESOURCE_MIST]: {
         0: [
-            { product: RESOURCE_CONDENSATE, amount: 1000},     // 0
+            { product: RESOURCE_CONDENSATE, amount: 2000},     // 0
         ],
         1: [
             { product: RESOURCE_CONCENTRATE, amount: 30},      // 1
@@ -187,11 +190,12 @@ export const BoostTarget = {
 
 export const Goods = [
     RESOURCE_COMPOSITE, RESOURCE_CRYSTAL, RESOURCE_LIQUID,
-    RESOURCE_TUBE, RESOURCE_PHLEGM, RESOURCE_SWITCH, RESOURCE_CONCENTRATE,
-    RESOURCE_FIXTURES, RESOURCE_TISSUE, RESOURCE_TRANSISTOR, RESOURCE_EXTRACT,
-    RESOURCE_FRAME, RESOURCE_MUSCLE, RESOURCE_MICROCHIP, RESOURCE_SPIRIT,
-    RESOURCE_HYDRAULICS, RESOURCE_ORGANOID, RESOURCE_CIRCUIT, RESOURCE_EMANATION,
-    RESOURCE_MACHINE, RESOURCE_ORGANISM, RESOURCE_DEVICE, RESOURCE_ESSENCE,
+
+    RESOURCE_WIRE, RESOURCE_CELL, RESOURCE_ALLOY, RESOURCE_CONDENSATE,
+    RESOURCE_TUBE, RESOURCE_FIXTURES, RESOURCE_TISSUE, RESOURCE_TRANSISTOR, RESOURCE_EXTRACT,
+    RESOURCE_PHLEGM, RESOURCE_FRAME, RESOURCE_MUSCLE, RESOURCE_MICROCHIP, RESOURCE_SPIRIT,
+    RESOURCE_SWITCH, RESOURCE_HYDRAULICS, RESOURCE_ORGANOID, RESOURCE_CIRCUIT, RESOURCE_EMANATION,
+    RESOURCE_CONCENTRATE, RESOURCE_MACHINE, RESOURCE_ORGANISM, RESOURCE_DEVICE, RESOURCE_ESSENCE,
 ]
 
 export const factoryBlacklist = [
