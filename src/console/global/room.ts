@@ -1,14 +1,30 @@
 import { roomInfoUpdate } from "@/controller/room/auto/info";
+import { drawTable } from "@/util/chart";
 import { coordCompress } from "@/util/coord";
 
 const roomStrings = {
     cn: {
+        outRoom: '外房',
+        room: '房间',
+        outMineralType: '类型',
+
         room_illegal: '[房间指令] 房间名不合法。',
-        room_not_found: `[市场指令] 房间「{0}」未在控制列表或未占领。`,
+        room_not_found: `[房间指令] 房间「{0}」未在控制列表或未占领。`,
+
+        outMineral_list_head: `[房间指令] 房间「{0}」的外矿列表如下：`,
+        outMineral_list_head_all: `[房间指令] 全部房间的外矿列表如下：`,
     },
     us: {
+        outRoom: 'outRoom',
+        room: 'Room',
+        outMineralType: 'Type',
+
         room_illegal: '',
-        room_not_found: `[市场指令] 房间「{0}」未在控制列表或未占领。`,
+        room_not_found: `[ROOM] Room「{0}」is not under control or unclaimed.`,
+
+        
+        outMineral_list_head: `[ROOM] Out mineral list of room「{0}」:`,
+        outMineral_list_head_all: `[ROOM] Out mineral list of all rooms:`,
     }
 }
 
@@ -150,6 +166,45 @@ export default {
                     return OK;
                 }
             }
+        },
+        list_outMineral: (roomName?: string) => {
+            const lang = Memory.lang || 'cn';
+            let rooms = [];
+            if (Game.rooms[roomName]) {
+                rooms = [roomName];
+            } else {
+                rooms = Object.keys(Memory.RoomInfo);
+            }
+
+            const roomMap = {};
+            for (const room of rooms) {
+                if (Memory.RoomInfo[room].OutMineral) {
+                    Object.keys(Memory.RoomInfo[room].OutMineral || {}).forEach(omType => {
+                        Memory.RoomInfo[room].OutMineral[omType].forEach(or => {
+                            if (!roomMap[or]) {
+                                roomMap[or] = [[], [], []];
+                            }
+                            roomMap[or][['energy', 'center', 'highway'].indexOf(omType)].push(room)
+                        })
+                    });
+                }
+            }
+            const data = [];
+            Object.keys(roomMap).forEach(or => {
+                if (roomMap[or][0].length > 0) 
+                    data.push([or, 'energy', roomMap[or][0].join(',')]);
+                if (roomMap[or][1].length > 0)
+                    data.push([or, 'center', roomMap[or][1].join(',')]);
+                if (roomMap[or][2].length > 0)
+                    data.push([or, 'highway', roomMap[or][2].join(',')]);
+            })
+
+            if (roomName) {
+                console.log(roomStrings[lang].outMineral_list_head.format(roomName));
+            } else {
+                console.log(roomStrings[lang].outMineral_list_head_all);
+            }
+            return drawTable(data, [roomStrings[lang].outRoom, roomStrings[lang].outMineralType, roomStrings[lang].room])
         },
         update: (roomName: string) => {
             const lang = Memory.lang || 'cn';
