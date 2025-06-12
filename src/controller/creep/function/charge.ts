@@ -1,5 +1,6 @@
 import { roomStructureLab } from "@/controller/room/structure/lab";
 import { creepMoveTo } from "./move";
+import { creepFindClosestTarget } from "./position";
 
 /**
  * 爬爬充能
@@ -10,11 +11,19 @@ export const creepChargeEnergy = (creep: Creep, pickup: boolean = true, minAmoun
     if (!creep.memory.cache) creep.memory.cache = {};
     if (!creep.memory.cache.chargeTarget) {
         let target;
-
+        
+        // 收破烂
+        if (!target) {
+            const ruins = creep.room.find(FIND_RUINS, {
+                filter: r => r?.store[RESOURCE_ENERGY] > minAmount
+            });
+            target = creepFindClosestTarget(creep, ruins);
+        }
+        
         // 捡垃圾
         if (pickup) {
             const resources = creep.room.find(FIND_DROPPED_RESOURCES, {filter: r => r.resourceType === RESOURCE_ENERGY && r.amount >= minAmount});
-            target = creep.pos.findClosestByRange(resources);
+            target = creepFindClosestTarget(creep, resources);
 
             if (target) {
                 creep.memory.cache.chargeTarget = {
@@ -39,15 +48,7 @@ export const creepChargeEnergy = (creep: Creep, pickup: boolean = true, minAmoun
                     structs.push(c);
                 }
             })
-            target = creep.pos.findClosestByRange(structs);
-        }
-
-        // 收破烂
-        if (!target) {
-            const ruins = creep.room.find(FIND_RUINS, {
-                filter: r => r?.store[RESOURCE_ENERGY] > 0
-            });
-            target = creep.pos.findClosestByRange(ruins);
+            target = creepFindClosestTarget(creep, structs);
         }
 
         if (!creep.memory.cache.chargeTarget && target) {
@@ -89,25 +90,23 @@ export const creepChargeEnergy = (creep: Creep, pickup: boolean = true, minAmoun
 }
 
 export const creepChargeUnboost = (creep: Creep) => {
-    if (!creep.body.some(part => part.boost)) return false;
+    if (!creep.body.some(part => part.boost)) return ERR_NO_BODYPART;
+    if (!creep.room.memory.unBoostPos) return ERR_NOT_FOUND;
 
-    const mem = Memory.RoomInfo[creep.room.name].lab;
-    if (!mem) return false;
+    const unBoostPos = new RoomPosition(creep.room.memory.unBoostPos.x, creep.room.memory.unBoostPos.y, creep.room.name);
 
-    const lab = creep.room.lab.find(l => {
-        if (!l) return false;
-        if (l.cooldown > 0 || l.mineralType) return false;
-        if (l.id === mem.labA || l.id === mem.labB) return false;
-        return true;
-    });
-
-    if (!lab) return false;
-
-    if (creep.pos.isNearTo(lab)) {
-        return lab.unboostCreep(creep) === OK;
+    if (creep.pos.isEqualTo(unBoostPos)) {
+        const lab = creep.room.lab.find(l => {
+            if (!l) return false;
+            if (!l.pos.isNearTo(creep.pos)) return false;
+            if (l.cooldown > 0) return false;
+            return true;
+        })
+        if (!lab) return ERR_NOT_FOUND;
+        return lab.unboostCreep(creep);
     } else {
-        creepMoveTo(creep, lab, { maxRooms: 1, range: 1 });
-        return false;
+        creepMoveTo(creep, unBoostPos, { maxRooms: 1, range: 0 });
+        return ERR_NOT_IN_RANGE;
     }
 }
 
@@ -119,6 +118,8 @@ export const creepChargeBoost = (creep: Creep, boosts: string[], must: boolean =
 
     // 寻找可用lab
     const labs = creep.room.lab?.filter(lab => lab.mineralType &&
+        lab.id !== Memory.RoomInfo[creep.room.name]?.lab?.labA &&
+        lab.id !== Memory.RoomInfo[creep.room.name]?.lab?.labB &&
         boosts.includes(lab.mineralType) &&
         lab.store[lab.mineralType] >= 30 &&
         creep.body.some(part => !part.boost && BOOSTS[part.type] && lab.mineralType in BOOSTS[part.type])
