@@ -19,38 +19,40 @@ const creepAidCarrierActions = {
             if (Game.time % (creep.memory.cache.standby+1)) return;
             let targets;
 
-            if (rType === null) {
-                targets = creep.room.find(FIND_STRUCTURES, {
-                    filter: s => (s.structureType === STRUCTURE_CONTAINER ||
-                                s.structureType === STRUCTURE_EXTENSION ||
-                                s.structureType === STRUCTURE_STORAGE ||
-                                s.structureType === STRUCTURE_TOWER ||
-                                s.structureType === STRUCTURE_TERMINAL) &&
-                                Object.keys(s.store).length > 0 &&
+            if (creep.memory.sourceRoom !== creep.memory.targetRoom) {
+                if (rType === null) {
+                    targets = creep.room.find(FIND_STRUCTURES, {
+                        filter: s => (s.structureType === STRUCTURE_CONTAINER ||
+                                    s.structureType === STRUCTURE_EXTENSION ||
+                                    s.structureType === STRUCTURE_STORAGE ||
+                                    s.structureType === STRUCTURE_TOWER ||
+                                    s.structureType === STRUCTURE_TERMINAL) &&
+                                    Object.keys(s.store).length > 0 &&
+                                    (creep.room.my || s.pos.lookFor(LOOK_STRUCTURES).every(ls => ls.structureType!== STRUCTURE_RAMPART))
+                    })
+                    if (targets.length === 0) {
+                        targets = creep.room.find(FIND_RUINS, {
+                            filter: s => Object.keys(s.store).length > 0 &&
                                 (creep.room.my || s.pos.lookFor(LOOK_STRUCTURES).every(ls => ls.structureType!== STRUCTURE_RAMPART))
-                })
-                if (targets.length === 0) {
-                    targets = creep.room.find(FIND_RUINS, {
-                        filter: s => Object.keys(s.store).length > 0 &&
-                            (creep.room.my || s.pos.lookFor(LOOK_STRUCTURES).every(ls => ls.structureType!== STRUCTURE_RAMPART))
-                    })
-                }
-            } else {
-                targets = creep.room.find(FIND_STRUCTURES, {
-                    filter: s => (s.structureType === STRUCTURE_CONTAINER ||
-                                s.structureType === STRUCTURE_EXTENSION ||
-                                s.structureType === STRUCTURE_STORAGE ||
-                                s.structureType === STRUCTURE_TOWER ||
-                                s.structureType === STRUCTURE_SPAWN ||
-                                s.structureType === STRUCTURE_TERMINAL) &&
-                                s.store[rType] > 0 &&
-                                (creep.room.my || s.pos.lookFor(LOOK_STRUCTURES).every(ls => ls.structureType !== STRUCTURE_RAMPART))
-                });
-                if (targets.length === 0) {
-                    targets = creep.room.find(FIND_RUINS, {
-                        filter: s => s.store[rType] > 0 &&
-                            (creep.room.my || s.pos.lookFor(LOOK_STRUCTURES).every(ls => ls.structureType!== STRUCTURE_RAMPART))
-                    })
+                        })
+                    }
+                } else {
+                    targets = creep.room.find(FIND_STRUCTURES, {
+                        filter: s => (s.structureType === STRUCTURE_CONTAINER ||
+                                    s.structureType === STRUCTURE_EXTENSION ||
+                                    s.structureType === STRUCTURE_STORAGE ||
+                                    s.structureType === STRUCTURE_TOWER ||
+                                    s.structureType === STRUCTURE_SPAWN ||
+                                    s.structureType === STRUCTURE_TERMINAL) &&
+                                    s.store[rType] > 0 &&
+                                    (creep.room.my || s.pos.lookFor(LOOK_STRUCTURES).every(ls => ls.structureType !== STRUCTURE_RAMPART))
+                    });
+                    if (targets.length === 0) {
+                        targets = creep.room.find(FIND_RUINS, {
+                            filter: s => s.store[rType] > 0 &&
+                                (creep.room.my || s.pos.lookFor(LOOK_STRUCTURES).every(ls => ls.structureType!== STRUCTURE_RAMPART))
+                        })
+                    }
                 }
             }
 
@@ -79,8 +81,15 @@ const creepAidCarrierActions = {
                 creep.memory.cache.type = 'withdraw'
                 creep.memory.cache.targetId = target.id;
                 creep.memory.cache.standby = 0;
-            } else {
+            }
+
+            if (!target) {
                 creep.memory.cache.standby += 1;
+
+                if (creep.memory.cache.standby > 10 && rType !== null) {
+                    creep.memory.rType = null;
+                    creep.memory.cache.standby = 0;
+                }
             }
         }
 
@@ -89,6 +98,7 @@ const creepAidCarrierActions = {
         if (creep.memory.cache.type === 'pickup') {
             if (!target || target.amount === 0) {
                 delete creep.memory.cache.targetId;
+                delete creep.memory.cache.type;
                 creep.memory.cache.standby = 0;
                 return ;
             }
@@ -107,6 +117,7 @@ const creepAidCarrierActions = {
 
         if (!target || !rType || target.store[rType] === 0) {
             delete creep.memory.cache.targetId;
+            delete creep.memory.cache.type;
             creep.memory.cache.standby = 0;
             return ;
         }
