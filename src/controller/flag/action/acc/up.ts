@@ -4,6 +4,13 @@ import { getRoomResourceAmount } from "@/controller/room/function/get"
 import { roomStructureLab } from "@/controller/room/structure/lab";
 
 export default {
+    colddown: 1000,
+    prepare: (flag: Flag) => {
+        const isOrder = !!flag.name.match(/-ORDER/);
+
+        flag.memory.data = { order: isOrder };
+        return true;
+    },
     action: (flag: Flag) => {
         if (flag.room.level === 8) {
             if (!flag.memory.manual) {
@@ -41,18 +48,20 @@ export default {
             }
             
             Memory.RoomInfo[flag.room.name].Resource[mType] = {
-                amount: 3000, order: flag.memory.data.order, price: price
+                amount: 3500, order: flag.memory.data.order, price: price
             }
-            roomStructureLab.addTarget(flag.room, mType, 3000)
+            roomStructureLab.addTarget(flag.room, mType, 3500)
             roomResourceCheck(flag.room, true);
         }
 
+        const amount = flag.room.level > 6 ? 900 : 450;
+
         if (getRoomResourceAmount(flag.room, RESOURCE_CATALYZED_GHODIUM_ACID) >= 2000) {
-            roomStructureLab.setBoost(flag.room, RESOURCE_CATALYZED_GHODIUM_ACID, 600, false);
+            roomStructureLab.setBoost(flag.room, RESOURCE_CATALYZED_GHODIUM_ACID, amount, false);
         } else if (getRoomResourceAmount(flag.room, RESOURCE_GHODIUM_ACID) >= 2000) {
-            roomStructureLab.setBoost(flag.room, RESOURCE_GHODIUM_ACID, 600, false);
+            roomStructureLab.setBoost(flag.room, RESOURCE_GHODIUM_ACID, amount, false);
         } else if (getRoomResourceAmount(flag.room, RESOURCE_GHODIUM_HYDRIDE) >= 2000) {
-            roomStructureLab.setBoost(flag.room, RESOURCE_GHODIUM_HYDRIDE, 600, false); 
+            roomStructureLab.setBoost(flag.room, RESOURCE_GHODIUM_HYDRIDE, amount, false); 
         }
 
         // if (getRoomResourceAmount(flag.room, RESOURCE_ENERGY) <= 50000) {
