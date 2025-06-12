@@ -18,26 +18,26 @@ const updateEnergyMission = (room: Room) => {
     }
     if (!source) return ;
 
-    if (room.spawn && room.energyAvailable < room.energyCapacityAvailable) {
-        let spawns = room.spawn.filter(s => s?.store.getFreeCapacity(RESOURCE_ENERGY) > 0);
-        let targets;
-        if (getRoomPowerCreepCount(room, pc => !!pc.powers[PWR_OPERATE_EXTENSION]) > 0) {
-            targets = spawns;
-        } else {
-            targets = spawns.concat(room.extension.filter(s => s?.store.getFreeCapacity(RESOURCE_ENERGY) > 0) as any[])
-        }
-        targets.forEach(s => {
-            if (energy < s.store.getFreeCapacity(RESOURCE_ENERGY)) return ;
-            energy -= s.store.getFreeCapacity(RESOURCE_ENERGY);
-            addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.spawn, {
-                source: source.id,
-                target: s.id,
-                pos: { x: s.pos.x, y: s.pos.y, roomName: s.pos.roomName },
-                rType: RESOURCE_ENERGY,
-                amount: s.store.getFreeCapacity(RESOURCE_ENERGY)
-            });
-        })
-    }
+    // if (room.spawn && room.energyAvailable < room.energyCapacityAvailable) {
+    //     let spawns = room.spawn.filter(s => s?.store.getFreeCapacity(RESOURCE_ENERGY) > 0);
+    //     let targets;
+    //     if (getRoomPowerCreepCount(room, pc => !!pc.powers[PWR_OPERATE_EXTENSION]) > 0) {
+    //         targets = spawns;
+    //     } else {
+    //         targets = spawns.concat(room.extension.filter(s => s?.store.getFreeCapacity(RESOURCE_ENERGY) > 0) as any[])
+    //     }
+    //     targets.forEach(s => {
+    //         if (energy < s.store.getFreeCapacity(RESOURCE_ENERGY)) return ;
+    //         energy -= s.store.getFreeCapacity(RESOURCE_ENERGY);
+    //         addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.spawn, {
+    //             source: source.id,
+    //             target: s.id,
+    //             pos: { x: s.pos.x, y: s.pos.y, roomName: s.pos.roomName },
+    //             rType: RESOURCE_ENERGY,
+    //             amount: s.store.getFreeCapacity(RESOURCE_ENERGY)
+    //         });
+    //     })
+    // }
 
     // 检查塔是否需要能量
     if (room.level >= 3 && room.tower) {
@@ -73,18 +73,23 @@ const updateEnergyMission = (room: Room) => {
     }
 
     if (Game.time % 30 === 0 && room.level === 8 && room.powerSpawn) {
-        const powerSpawn = room.powerSpawn;
-        const amount = powerSpawn.store.getFreeCapacity(RESOURCE_ENERGY);
+        const center = Memory.RoomInfo[room.name].center;
+        if (center && room.powerSpawn.pos.isNearTo(center.x, center.y)) {
+            // 不处理
+        } else {
+            const powerSpawn = room.powerSpawn;
+            const amount = powerSpawn.store.getFreeCapacity(RESOURCE_ENERGY);
 
-        if (powerSpawn && powerSpawn.store.getFreeCapacity(RESOURCE_ENERGY) > 400 && energy >= amount) {
-            energy -= amount;
-            addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.power_spawn, {
-                source: room.storage.id,
-                target: powerSpawn.id,
-                pos: { x: powerSpawn.pos.x, y: powerSpawn.pos.y, roomName: powerSpawn.pos.roomName },
-                rType: RESOURCE_ENERGY,
-                amount: amount
-            })
+            if (powerSpawn && powerSpawn.store.getFreeCapacity(RESOURCE_ENERGY) > 400 && energy >= amount) {
+                energy -= amount;
+                addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.power_spawn, {
+                    source: room.storage.id,
+                    target: powerSpawn.id,
+                    pos: { x: powerSpawn.pos.x, y: powerSpawn.pos.y, roomName: powerSpawn.pos.roomName },
+                    rType: RESOURCE_ENERGY,
+                    amount: amount
+                })
+            }
         }
     }
 

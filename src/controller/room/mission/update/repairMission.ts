@@ -9,13 +9,15 @@ export const updateRepairMission = (room: Room) => {
 
     const NORMAL_THRESHOLD = 0.8;
     const URGENT_THRESHOLD = 0.15;
-    const NORMAL_WALL_HITS = room.level < 7 ? 3e5 : 1e6;
+    const NORMAL_WALL_HITS = [0, 1e5, 1e5, 1e5, 1e5, 3e5, 7e5, 2e6, 5e6][room.level];
     const URGENT_WALL_HITS = 5000;
 
     for (const struct of structures) {
         const { hits, hitsMax } = struct;
         if (struct.structureType === STRUCTURE_CONTAINER && room.level === 8) {
-            if (!struct.pos.isNearTo(room.mineral?.pos)) continue;
+            if (!struct.pos.isNearTo(room.mineral?.pos) &&
+                (room.memory.unBoostPos && (struct.pos.x !== room.memory.unBoostPos.x || struct.pos.y !== room.memory.unBoostPos.y))
+            ) continue;
         }
         if (struct.structureType !== STRUCTURE_WALL && struct.structureType !== STRUCTURE_RAMPART) {
             // 建筑紧急维修
@@ -46,7 +48,7 @@ export const updateRepairMission = (room: Room) => {
                 continue
             }
 
-            if (!room.storage || room.storage.store[RESOURCE_ENERGY] < 10000) continue;
+            if (!room.storage || room.storage.store[RESOURCE_ENERGY] < 20000) continue;
 
             if (hits < NORMAL_WALL_HITS) {
                 addMission(room, MISSION_TYPE.REPAIR, REPAIRE_MISSION.normal_wall, {
@@ -126,11 +128,11 @@ export const updateWallRepairMission = (room: Room) => {
 
         // 日常刷墙维修
         if (hits < hitsMax * WALL_MAX_THRESHOLD) {
-            const level = Math.floor(hits / hitsMax * 100) + 1;
-            const targetHits = level / 100 * hitsMax;
+            const level = hits / hitsMax * 100;
+            const targetHits = Math.round((level+.5) / 100 * hitsMax);
             addMission(room, MISSION_TYPE.REPAIR, {
                 ...REPAIRE_MISSION.dynamic,
-                level: 10+level
+                level: Math.floor(10+level+1)
             }, {
                 target: s.id,
                 pos: { x: s.pos.x, y: s.pos.y, roomName: s.room.name },

@@ -11,6 +11,7 @@ import { updateTransportMission } from './transportMission';
  */
 const roomMissionClean = (room: Room) => {
     let count = 0;
+    if (room.level === 8) return ;
     for (const mType in room.memory.missions) {
         const tasks = filterMission(room, mType, m => Game.time - m.time > 2000);
         count += tasks.length
@@ -21,7 +22,7 @@ const roomMissionClean = (room: Room) => {
 
 export const roomMissionUpdate = (room: Room) => {
     // 孵化任务
-    if (Game.time % 10 === 0) updateSpawnMission(room);
+    updateSpawnMission(room);
     if (Game.time % 20 === 0) updateTransportMission(room);
     
     // 中央搬运任务

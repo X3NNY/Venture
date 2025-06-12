@@ -2,6 +2,9 @@ import { CreepRoleBody } from "@/constant/creep";
 import { updateCreepNum, updateSpawnCreepNum } from "../../function";
 import { addMission, countMission } from "../pool";
 import { MISSION_TYPE, REPAIRE_MISSION, SPAWN_MISSION } from '@/constant/mission';
+import harvester from "@/controller/creep/action/main/harvester";
+import { getRoomPowerCreepCount } from "../../function/get";
+import { isLPShard } from "@/util/function";
 
 const spawnMissionCheck = {
     /**
@@ -31,22 +34,31 @@ const spawnMissionCheck = {
         if (!room.container && room.level < 2) return false;
 
         // 过渡期保持在最大数量
-        if (room.level < 5 && maxNum > 0) return current < maxNum;
+        if (room.level <= 5 && maxNum > 0) return current < maxNum;
 
         // 后期最多一只就够了
         if (current >= 1) return false;
 
-        // 有矿
-        if (room.mineral?.mineralAmount > 0) return true;
-        // 容器快满了
-        if (room.container?.some(c => c.store.getUsedCapacity() > 1500)) return true;
-        // 捡垃圾
-        if (room.find(FIND_DROPPED_RESOURCES).filter(r => r.amount > 1000)) return true;
+        if (room.level < 8) {
+            // 有矿
+            if (room.mineral?.mineralAmount > 0) return true;
+            // 容器快满了
+            if (room.container?.some(c => c.store.getUsedCapacity() > 1500)) return true;
+            // 捡垃圾
+            if (room.find(FIND_DROPPED_RESOURCES).filter(r => r.amount > 800)) return true;
+        } else {
+            // 有矿
+            // if (room.mineral?.mineralAmount > 0) return true;
+            // 捡垃圾
+            // if (room.find(FIND_DROPPED_RESOURCES).filter(r => r.resourceType !== RESOURCE_ENERGY && r.amount > 1000)) return true;
+        }
 
         return false
     },
 
     courier: (room: Room, current: number, maxNum: number) => {
+        if (room.level < 6) return false;
+        if (room.level === 8) return current < 1;
         if (!room.storage || room.storage.store[RESOURCE_ENERGY] < 10000) return false;
         return current < maxNum;
     },
@@ -59,7 +71,7 @@ const spawnMissionCheck = {
         if (room.level < 3 && current < 2 && countMission(room, MISSION_TYPE.BUILD)) return true;
 
         // 有资源后可以多造点
-        if (room.level < 4 && room.source.length >= 2 && current < 3 && countMission(room, MISSION_TYPE.BUILD) > 5) return true;
+        if (room.level <= 4 && room.source.length >= 2 && current < 3 && countMission(room, MISSION_TYPE.BUILD) > 5) return true;
 
         // 后续的话任务多且有能量孵化两个，否则一个就够了
         if (countMission(room, MISSION_TYPE.BUILD) > 10 && room.storage?.store[RESOURCE_ENERGY] > 30000 && current < 2) return true;
@@ -77,7 +89,7 @@ const spawnMissionCheck = {
             return current < maxNum+1;
         }
 
-        if (room.level == 8 && !Game.flags[`${room.name}/UPGRADE`] && room.controller.ticksToDowngrade >= 100000) return false;
+        if (room.level == 8 && room.controller.ticksToDowngrade >= 100000) return false;
 
         // 高等级后没能量说明有其他事，先暂停升级
         if (room.level >= 6 && room.storage.store[RESOURCE_ENERGY] < 20000 && room.controller.ticksToDowngrade > 20000) return false;
@@ -85,6 +97,9 @@ const spawnMissionCheck = {
         // 建造任务太多了 少造一个
         if (countMission(room, MISSION_TYPE.BUILD) > 10) return current < maxNum -1;
 
+        // if (!isLPShard() && room.level <= 3) {
+        //     return current < maxNum * 2;
+        // }
         return current < maxNum;
     },
     manager: (room: Room, current: number, maxNum: number) => {
@@ -127,16 +142,59 @@ const spawnMissionCheck = {
     }
 }
 
+const spawnMissionColddown = {
+    harvester: {
+        8: 30
+    },
+    universal: {
+        8: 50
+    },
+    carrier: {
+        8: 100
+    },
+    builder: {
+        8: 30
+    },
+    upgrader: {
+        8: 500
+    },
+    miner: {
+        8: 100
+    }
+}
+
+const spawnUpbodyCheck = {
+    harvester: (room: Room) => {
+        if (room.level < 8) return false;
+
+        if (getRoomPowerCreepCount(room, pc => !!pc.powers[PWR_REGEN_SOURCE]) > 0) return true;
+        return false;
+    },
+    upgrader: (room: Room) => {
+        if (room.level < 4 || room.level >= 8) return false;
+
+        if (room.level >= 5 && room.link.length < 2) return false;
+
+        if ((room.storage?.store.energy||0) > 40000) return true;
+        return false;
+    }
+}
+
 export const updateSpawnMission = (room: Room) => {
+    if (Game.time % 10 !== 0) return ;
+
     updateSpawnCreepNum(room)
     updateCreepNum(room)
 
     for (const role in spawnMissionCheck) {
+        if (room.level == 8 && Game.time % (spawnMissionColddown[role]?.[room.level] || 10) !== 0) continue;
         const current = (global.CreepNum[room.name][role] || 0) + (global.SpawnCreepNum[room.name][role] || 0);
         // console.log(role, room.level, Object.keys(CreepRoleBody[role][room.level]))
         const maxNum = CreepRoleBody[role][room.level].num;
         if (spawnMissionCheck[role](room, current, maxNum)) {
-            addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION[role], { home: room.name });
+            addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION[role], { home: room.name, opts: {
+                upbody: spawnUpbodyCheck[role]?.(room)
+            }});
         }
     }
 }

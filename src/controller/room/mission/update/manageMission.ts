@@ -1,6 +1,7 @@
 import { MANAGE_MISSION, MISSION_TYPE, TERMINAL_MISSION } from "@/constant/mission";
 import { addMission, deleteMission, filterMission, getMission, getMissionByFilter } from "../pool";
 import { getRoomResourceAmount } from "../../function/get";
+import { add } from "lodash";
 
 const getTerminalMissionTotal = (room: Room) => {
     const terminal = room.terminal;
@@ -84,6 +85,44 @@ const roomTerminalManageChcek = (room: Room) => {
     }
 }
 
+const roomPowerSpawnManageCheck = (room: Room) => {
+    if (!room.powerSpawn) return false;
+
+    const mem = Memory.RoomInfo[room.name];
+    if (!mem ||!mem.powerSpawn || !mem.powerSpawn.open) return false;
+
+    const center = Memory.RoomInfo[room.name].center;
+    if (!center || !room.powerSpawn.pos.isNearTo(center.x, center.y)) return false;
+
+    const amount = room.powerSpawn.store.getFreeCapacity(RESOURCE_ENERGY)
+
+    if (amount > 400 && room.storage.store.energy >= amount) {
+        addMission(room, MISSION_TYPE.MANAGE, MANAGE_MISSION.s2p, {
+            rType: RESOURCE_ENERGY,
+            amount: amount
+        })
+    }
+
+    const needPower = 100 - room.powerSpawn.store[RESOURCE_POWER];
+
+    if (needPower < 50 || room.storage.store.energy <= 50000) {
+        return ;
+    }
+
+    const target = [room.storage, room.terminal].reduce((a, b) => {
+        if (!a || !b) return a || b;
+        if (a.store.power < b.store.power) return b;
+        return a;
+    }, null);
+
+    if (!target || target.store.power === 0) return ;
+    const missionType = target.id === room.storage.id ? MANAGE_MISSION.s2p : MANAGE_MISSION.t2p;
+    addMission(room, MISSION_TYPE.MANAGE, missionType, {
+        rType: RESOURCE_POWER,
+        amount: Math.min(needPower, target.store.power)
+    });
+}
+
 const roomFactoryManageCheck = (room: Room) => {
     if (!room.factory || !room.storage) return false;
 
@@ -139,5 +178,6 @@ export const updateManageMission = (room: Room) => {
     roomTerminalManageChcek(room);
     // 检查工厂资源数量
     // roomFactoryManageCheck(room);
+    roomPowerSpawnManageCheck(room);
 
 }
