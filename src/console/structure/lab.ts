@@ -211,7 +211,8 @@ export default {
                 return labStrings[lang].room_not_found.format(roomName);
             }
 
-            boostTaskAssign(room, mineral, amount);
+            roomStructureLab.setBoost(room, mineral, amount, true);
+            // boostTaskAssign(room, mineral, amount);
             return OK;
         },
         // 移除指定boost类型
