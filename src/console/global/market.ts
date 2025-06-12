@@ -43,7 +43,8 @@ const marketStrings = {
         update_dsell_order: '[市场指令] 已修改房间「{0}」中资源「{1}」自动卖出出售阈值为「{2}」，价格限制：「{3}」',
         order_remove: '[市场指令] 房间「{0}」中资源「{1}」全部订单已清除，成功清理「{2}」个订单。',
         order_remove_type: '[市场指令] 房间「{0}」中资源「{1}」订单类型「{2}」已清除。',
-        resource_price: '[市场指令] 资源「{0}」订单「{1}」类型最近均价为「{2}」。'
+        resource_price: '[市场指令] 资源「{0}」订单「{1}」类型最近均价为「{2}」。',
+        change_price_ok: '[市场指令] 资源「{0}」订单类型「{1}」价格限制修改为「{2}」，成功修改「{3}」个订单。'
     },
     
     us: {
@@ -85,7 +86,8 @@ const marketStrings = {
         update_dsell_order: '[市场指令] 已修改房间「{0}」中资源「{1}」自动卖出出售阈值为「{2}」，价格限制：「{3}」',
         order_remove: '[市场指令] 房间「{0}」中资源「{1}」全部订单已清除，成功清理「{2}」个订单。',
         order_remove_type: '[市场指令] 房间「{0}」中资源「{1}」类型「{2}」订单已清除。',
-        resource_price: '[市场指令] 资源「{0}」订单「{1}」类型最近均价为「{2}」。'
+        resource_price: '[市场指令] 资源「{0}」订单「{1}」类型最近均价为「{2}」。',
+        change_price_ok: '[市场指令] 资源「{0}」订单类型「{1}」价格限制修改为「{2}」，成功修改「{3}」个订单。'
     }
 }
 
@@ -171,6 +173,21 @@ export default {
             const price = gerOrderPrice(rType, type);
 
             return marketStrings[lang].resource_price.format(rType, type, price);
+        },
+        change_price: (roomName: string, rType: ResourceConstant, type: string, price: number) => {
+            const lang = Memory.lang || 'cn';
+            const rooms = roomName !== 'ALL' ? [roomName] : getRoomList();
+            
+            let cnt = 0;
+            for (const rName of rooms) {
+                for (const order of (Memory.RoomInfo[rName].Market || [])) {
+                    if (order.rType === rType && order.orderType === type) {
+                        order.price = price;
+                        cnt += 1;
+                    }
+                }
+            }
+            return marketStrings[lang].change_price_ok.format(rType, type, price, cnt);
         },
         help: (func?: string) => {
             const lang = Memory.lang || 'cn';
