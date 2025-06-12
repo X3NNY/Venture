@@ -4,7 +4,7 @@ import { creepMoveTo } from "../../function/move";
 import { creepGoTransfer } from "../../function/work";
 
 const getTransportMission = (creep: Creep) => {
-    const task = getMissionByDist(creep.room, MISSION_TYPE.TRANSPORT, creep.pos);
+    const task = getMissionByDist(creep.room, MISSION_TYPE.TRANSPORT, creep.pos, true);
     if (!task) return {};
 
     const source = Game.getObjectById(task.data.source as Id<AnyStoreStructure>);
@@ -16,7 +16,7 @@ const getTransportMission = (creep: Creep) => {
     ) {
         deleteMission(creep.room, MISSION_TYPE.TRANSPORT, task.id);
     } else {
-        lockMission(creep.room, MISSION_TYPE.TRANSPORT, task.id, creep.id);
+        // lockMission(creep.room, MISSION_TYPE.TRANSPORT, task.id, creep.id);
         return Object.assign({missionId: task.id}, task.data);
     }
     return {};
@@ -41,9 +41,9 @@ const creepCourierActions = {
             return ;
         }
 
-        if (creep.ticksToLive < 30 && creep.memory.cache.missionId) {
-            unlockMission(creep.room, MISSION_TYPE.TRANSPORT, creep.memory.cache.missionId)
-        }
+        // if (creep.ticksToLive < 30 && creep.memory.cache.missionId) {
+        //     unlockMission(creep.room, MISSION_TYPE.TRANSPORT, creep.memory.cache.missionId)
+        // }
 
         const source = Game.getObjectById(creep.memory.cache.source as Id<AnyStoreStructure>);
         const target = Game.getObjectById(creep.memory.cache.target as Id<AnyStoreStructure>);
@@ -74,11 +74,16 @@ const creepCourierActions = {
 
         // 资源不够，先去取
         if (creep.store.getFreeCapacity(rType) > 0 && creep.store[rType] < amount) {
-            const result = creep.withdraw(source, rType);
+            const withdrawAmount = rType === RESOURCE_ENERGY ? null : Math.min(amount-creep.store[rType], creep.store.getFreeCapacity(rType));
+            const result = creep.withdraw(source, rType, withdrawAmount);
             if (result === OK && !creep.pos.isNearTo(target)) {
                 creepMoveTo(creep, target, { maxRooms: 1, range: 1 });
             } else if (result === ERR_NOT_IN_RANGE) {
                 creepMoveTo(creep, source, { maxRooms: 1, range: 1 });
+            } else {
+                deleteMission(creep.room, MISSION_TYPE.TRANSPORT, creep.memory.cache.missionId);
+                creep.memory.cache = {};
+                return ;
             }
             return ;
         }

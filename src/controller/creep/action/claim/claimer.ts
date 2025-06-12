@@ -1,5 +1,5 @@
-import { creepMoveTo, creepMoveToRoom, creepMoveToRoomBypass } from "../../function/move";
-import { creepGetRangePos, creepIsOnEdge } from "../../function/position";
+import { creepMoveTo, creepMoveToRoom, creepMoveToRoomBypass, creepMoveToShard } from "../../function/move";
+import { creepFindClosestTarget, creepGetRangePos, creepIsOnEdge } from "../../function/position";
 
 const creepDoneClaim = (creep: Creep) => {
     const targetRoom = creep.memory.targetRoom;
@@ -29,16 +29,26 @@ const creepDoneClaim = (creep: Creep) => {
 export default {
     prepare: (creep: Creep) => {
         if (!creep.memory.cache) creep.memory.cache = {};
+
+        // 自我治疗
+        if (creep.getActiveBodyparts(HEAL) > 0 && creep.hits < creep.hitsMax) {
+            creep.heal(creep);
+        }
+
+        if (creep.memory.targetShard && creep.memory.targetShard !== Game.shard.name) {
+            return creepMoveToShard(creep, creep.memory.targetShard);
+        }
+
         const flag = Game.flags['CP-CLAIM'];
         if (flag && !creep.memory.cache.checkpoint) {
-            if (creep.room.name !== flag.pos.roomName || creepIsOnEdge(creep)) {
+            if ((creep.room.name !== flag.pos.roomName || !creep.pos.isEqualTo(flag.pos)) || creepIsOnEdge(creep)) {
                 // 绕过敌对单位
                 if (creep.room.find(FIND_HOSTILE_CREEPS, {
                     filter: (c: Creep) => (c.getActiveBodyparts(ATTACK) > 0 || c.getActiveBodyparts(RANGED_ATTACK) > 0) && !Memory.Whitelist?.includes(c.owner.username)
                 }).length > 0) {
-                    creepMoveToRoomBypass(creep, flag.pos.roomName, {visualizePathStyle: {stroke: '#00ff00'}})
+                    creepMoveTo(creep, flag.pos, {visualizePathStyle: {stroke: '#00ff00', swampCost: 2}})
                 } else {
-                    creepMoveToRoom(creep, flag.pos.roomName, {visualizePathStyle: {stroke: '#00ff00'}})
+                    creepMoveTo(creep, flag.pos, {visualizePathStyle: {stroke: '#00ff00', swampCost: 2}})
                 }
                 return false;
             } else {
@@ -46,15 +56,38 @@ export default {
             }
         }
 
+        const protalRoom = creep.memory.protalRoom;
+        if (protalRoom && !creep.memory.cache.protalcheck) {
+            if (creep.room.name !== protalRoom || creepIsOnEdge(creep)) {
+                creepMoveToRoom(creep, protalRoom, {visualizePathStyle: {stroke: '#00ff00', swampCost: 2}})
+            } else {
+                const protals = creep.room.find(FIND_STRUCTURES, {
+                    filter: s => s.structureType === STRUCTURE_PORTAL
+                });
+                if (protals.length > 0) {
+                    const protal = creepFindClosestTarget(creep, protals);
+
+                    if (!creep.pos.isNearTo(protal)) {
+                        creepMoveTo(creep, protal, { range: 1, swampCost: 2});
+                    } else {
+                        creep.say('🚪');
+                        creepMoveTo(creep, protal);
+                        creep.memory.cache.protalcheck = true;
+                    }
+                    return ;
+                }
+            }
+        }
+
         if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
             // 绕过敌对单位
-            if (creep.room.find(FIND_HOSTILE_CREEPS, {
-                filter: (c: Creep) => (c.getActiveBodyparts(ATTACK) > 0 || c.getActiveBodyparts(RANGED_ATTACK) > 0) && !Memory.Whitelist?.includes(c.owner.username)
-            }).length > 0) {
-                creepMoveToRoomBypass(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00'}})
-            } else {
-                creepMoveToRoom(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00'}})
-            }
+            // if (creep.room.find(FIND_HOSTILE_CREEPS, {
+            //     filter: (c: Creep) => (c.getActiveBodyparts(ATTACK) > 0 || c.getActiveBodyparts(RANGED_ATTACK) > 0) && !Memory.Whitelist?.includes(c.owner.username)
+            // }).length > 0) {
+            //     creepMoveToRoom(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00', swampCost: 2}})
+            // } else {
+                creepMoveToRoom(creep, creep.memory.targetRoom, {visualizePathStyle: {stroke: '#00ff00', swampCost: 2}})
+            // }
             return false;
         }
 

@@ -1,6 +1,7 @@
 import { roomFindClosestSource } from "@/controller/room/function/find";
 import { creepGoHarvest } from "../../function/work";
 import { creepMoveTo } from "../../function/move";
+import { creepFindClosestTarget } from "../../function/position";
 
 const creepUniversalActions = {
     /**
@@ -9,31 +10,6 @@ const creepUniversalActions = {
      * @returns 
      */
     harvest: (creep: Creep) => {
-        // 捡垃圾
-        const droppedEnergy = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
-            filter: r => r.resourceType === RESOURCE_ENERGY && r.amount > 100
-        })
-
-        if (droppedEnergy) {
-            if (creep.pickup(droppedEnergy) === ERR_NOT_IN_RANGE) {
-                creepMoveTo(creep, droppedEnergy, { maxRooms: 1, range: 1 });
-            }
-            return ;
-        }
-
-        // 收破烂
-        const ruinedEnergy = creep.pos.findClosestByRange(FIND_RUINS, {
-            filter: r => r.store[RESOURCE_ENERGY] > 50
-        });
-
-        if (ruinedEnergy) {
-            if (creep.withdraw(ruinedEnergy, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-                creepMoveTo(creep, ruinedEnergy, { maxRooms: 1, range: 1 });
-            }
-            return ;
-        }
-
-
         // 从最近能量点拿
         const structs = [];
         if (creep.room.storage?.store[RESOURCE_ENERGY] >= 1000) structs.push(creep.room.storage);
@@ -48,7 +24,7 @@ const creepUniversalActions = {
                 structs.push(c);
             }
         })
-        const target = creep.pos.findClosestByRange(structs);
+        const target = creepFindClosestTarget(creep, structs);
 
         if (target) {
             if (creep.withdraw(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
@@ -65,6 +41,31 @@ const creepUniversalActions = {
         if (container) {
             if (creep.withdraw(container, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
                 creepMoveTo(creep, container, { maxRooms: 1, range: 1 });
+            }
+            return ;
+        }
+
+        
+        // 收破烂
+        const ruinedEnergy = creep.pos.findClosestByRange(FIND_RUINS, {
+            filter: r => r.store[RESOURCE_ENERGY] > 50
+        });
+
+        if (ruinedEnergy) {
+            if (creep.withdraw(ruinedEnergy, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                creepMoveTo(creep, ruinedEnergy, { maxRooms: 1, range: 1 });
+            }
+            return ;
+        }
+        
+        // 捡垃圾
+        const droppedEnergy = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
+            filter: r => r.resourceType === RESOURCE_ENERGY && r.amount > 100
+        })
+
+        if (droppedEnergy) {
+            if (creep.pickup(droppedEnergy) === ERR_NOT_IN_RANGE) {
+                creepMoveTo(creep, droppedEnergy, { maxRooms: 1, range: 1 });
             }
             return ;
         }
@@ -128,12 +129,13 @@ const creepUniversalActions = {
         } else {
             // 没有需要充能的就建，优先建容器
             const sites = creep.room.find(FIND_CONSTRUCTION_SITES, {
-                filter: { structureType: STRUCTURE_CONTAINER }
+                filter: s => s.structureType === STRUCTURE_CONTAINER ||
+                    s.structureType === STRUCTURE_EXTENSION
             });
             const site = creep.pos.findClosestByRange(sites);
             if (site) {
                 if (creep.build(site) === ERR_NOT_IN_RANGE) {
-                    creepMoveTo(creep, site, { maxRooms: 1, range: 1});
+                    creepMoveTo(creep, site, { maxRooms: 1, range: 3});
                 }
             } else {
                 creepUniversalActions.upgrade(creep);

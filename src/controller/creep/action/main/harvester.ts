@@ -44,6 +44,14 @@ const creepHarvesterActions = {
             }
             // 如果在采集点上
             else {
+                // 找一下工地，构建
+                let containerSite = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES).find(s => s.structureType === STRUCTURE_CONTAINER);
+                if (containerSite && creep.store.getUsedCapacity() >= 10) {
+                    creep.build(containerSite);
+                    return ;
+                }
+                
+
                 // 如果就是在Container上，顺便修一下
                 let container = creep.pos.lookFor(LOOK_STRUCTURES);
                 if (container.length > 0 && container[0].structureType === STRUCTURE_CONTAINER && creep.store.getUsedCapacity() > 0) {
@@ -55,13 +63,9 @@ const creepHarvesterActions = {
                 }
                 
                 // 修不了 直接挖
-                else {
+                else if (!containerSite){
                     creep.memory.action = 'harvest';
                 }
-
-                // 找一下工地，构建
-                let containerSite = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES).find(s => s.structureType === STRUCTURE_CONTAINER);
-                creep.build(containerSite);
             }
 
             // 没带CARRY，直接挖吧
@@ -87,6 +91,14 @@ const creepHarvesterActions = {
      * @returns 
      */
     harvest: (creep: Creep) => {
+        // 检查是否有链接
+        if (creep.getActiveBodyparts(CARRY) && (creep.store.getFreeCapacity() === 0)) {
+            if (creep.room.level >= 5 && creep.room.link) {
+                // creep.memory.action = 'transfer';
+                return creepHarvesterActions.transfer(creep, false);
+            }
+        }
+
         const targetSource = Game.getObjectById(creep.memory.targetSourceId);
         if (!targetSource) {
             creep.memory.ready = false;
@@ -96,19 +108,13 @@ const creepHarvesterActions = {
 
         // 能量不能浪费
         if (creep.ticksToLive < 2) creep.drop(RESOURCE_ENERGY)
-
-        // 检查是否有链接
-        if (creep.getActiveBodyparts(CARRY) && creep.store.getFreeCapacity() === 0) {
-            if (creep.room.link) {
-                creep.memory.action = 'transfer';
-            }
-        }
     },
-    transfer: (creep: Creep) => {
+    transfer: (creep: Creep, harvestWhenNonTarget: boolean = true) => {
         const target = creep.room.link.find(l => creep.pos.inRangeTo(l, 1) && l.store.getFreeCapacity(RESOURCE_ENERGY) > 0);
 
         if (!target) {
-            creepHarvesterActions.harvest(creep);
+            creep.drop(RESOURCE_ENERGY);
+            harvestWhenNonTarget && creepHarvesterActions.harvest(creep);
         } else {
             creep.transfer(target, RESOURCE_ENERGY);
         }

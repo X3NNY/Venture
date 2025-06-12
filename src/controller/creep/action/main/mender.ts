@@ -2,12 +2,22 @@ import { MISSION_TYPE } from "@/constant/mission";
 import { deleteMission, getMission, getMissionByDist, lockMission, unlockMission } from "@/controller/room/mission/pool";
 import { creepGoRepair } from "../../function/work";
 import { creepMoveTo, creepMoveToHome } from "../../function/move";
-import { creepChargeEnergy } from "../../function/charge";
+import { creepChargeBoost, creepChargeEnergy, creepChargeUnboost } from "../../function/charge";
 import { creepIsOnEdge } from "../../function/position";
+import { creepCheckUnboostAvailable } from "../../function/check";
 
 const creepMenderActions = {
     withdraw: (creep: Creep) => {
-        creepChargeEnergy(creep)
+        if (creep.room.level < 8) {
+            creepChargeEnergy(creep)
+        } else {
+            if (!creep.room.storage) return ;
+            if (creep.pos.isNearTo(creep.room.storage)) {
+                creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
+            } else {
+                creepMoveTo(creep, creep.room.storage);
+            }
+        }
 
         if (creep.store.getFreeCapacity() === 0) {
             creep.memory.action = 'repair';
@@ -43,8 +53,12 @@ const creepMenderActions = {
 
         if (!creep.memory.cache.task) return ;
 
+        if (creep.ticksToLive < 50 && creepCheckUnboostAvailable(creep)) {
+            return creepChargeUnboost(creep);
+        }
+
         // 快死了，释放任务
-        if (creep.ticksToLive < 20) {
+        if (creep.ticksToLive < 10) {
             unlockMission(creep.room, MISSION_TYPE.REPAIR, creep.memory.cache.task.id);
         }
 
@@ -100,7 +114,7 @@ export default {
     prepare: (creep: Creep) => {
         if (!creep.memory.cache) creep.memory.cache = {}
         creep.memory.action = 'withdraw';
-        return true;
+        return creepChargeBoost(creep, ['XLH2O', 'LH2O', 'LH']);;
     },
     action: (creep: Creep) => {
         if (creepIsOnEdge(creep)) {

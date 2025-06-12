@@ -1,4 +1,6 @@
+import { addMission, countMission } from "@/controller/room/mission/pool";
 import { creepMoveTo } from "../../function/move";
+import { MISSION_TYPE, TRANSPORT_MISSION } from "@/constant/mission";
 
 const creepMinerActions = {
     move: (creep: Creep) => {
@@ -25,6 +27,7 @@ const creepMinerActions = {
 
         if (result === ERR_NOT_IN_RANGE) {
             creepMoveTo(creep, creep.room.mineral, { maxRooms: 1, range: 1 });
+            return ;
         }
 
         if (creep.store.getFreeCapacity() === 0) {
@@ -47,7 +50,7 @@ const creepMinerActions = {
             
             // 检查容器是否有空间
 
-            if (mContainer && mContainer.store.getFreeCapacity() > 0) {
+            if (mContainer) {
                 creep.memory.cache.targetId = mContainer.id;
             } else {
                 return ;
@@ -55,15 +58,27 @@ const creepMinerActions = {
         }
 
         const target = Game.getObjectById(creep.memory.cache.targetId) as StructureContainer;
-        if (!target || target.store.getFreeCapacity() === 0) {
-            delete creep.memory.cache.targetId;
+
+        if (!target) {
             return ;
+        }
+
+        if (creep.room.level >= 8 && target.store.getUsedCapacity() >= 1000 && countMission(creep.room, MISSION_TYPE.TRANSPORT, m => m.data.source === target.id) === 0) {
+            const rType = Object.keys(target.store)[0] as ResourceConstant
+            addMission(creep.room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.mineral, {
+                source: target.id,
+                target: creep.room.storage?.id || creep.room.terminal?.id, 
+                pos: target.pos,
+                rType: rType,
+                amount: target.store[rType]
+            })
         }
 
         const result = creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant);
 
         if (result === ERR_NOT_IN_RANGE) {
             creepMoveTo(creep, target, { maxRooms: 1, range: 1 });
+            return ;
         }
 
         if (creep.store.getUsedCapacity() === 0) {

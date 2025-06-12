@@ -31,23 +31,23 @@ const creepManagerActions = {
             const center = Memory.RoomInfo[creep.room.name]?.center;
             creep.memory.cache.nLink = [];
             for (const link of creep.room.link) {
+                if (center && link.pos.inRangeTo(center.x, center.y, 1) && link.pos.inRangeTo(creep.room.storage, 2)) {
+                    creep.memory.cache.mLink = link.id;
+                    continue;
+                }
+
                 if (creep.room.source.some(s => link.pos.inRangeTo(s, 2))) continue;
 
                 if (link.pos.inRangeTo(creep.room.controller, 2)) {
                     creep.memory.cache.cLink = link.id;
                     continue;
                 }
-
-                if (center && link.pos.inRangeTo(center.x, center.y, 1) && link.pos.inRangeTo(creep.room.storage, 2)) {
-                    creep.memory.cache.mLink = link.id;
-                    continue;
-                }
                 creep.memory.cache.nLink.push(link.id);
             }
         }
 
-        const cLink = Game.getObjectById(creep.memory.cache.cLink) as StructureLink;
-        const mLink = Game.getObjectById(creep.memory.cache.mLink) as StructureLink;
+        const mLink = Game.getObjectById(creep.memory.cache.mLink as Id<StructureLink>);
+        const cLink = mLink.pos.inRangeTo(creep.room.controller, 2) ? mLink : Game.getObjectById(creep.memory.cache.cLink as Id<StructureLink>);
 
         if (!mLink) {
             creep.memory.cache.mLink = null;
@@ -55,7 +55,7 @@ const creepManagerActions = {
         }
 
         // 如果控制器链接需要能量
-        if (cLink && cLink.store[RESOURCE_ENERGY] < 400) {
+        if (cLink && cLink != mLink && cLink.store[RESOURCE_ENERGY] < 400) {
             if (mLink.store.getFreeCapacity(RESOURCE_ENERGY) < 100) {
                 return false;
             }
@@ -188,13 +188,16 @@ export default {
         return true;
     },
     action: (creep: Creep) => {
-        if (Game.time % 50 === 0) {
+        if (Game.time % 50 === 0 || creep.memory.cache.needMove) {
             const center = Memory.RoomInfo[creep.room.name]?.center;
             if (center) {
                 const pos = new RoomPosition(center.x, center.y, creep.room.name);
                 if (!creep.pos.isEqualTo(pos)) {
+                    creep.memory.cache.needMove = true;
                     creepMoveTo(creep, pos, { ignoreCreeps: false });
                     return false;
+                } else {
+                    delete creep.memory.cache.needMove;
                 }
             }
         }

@@ -3,21 +3,34 @@ import { deleteMission, getMission, getMissionByDist } from "@/controller/room/m
 import { creepGoBuild, creepGoRepair } from "../../function/work";
 import { creepChargeEnergy } from "../../function/charge";
 import { creepMoveTo } from "../../function/move";
+import { isLPShard } from "@/util/function";
 
 const creepBuilderActions = {
     withdraw: (creep: Creep) => {
-        creepChargeEnergy(creep, true, creep.store.getFreeCapacity())
-        // if (creepChargeEnergy(creep, true, creep.store.getFreeCapacity())) {
-        //     creep.memory.cache = {}
-        // } else {
-        //     const source = creep.pos.findClosestByRange(creep.room.source.filter(s => s && s.energy > 0));
-        //     if (source) {
-        //         const result = creep.harvest(source);
-        //         if (result === ERR_NOT_IN_RANGE) {
-        //             creepMoveTo(creep, source, { maxRooms: 1, range: 1});
-        //         }
+        // creepChargeEnergy(creep, true, creep.store.getFreeCapacity())
+        // if (creep.room.storage?.store[RESOURCE_ENERGY] >= 50000) {
+        //     if (creep.pos.isNearTo(creep.room.storage)) {
+        //         creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
+        //         creep.memory.action = 'build';
+        //     } else {
+        //         creepMoveTo(creep, creep.room.storage, {
+        //             maxRooms: 1,
+        //             range: 1
+        //         })
         //     }
+        //     return ;
         // }
+        if (creepChargeEnergy(creep, true, creep.store.getFreeCapacity())) {
+            // creep.memory.cache = {}
+        } else {
+            const source = creep.pos.findClosestByRange(creep.room.source.filter(s => s && s.energy > 0));
+            if (source) {
+                const result = creep.harvest(source);
+                if (result === ERR_NOT_IN_RANGE) {
+                    creepMoveTo(creep, source, { maxRooms: 1, range: 1});
+                }
+            }
+        }
 
         if (creep.store.getFreeCapacity() === 0) {
             creep.memory.action = 'build';
@@ -70,9 +83,11 @@ const creepBuilderActions = {
             creep.memory.action = 'withdraw';
         }
 
+        const lowHits = isLPShard() ? 10000 : 30000;
+
         if (!creep.memory.cache.rampart) {
-            const rampart = creep.room.rampart.find(s => s && s.hits < 10000) || creep.room.find<StructureRampart>(FIND_STRUCTURES, {
-                filter: s => s.structureType === STRUCTURE_RAMPART && s.hits < 10000
+            const rampart = creep.room.rampart.find(s => s && s.hits < lowHits) || creep.room.find<StructureRampart>(FIND_STRUCTURES, {
+                filter: s => s.structureType === STRUCTURE_RAMPART && s.hits < lowHits
             })?.[0];
             if (rampart) {
                 creep.memory.cache.rampart = rampart.id;
@@ -85,7 +100,7 @@ const creepBuilderActions = {
 
         const rampart = Game.getObjectById(creep.memory.cache.rampart) as StructureRampart;
 
-        if (!rampart || rampart.hits >= 10000) {
+        if (!rampart || rampart.hits >= lowHits) {
             delete creep.memory.cache.rampart;
             return ;
         }

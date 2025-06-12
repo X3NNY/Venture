@@ -1,4 +1,6 @@
+import { isLPShard } from "@/util/function";
 import { creepMoveTo, creepMoveToHome } from "../../function/move"
+import { creepFindClosestTarget } from "../../function/position";
 
 // 检查spawn和tower是否需要能量
 const checkSpawnAndTower = (room: Room) => {
@@ -13,38 +15,39 @@ const creepCarrierActions = {
     // 获取资源
     withdraw: (creep: Creep) => {
         let source = Game.getObjectById(creep.memory.cache.sourceId) as any;
-        const minAmount = Math.min(creep.store.getFreeCapacity(), 500);
+        const minAmount = Math.min(creep.store.getFreeCapacity(), 300);
         if ((source?.amount||0) === 0 && (source?.store[RESOURCE_ENERGY]||0) === 0) {
             delete creep.memory.cache.sourceId;
             source = null;
         }
-        if (!source && Game.time % 10 === 2) {
+        if (!source || Game.time % 10 === 2) {
             delete creep.memory.cache.type;
             delete creep.memory.cache.sourceId;
 
             // 捡垃圾
-            const tombstone = creep.pos.findClosestByRange(FIND_TOMBSTONES, {
-                filter: t => t.store[RESOURCE_ENERGY] >= minAmount || (Object.keys(t.store).length > 1)
+            const tombstone = creepFindClosestTarget(creep, FIND_TOMBSTONES, {
+                filter: t => Object.keys(t.store).length > 1 || Object.values(t.store)[0] >= minAmount
             })
             if (tombstone && (creep.room.storage || tombstone[RESOURCE_ENERGY] >= minAmount)) {
                 source = tombstone;
             }
 
             if (!source) {
-                const droppedEnergy = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
+                // 收破烂
+                const ruinedEnergy = creepFindClosestTarget(creep, FIND_RUINS, {
+                    filter: r => r.store[RESOURCE_ENERGY] > 50 || Object.keys(r.store).length > 1
+                });
+                if (ruinedEnergy) source = ruinedEnergy;
+            }
+
+            if (!source) {
+                const droppedEnergy = creepFindClosestTarget(creep, FIND_DROPPED_RESOURCES, {
                     filter: r => (r.resourceType === RESOURCE_ENERGY && r.amount >= minAmount) || (r.resourceType !== RESOURCE_ENERGY && r.amount >= 10)
                 })
                 if (droppedEnergy && (creep.room.storage || droppedEnergy.resourceType === RESOURCE_ENERGY)) {
                     source = droppedEnergy;
                     creep.memory.cache.type = 'pickup'
                 }
-            }
-            if (!source) {
-                // 收破烂
-                const ruinedEnergy = creep.pos.findClosestByRange(FIND_RUINS, {
-                    filter: r => r.store[RESOURCE_ENERGY] > 50
-                });
-                if (ruinedEnergy) source = ruinedEnergy;
             }
             if (source) {
                 creep.memory.cache.sourceId = source.id;
@@ -54,10 +57,12 @@ const creepCarrierActions = {
         // 从容器获取
         if (!source) {
             const containers = creep.room.container.filter(s => (creep.room.storage ? s.store.getUsedCapacity() > minAmount : s?.store[RESOURCE_ENERGY] > Math.min(1200, creep.store.getFreeCapacity())) && !s.pos.inRangeTo(creep.room.controller, 2));
-            if (containers) source = creep.pos.findClosestByRange(containers);
+            if (containers) {
+                source = creepFindClosestTarget(creep, containers);
+            }
         }
         if (!source && creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY] > 10000) source = creep.room.storage;
-        if (!source && creep.room.terminal && creep.room.terminal.store[RESOURCE_ENERGY] > 10000) source = creep.room.terminal;
+        if (!source && creep.room.terminal && creep.room.terminal.store[RESOURCE_ENERGY] > 1000) source = creep.room.terminal;
         if (!source && creep.room.storage) source = creep.room.storage;
 
         if (source) {
@@ -145,7 +150,7 @@ const creepCarrierActions = {
                     return OK;
                 }
             } else if (res === ERR_NOT_IN_RANGE) {
-                creepMoveTo(creep, target, { maxRooms: 1, range: 1 });
+                creepMoveTo(creep, target, { maxRooms: 1, range: 1});
             }
         }
 
