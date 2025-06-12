@@ -193,24 +193,30 @@ export const SPAWN_MISSION = {
         level: 11,
         role: 'deposit_carrier'
     },
+    deposit_guardian: {
+        type: MISSION_TYPE.SPAWN,
+        code: 'DG',
+        level: 11,
+        role: 'deposit_guardian'
+    },
 
     // 超能采集
     power_attacker: {
         type: MISSION_TYPE.SPAWN,
         code: 'PAT',
-        level: 10,
+        level: 9,
         role: 'power_attacker',
     },
     power_healer: {
         type: MISSION_TYPE.SPAWN,
         code: 'PH',
-        level: 10,
+        level: 9,
         role: 'power_healer',
     },
     power_carrier: {
         type: MISSION_TYPE.SPAWN,
         code: 'PC',
-        level: 9,
+        level: 11,
         role: 'power_carrier',
     },
     power_archer: {
@@ -308,6 +314,11 @@ export const TRANSPORT_MISSION = {
         code: 'lab_energy',
         level: 1,
     },
+    mineral: {
+        type: MISSION_TYPE.TRANSPORT,
+        code: 'mineral',
+        level: 2,
+    },
     lab: {
         type: MISSION_TYPE.TRANSPORT,
         code: 'lab',
@@ -336,6 +347,11 @@ export const MANAGE_MISSION = {
         code: 's2f',
         level: 1
     },
+    s2p: {
+        type: MISSION_TYPE.MANAGE,
+        code: 's2p',
+        level: 1,
+    },
     t2s: {
         type: MISSION_TYPE.MANAGE,
         code: 't2s',
@@ -345,6 +361,11 @@ export const MANAGE_MISSION = {
         type: MISSION_TYPE.MANAGE,
         code: 't2f',
         level: 1
+    },
+    t2p: {
+        type: MISSION_TYPE.MANAGE,
+        code: 't2p',
+        level: 1,
     },
     f2s: {
         type: MISSION_TYPE.MANAGE,

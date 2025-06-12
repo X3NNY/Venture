@@ -33,6 +33,7 @@ import creepDoubleHealerAction from './double/doubleHealer';
 
 import creepDepositHarvesterAction from './deposit/depositHarvester';
 import creepDepositCarrierAction from './deposit/depositCarrier';
+import creepDepositGuardianAction from './deposit/depositGuardian';
 
 import creepPowerAttackerAction from './power/powerAttacker';
 import creepPowerHealerAction from './power/powerHealer';
@@ -79,6 +80,7 @@ const actions = {
     // 商品采集
     deposit_harvester: creepDepositHarvesterAction,
     deposit_carrier: creepDepositCarrierAction,
+    deposit_guardian: creepDepositGuardianAction,
 
     // 超能采集
     power_attacker: creepPowerAttackerAction,
