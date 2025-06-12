@@ -11,13 +11,14 @@ const getSpawnTask = (room: Room) => {
     const mission = getSpawnMission(room);
     if (!mission) return;
 
-    // 检查能量是否够用
-    const cost = calcCreepBodyEnergy(mission.data.body);
 
-    if (mission.data.body.length === 0) {
+    if (!mission.data.body || mission.data.body.length === 0) {
         deleteMission(room, MISSION_TYPE.SPAWN, mission.id)
         return getSpawnTask(room);
     }
+    
+    // 检查能量是否够用
+    const cost = calcCreepBodyEnergy(mission.data.body);
 
     if (cost > room.energyCapacityAvailable) {
         deleteMission(room, MISSION_TYPE.SPAWN, mission.id)
@@ -34,7 +35,7 @@ const getSpawnTask = (room: Room) => {
 }
 
 const spawnCreep = (room: Room) => {
-    const spawn = room.spawn.find(spawn => !spawn.spawning);
+    const spawn = room.spawn.find(spawn => !spawn.spawning && (global.SpawnCache?.[spawn.id] !== Game.time));
     if (!spawn) return;
 
     const task = getSpawnTask(room);
@@ -46,9 +47,13 @@ const spawnCreep = (room: Room) => {
 
     // 如果创建成功
     if (result == OK) {
+        if (!global.SpawnCache) global.SpawnCache = {};
+        global.SpawnCache[spawn.id] = Game.time;
         if (!global.CreepNum) global.CreepNum = {};
         if (!global.CreepNum[room.name]) global.CreepNum[room.name] = {}
         global.CreepNum[room.name][role] = (global.CreepNum[room.name][role] || 0) + 1;
+        if (!global.SpawnCount) global.SpawnCount = {};
+        global.SpawnCount[room.name] = (global.SpawnCount[room.name] || 0) + 1;
         doneMission(room, MISSION_TYPE.SPAWN, task.missionId);
         return;
     }
@@ -58,6 +63,14 @@ const spawnCreep = (room: Room) => {
 
     // 能量不足导致的创建失败
     if (task.cost > room.energyAvailable) {
+        if (room.level == 8 && room.storage?.store.energy >= 20000 && room.find(FIND_MY_CREEPS, {filter: c => c.memory.role === CREEP_ROLE.CARRIER || c.memory.role === CREEP_ROLE.COURIER}).length > 0) {
+            // 同时出多个power小队会导致能量补充不及时，对healer单独特殊处理
+            if (role === CREEP_ROLE.POWER_HEALER || role === CREEP_ROLE.POWER_ATTACKER || role === CREEP_ROLE.POWER_ARCHER) {
+                return ;
+            }
+            delayMission(room, MISSION_TYPE.SPAWN, task.missionId);
+            return ;
+        }
         // 不是房间运维爬爬
         if (role !== CREEP_ROLE.HARVESTER && role !== CREEP_ROLE.CARRIER && role !== CREEP_ROLE.COURIER && role !== CREEP_ROLE.MANAGER) {
             deleteMission(room, MISSION_TYPE.SPAWN, task.missionId);

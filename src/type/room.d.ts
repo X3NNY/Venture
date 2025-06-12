@@ -55,6 +55,7 @@ interface Room {
         },
         powerTarget?: {                                   // 超能采集目标
             [roomName: string]: {
+                avail: boolean,                           // 是否可采集
                 creep: number,                            // 能量采集爬爬预计数量
                 count?: number,                           // 能量采集爬爬已有数量
                 max: number,                              // 能量采集爬爬最大数量
@@ -72,6 +73,7 @@ interface Room {
         },
         sourceHarvestPos?: any,                           // 采集点
         index?: number,                                   // 耗时任务执行tick
+        unBoostPos?: { x: number, y: number },            // 去强化位置 
         [key: string]: any
     };
     

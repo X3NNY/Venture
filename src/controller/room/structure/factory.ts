@@ -54,7 +54,7 @@ const factoryGetTarget = (room: Room) => {
         }
         
 
-        if (room.terminal.store[rType] < amount) {
+        if (getRoomResourceAmount(room, rType) < amount) {
             // 等级不匹配，发起共享任务
             if (COMMODITIES[rType].level && COMMODITIES[rType].level !== room.factory.level) {
                 addMission(room, MISSION_TYPE.TERMINAL, TERMINAL_MISSION.request, {
@@ -92,6 +92,18 @@ const factoryGetResource = (room: Room) => {
         return ;
     }
 
+    if (!Memory.RoomInfo[room.name].Factory.loadtime) {
+        Memory.RoomInfo[room.name].Factory.loadtime = Game.time;
+    }
+    if (Game.time - Memory.RoomInfo[room.name].Factory.loadtime > 300) {
+        const task = Memory.RoomInfo[room.name]?.Factory.autoQueue?.[0];
+        Memory.RoomInfo[room.name].Factory.autoQueue.shift();
+        Memory.RoomInfo[room.name].Factory.autoQueue.push(task);
+        Memory.RoomInfo[room.name].Factory.state = FACTORY_STATE.IDLE;
+        delete Memory.RoomInfo[room.name].Factory.loadtime;
+        return ;
+    }
+
     const rcts = COMMODITIES[product].components;
     for (const rType in rcts) {
         if (room.factory.store[rType] < rcts[rType]) {
@@ -121,6 +133,7 @@ const factoryGetResource = (room: Room) => {
             return ;
         }
     }
+    delete Memory.RoomInfo[room.name].Factory.loadtime;
     Memory.RoomInfo[room.name].Factory.state = FACTORY_STATE.WORK;
 }
 
@@ -308,24 +321,29 @@ export const roomStructureFactory = {
         if (!memory.autoQueue) {
             memory.autoQueue = [];
         } else {
-            memory.autoQueue = memory.autoQueue.filter(task => task.manual)
+            memory.autoQueue = memory.autoQueue.filter(task => task?.manual)
         }
 
-        if (room.storage.store[RESOURCE_MIST]) {
-            if (room.factory.level) {
+        if (getRoomResourceAmount(room, RESOURCE_MIST) > 0) {
+            if (room.factory.level || memory.level) {
                 memory.autoQueue.push(...FactoryTarget[RESOURCE_MIST][memory.level]);
             }
             memory.autoQueue.push(...FactoryTarget[RESOURCE_MIST][0]);
         }
 
-        if (room.mineral) {
+        if (room.mineral && getRoomResourceAmount(room, room.mineral.mineralType) >= 60000) {
             const product = ResourceBarMap[room.mineral.mineralType];
-            if (getRoomResourceAmount(room, product) < 4000) {
-                memory.autoQueue.unshift({
-                    product: product,
-                    amount: 2000
-                });
-            }
+            memory.autoQueue.unshift({
+                product: product,
+                amount: 2000
+            });
+        }
+
+        if (room.storage?.store.energy >= 200000) {
+            memory.autoQueue.unshift({
+                product: RESOURCE_BATTERY,
+                amount: 10000
+            })
         }
 
         // 去除重复

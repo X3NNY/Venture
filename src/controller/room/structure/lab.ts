@@ -15,7 +15,7 @@ const labGetTarget = (room: Room) => {
     const resource = Memory.RoomInfo[room.name].lab.autoQueue[Memory.RoomInfo[room.name].lab.index];
 
     if (!resource) return labIndexUpdate(room);
-    if (room.storage.store[resource.target] + room.terminal.store[resource.target] >= resource.amount) {
+    if (getRoomResourceAmount(room, resource.target) >= resource.amount) {
         return labIndexUpdate(room);
     }
     // console.log(JSON.stringify(resource))
@@ -213,7 +213,7 @@ export const roomStructureLab = {
         if (!memory.lab.autoQueue) {
             memory.lab.autoQueue = []
         } else {
-            memory.lab.autoQueue = memory.lab.autoQueue.filter(task => task.manual);
+            memory.lab.autoQueue = memory.lab.autoQueue.filter(task => task?.manual);
         }
 
         // 寻找房间大于6级的矿物种类数
@@ -280,7 +280,7 @@ export const roomStructureLab = {
         }
 
         // 如有通道矿房
-        if ((memory.OutMineral.highway?.length||0) > 0) {
+        if ((memory.OutMineral?.highway?.length||0) > 0) {
             memory.lab.autoQueue.push(...HighWayLabTarget)
         }
 
@@ -336,21 +336,22 @@ export const roomStructureLab = {
             if (!BOOST[part]) continue;
 
             const amount = bodyparts[part] * 30;
+            if (amount == 0) continue;
             let mIdx = 0;
             while (mIdx < BOOST[part].length) {
                 if (getRoomResourceAmount(room, BOOST[part][mIdx]) >= amount) break;
                 mIdx++;
             }
             if (mIdx >= BOOST[part].length) {
-                return false;
+                return [false, part];
             }
             tasks.push([BOOST[part][mIdx], amount]);
             // roomStructureLab.setBoost(room, BOOST[part][mIdx], amount);
         }
         for (const task of tasks) {
-            roomStructureLab.setBoost(room, task[0], task[1]);
+            roomStructureLab.setBoost(room, task[0], task[1], true);
         }
-        return true;
+        return [true, null];
     },
     // 指定boost任务化工厂
     setBoost: (room: Room, mineral: MineralBoostConstant, amount: number, increase: boolean = true) => {

@@ -3,6 +3,7 @@ import { getRoomResourceAmount } from "../function/get";
 export const roomStructurePowerCreep = {
     work: (room: Room) => {
         if (room.level < 8) return ;
+        if (Game.cpu.bucket < 100) return ;
 
         if (!Memory['RoomInfo'][room.name].powerSpawn?.open) return;
 
