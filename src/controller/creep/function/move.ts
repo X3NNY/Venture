@@ -1,9 +1,66 @@
+import { roomFindClosestPotalRoom } from "@/controller/room/function/find";
 import { creepGetRangePos, creepIsOnEdge } from "./position";
+import { transmitCreepToIntershard } from "@/module/shard/intershard";
+
+export const creepMoveToShard = (creep: Creep, shardName: string, options = {}) => {
+    if (!creep.memory.targetShard) creep.memory.targetShard = shardName;
+
+    if (shardName === Game.shard.name) {
+        if (creep.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_PORTAL)) {
+            if (creep.memory.targetRoom) {
+                creepMoveToRoom(creep, creep.memory.targetRoom);
+            } else {
+                creep.move(RIGHT);
+            }
+        }
+        return ;
+    }
+
+    // 寻找传送房间
+    if (!creep.memory.cache?.protalRoom) {
+        if (Game.flags[shardName+'-PROTAL']) {
+            creep.memory.cache.protalRoom = Game.flags[shardName+'-PROTAL'].room.name;
+        } else {
+            creep.memory.cache.protalRoom = roomFindClosestPotalRoom(creep.room);
+        }
+    }
+    if (!creep.memory.cache?.protalRoom) {
+        return ERR_NO_PATH;
+    }
+
+    if (creep.room.name !== creep.memory.cache.protalRoom || creepIsOnEdge(creep)) {
+        return creepMoveToRoom(creep, creep.memory.cache.protalRoom, options);
+    } else {
+        // 寻找传送星门
+        const portal = creep.room.find(FIND_STRUCTURES, {
+            filter: s => s.structureType === STRUCTURE_PORTAL &&
+                ((s.destination as any).shard === shardName ||
+                    ((parseInt(Game.shard.name[5])-parseInt(shardName[5])) > 1 && (s.destination as any).shard[5] < Game.shard.name[5]) ||
+                    ((parseInt(Game.shard.name[5])-parseInt(shardName[5])) < -1 && (s.destination as any).shard[5] > Game.shard.name[5])
+                )
+        })[0];
+        if (!portal) return ;
+
+        // 移动到附近
+        if (!creep.pos.isNearTo(portal)) {
+            creepMoveTo(creep, portal.pos, { range: 1 });
+        } else {
+            const data = {
+                targetShard: shardName,
+                sourceShard: Game.shard.name,
+                creepMemory: creep.memory
+            }
+            if (transmitCreepToIntershard(creep, data)) {
+                creepMoveTo(creep, portal.pos);
+            }
+        }
+    }
+}
 
 export const creepMoveToRoom = (creep: Creep, roomName: string, options = {}) => {
     if (creep.fatigue > 0) return ERR_TIRED;
 
-    options['range'] = 3;
+    options['range'] = 1;
     let lastTargetPos = null;
 
     // 就在这个房间，移动至controller处
@@ -46,7 +103,11 @@ export const creepMoveToRoomBypass = (creep: Creep, roomName: string, options = 
         creep.memory.lastTargetPos.roomName === roomName) {
         lastTargetPos = creep.memory.lastTargetPos;
     } else { // 否则移动至中心附近
-        lastTargetPos = new RoomPosition(20+Math.floor(Math.random()*10+1), 20+Math.floor(Math.random()*10+1), roomName);
+        if (Game.rooms[roomName] && Game.rooms[roomName].controller) {
+            lastTargetPos = Game.rooms[roomName].controller.pos;
+        } else {
+            lastTargetPos = new RoomPosition(20+Math.floor(Math.random()*10+1), 20+Math.floor(Math.random()*10+1), roomName);
+        }
         creep.memory.lastTargetPos = lastTargetPos;
     }
     options['costCallback'] = (roomName: string, costMatrix: CostMatrix) => {
@@ -57,7 +118,7 @@ export const creepMoveToRoomBypass = (creep: Creep, roomName: string, options = 
                 c => {
                     let poss;
                     if (c.getActiveBodyparts(RANGED_ATTACK) > 0) {
-                        poss = creepGetRangePos(c, 3)
+                        poss = creepGetRangePos(c, 2)
                     } else {
                         poss = creepGetRangePos(c, 1);
                     }

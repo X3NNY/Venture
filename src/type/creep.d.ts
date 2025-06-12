@@ -23,6 +23,8 @@ interface CreepMemory {
     rType?: ResourceConstant,
     sourceRoom?: string,
     targetRoom?: string,
+    protalRoom?: string,
+    targetShard?: string,
     dontPullMe?: boolean,
     
     boostCount: number,             // 强化尝试次数
@@ -41,4 +43,26 @@ interface CreepMemory {
         y: number,
         roomName: string
     },
+}
+
+
+interface CreepFindClosestTarget{
+    /**
+     * Find the object with the shortest linear distance from the given position.
+     * @param type Any of the FIND_* constants.
+     * @param opts An object containing pathfinding options (see Room.findPath), or one of the following: filter, algorithm
+     */
+    <K extends FindConstant, S extends FindTypes[K]>(creep: Creep | PowerCreep, type: K, opts?: FilterOptions<K, S>): S | null;
+    <S extends AnyStructure>(creep: Creep | PowerCreep, typeOrObjects: FIND_STRUCTURES | FIND_MY_STRUCTURES | FIND_HOSTILE_STRUCTURES, opts?: FilterOptions<FIND_STRUCTURES, S>): S | null;
+
+    /**
+     * Find the object with the shortest linear distance from the given position.
+     * @param objects An array of RoomPositions or objects with a RoomPosition.
+     * @param opts An object containing pathfinding options (see Room.findPath), or one of the following: filter, algorithm
+     */
+    <T extends _HasRoomPosition | RoomPosition>(
+        creep: Creep | PowerCreep,
+        objects: T[],
+        opts?: { filter: any | string },
+    ): T | null;
 }
