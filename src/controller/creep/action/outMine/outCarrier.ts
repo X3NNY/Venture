@@ -1,6 +1,7 @@
 import { CREEP_ROLE } from "@/constant/creep";
 import { creepMoveTo, creepMoveToRoom } from "../../function/move";
 import { creepIsOnEdge } from "../../function/position";
+import { isLPShard } from "@/util/function";
 
 const creepOutCarrierActions = {
     withdraw: (creep: Creep) => {
@@ -157,7 +158,8 @@ const creepOutCarrierActions = {
             //     if (!creep.pos.inRangeTo(r.pos, 1)) return false;
             //     return true;
             // });
-            const roads = creep.pos.findInRange(FIND_STRUCTURES, 1, { filter: s => s.structureType === STRUCTURE_ROAD && s.hits < s.hitsMax * 0.8});
+            // const roads = creep.pos.findInRange(FIND_STRUCTURES, 1, { filter: s => s.structureType === STRUCTURE_ROAD && s.hits < s.hitsMax * 0.8});
+            const roads = creep.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType === STRUCTURE_ROAD && s.hits < s.hitsMax * 0.8);
 
             if (roads.length > 0) {
                 const road = creep.pos.findClosestByRange(roads);
@@ -166,7 +168,7 @@ const creepOutCarrierActions = {
                     creepMoveToRoom(creep, creep.room.name, { plainCost: 2, swampCost: 10 });
                 }
                 if (result === OK) return true;
-                if (result === ERR_NOT_IN_RANGE) {
+                else if (result === ERR_NOT_IN_RANGE) {
                     creepMoveTo(creep, road, {plainCost: 2, swampCost: 10});
                     return true;
                 }
@@ -244,6 +246,21 @@ const creepOutCarrierActions = {
             return ;
         }
 
+        // 非LP，看是否路过Controller
+        if (!isLPShard()) {
+            if (creep.memory.cache.goController || creep.pos.inRangeTo(creep.room.controller, 5)) {
+                const cContainer = creep.room.container.find(c => c.pos.isNearTo(creep.room.controller) && c.store.getFreeCapacity() >= creep.store.energy);
+                if (cContainer) {
+                    const res = creep.transfer(cContainer, RESOURCE_ENERGY);
+                    if (res === ERR_NOT_IN_RANGE) {
+                        creepMoveTo(creep, cContainer, { maxRooms: 1, range: 1, plainCost: 2, swampCost: 10 });
+                    }
+                    creep.memory.cache.goController = true;
+                    return ;
+                }
+            }
+        }
+
         let target: StructureContainer | StructureStorage;
         if (creep.memory.cache.targetId) {
             target = Game.getObjectById(creep.memory.cache.targetId) as any;
@@ -293,6 +310,19 @@ const creepOutCarrierActions = {
                     creep.drop(Object.keys(creep.store)[0] as ResourceConstant);
                 } else {
                     creepMoveTo(creep, creep.room.storage, { maxRooms: 1, range: 1, plainCost: 2, swampCost: 10 });
+                }
+            } else {
+                const site = creep.pos.findClosestByRange(FIND_MY_CONSTRUCTION_SITES, {
+                    filter: s => s.structureType === STRUCTURE_CONTAINER
+                });
+                if (site) {
+                    if (creep.pos.inRangeTo(site, 3)) {
+                        creep.drop(Object.keys(creep.store)[0] as ResourceConstant);
+                    } else {
+                        creepMoveTo(creep, site, { maxRooms: 1, range: 3, plainCost: 2, swampCost: 10 });
+                    }
+                } else {
+                    creep.drop(Object.keys(creep.store)[0] as ResourceConstant);
                 }
             }
         }

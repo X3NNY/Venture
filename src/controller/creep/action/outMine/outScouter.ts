@@ -1,4 +1,4 @@
-import { creepMoveTo, creepMoveToRoom } from "../../function/move";
+import { creepMoveTo, creepMoveToRoom, creepMoveToShard } from "../../function/move";
 import { creepIsOnEdge } from "../../function/position";
 
 const creepOutScouterActions = {
@@ -10,13 +10,13 @@ const creepOutScouterActions = {
 
         const controller = creep.room.controller;
         if (!controller) return ;
-        const sign = creep.memory['sign'] ?? '𝙑𝙚𝙣𝙩𝙪𝙧𝙚';
-        if (sign !== controller.sign?.text) {
-            if (creep.pos.isNearTo(controller)) {
+        
+        if (creep.pos.isNearTo(controller)) {
+            const sign = creep.memory['sign'];
+            if (sign && sign !== controller.sign?.text)
                 creep.signController(creep.room.controller, sign);
-            } else {
-                creepMoveTo(creep, controller);
-            }
+        } else {
+            creepMoveTo(creep, controller);
         }
         return false;
     }
@@ -25,6 +25,12 @@ const creepOutScouterActions = {
 export default {
     prepare: (creep: Creep) => {
         if (!creep.memory.cache) creep.memory.cache = {}
+
+        if (creep.memory.targetShard && creep.memory.targetShard !== Game.shard.name) {
+            creepMoveToShard(creep, creep.memory.targetShard, {visualizePathStyle: {stroke: '#00ff00'}});
+            return false;
+        }
+
         creep.memory.action = 'scout';
         return true;
     },

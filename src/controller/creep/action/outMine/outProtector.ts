@@ -3,6 +3,7 @@ import { creepIsOnEdge } from "../../function/position";
 
 export default {
     prepare: (creep: Creep) => {
+        if (!creep.memory.cache) creep.memory.cache = {}
         if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
             creepMoveToRoom(creep, creep.memory.targetRoom);
             return false;
@@ -10,29 +11,34 @@ export default {
         return true;
     },
     action: (creep: Creep) => {
+        // 远程攻击和治疗不冲突
+        if (creep.hits < creep.hitsMax) creep.heal(creep);
+
         if (creep.room.name !== creep.memory.targetRoom || creepIsOnEdge(creep)) {
             creepMoveToRoom(creep, creep.memory.targetRoom);
             return ;
         }
-        const hostiles = creep.room.find(FIND_HOSTILE_CREEPS, {
-            filter: c => c.owner.username === 'Invader' ||
-                        c.owner.username === 'Source Keeper'
-        });
 
-        // 远程攻击和治疗不冲突
-        if (creep.hits < creep.hitsMax) creep.heal(creep);
+        let target = Game.getObjectById(creep.memory.cache?.target as Id<Creep>);
 
-        if (hostiles.length > 0) {
-            const target = creep.pos.findClosestByRange(hostiles);
-            if (target) {
-                if (creep.pos.isNearTo(target)) {
-                    creep.rangedMassAttack();
-                } else if (creep.pos.inRangeTo(target, 3)) {
-                    creep.rangedAttack(target);
-                    creepMoveTo(creep, target);
-                } else {
-                    creepMoveTo(creep, target);
+        if (!target) {
+            const hostiles = creep.room.find(FIND_HOSTILE_CREEPS);
+            if (hostiles.length > 0) {
+                target = creep.pos.findClosestByRange(hostiles);
+                if (target) {
+                    creep.memory.cache = {target: target.id};
                 }
+            }
+        }
+
+        if (target) {
+            if (creep.pos.isNearTo(target)) {
+                creep.rangedMassAttack();
+            } else if (creep.pos.inRangeTo(target, 3)) {
+                creep.rangedAttack(target);
+                creepMoveTo(creep, target);
+            } else {
+                creepMoveTo(creep, target);
             }
             return ;
         }
