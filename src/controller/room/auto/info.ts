@@ -1,4 +1,3 @@
-import { filter } from 'lodash';
 import { BaseBar, BaseMineral, BoostTarget, Goods, ResourceBarMap } from "@/constant/resource";
 import { addMission } from "../mission/pool";
 import { MISSION_TYPE, TERMINAL_MISSION, TRANSPORT_MISSION } from "@/constant/mission";
@@ -38,10 +37,6 @@ export const roomMarketUpdate = (room: Room) => {
         else if (mType === RESOURCE_CATALYST){
             Memory.Resource[mType][room.name] = 10000;
         }
-        // 商品
-        else if (mType in Goods) {
-            Memory.Resource[mType][room.name] = 1;
-        }
         // 其他
         else {
             Memory.Resource[mType][room.name] = 1000;
@@ -55,6 +50,30 @@ export const roomMarketUpdate = (room: Room) => {
         if (!Memory.Resource[item.target]) Memory.Resource[item.target] = {}
         Memory.Resource[item.target][room.name] = Math.max(item.amount-1000, 1000)
     }
+
+    const goods = Object.keys(room.terminal.store).filter((rType: any) => Goods.indexOf(rType) !== -1 && !Memory.Resource[rType]?.[room.name])
+    for (const rType of goods) {
+        if (!Memory.Resource[rType]) Memory.Resource[rType] = {}
+        Memory.Resource[rType][room.name] = 1;
+    }
+
+    // Object.keys(Memory.RoomInfo[room.name].Resource).forEach(rType => {
+    //     const item = Memory.RoomInfo[room.name].Resource[rType];
+    //     if (!item.order) return;
+    //     if (BaseMineral.indexOf(rType as any) !== -1) {
+    //         const troom = Object.keys(Memory.Resource[rType] || {}).find(rName => {
+    //             const troom = Game.rooms[rName];
+                
+    //             if (!troom || troom.mineral.mineralType !== rType) return false;
+    //             if (rName === room.name) return false;
+    //             if (Game.map.getRoomLinearDistance(room.name, rName) <= 10) return true;
+    //         });
+
+    //         if (troom) {
+    //             item.order = false;
+    //         }
+    //     }
+    // })
 
     // 检查基础元素资源数量
     // BaseMineral.forEach(r => {
@@ -113,6 +132,39 @@ export const roomMarketUpdate = (room: Room) => {
     // })
 }
 
+export const roomBoostUpdate = (room: Room) => {
+    if (!room.memory.unBoostPos) {
+        const container = room.find(FIND_STRUCTURES, {
+            filter: s => s.structureType === STRUCTURE_CONTAINER && s.pos.findInRange(FIND_MY_STRUCTURES, 1, {filter: s => s.structureType === STRUCTURE_LAB}).length >= 4
+        });
+        if (container.length > 0) {
+            room.memory.unBoostPos = container[0].pos;
+        } else {
+            const labA = Game.getObjectById(Memory.RoomInfo[room.name].lab?.labA);
+            const labB = Game.getObjectById(Memory.RoomInfo[room.name].lab?.labB);
+
+            if (labA && labB) {
+                room.memory.unBoostPos = {
+                    x: Math.min(labA.pos.x, labB.pos.x),
+                    y: Math.min(labA.pos.y, labB.pos.y)
+                }
+                if (!room.lookAt(room.memory.unBoostPos.x, room.memory.unBoostPos.y).some(s => s.structure.structureType === STRUCTURE_ROAD)) {
+                    room.memory.unBoostPos = {
+                        x: Math.max(labA.pos.x, labB.pos.x),
+                        y: Math.min(labA.pos.y, labB.pos.y)
+                    }
+                }
+                room.createConstructionSite(room.memory.unBoostPos.x, room.memory.unBoostPos.y, STRUCTURE_CONTAINER)
+            }
+        }
+    } else {
+        const container = room.lookAt(room.memory.unBoostPos.x, room.memory.unBoostPos.y).find(s => s.structure && s.structure.structureType === STRUCTURE_CONTAINER);
+        if (!container) {
+            room.createConstructionSite(room.memory.unBoostPos.x, room.memory.unBoostPos.y, STRUCTURE_CONTAINER)
+        }
+    }
+}
+
 /**
  * 自动化信息更新
  * @param room 
@@ -129,14 +181,16 @@ export const roomInfoUpdate = (room: Room, force?: boolean) => {
     const rooms = getRoomNumber();
     
     // 房间数增加了
-    if (rooms > (Memory.System.rooms||0)) {
+    if (force || rooms > (Memory.System.rooms||0)) {
         // 更新化工厂合成列表。
         roomStructureLab.setTarget(room, true);
         Memory.System.rooms = rooms;
     }
 
-    if (Game.time % 10000 === 1) {
+    if (force || Game.time % 10000 === 1) {
         roomMarketUpdate(room);
+        roomStructureLab.setTarget(room, true);
+        roomBoostUpdate(room);
     }
 
     // 设置BOOST任务
@@ -175,8 +229,8 @@ export const roomInfoUpdate = (room: Room, force?: boolean) => {
     }
 
     if (room.factory && Memory.RoomInfo[room.name].Factory?.open) {
-        if (Memory.RoomInfo[room.name].Factory.autoQueue.length === 0) {
-            roomStructureFactory.setTarget(room);
-        }
+        // if (Memory.RoomInfo[room.name].Factory.autoQueue.length === 0) {
+        roomStructureFactory.setTarget(room);
+        // }
     }
 }

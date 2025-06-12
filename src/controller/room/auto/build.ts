@@ -1,4 +1,5 @@
 import { coordDecompress } from "@/util/coord";
+import { isLPShard } from "@/util/function";
 
 const roomBuildMaxSite = (room: Room, structureType: string, layouts: any, buildMax: number) => {
     if (structureType === STRUCTURE_ROAD) {
@@ -128,7 +129,7 @@ const roomBuildCreateSite = (room: Room, layoutInfo: any) => {
             // 特殊判断
             if (sType === STRUCTURE_RAMPART) {
                 const hasRoadSite = room.find(FIND_CONSTRUCTION_SITES, { filter: s => s.structureType === STRUCTURE_ROAD }).length > 0;
-                if (room.level >= 3 && structs.length === 0 && !hasRoadSite) {
+                if (room.level >= 3 && structs.length === 0 && !hasRoadSite && isLPShard()) {
                     room.createConstructionSite(x, y, STRUCTURE_WALL);
                     continue
                 }

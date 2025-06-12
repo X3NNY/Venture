@@ -1,4 +1,4 @@
-import { MANAGE_MISSION, MISSION_TYPE, SPAWN_MISSION, TERMINAL_MISSION } from "@/constant/mission";
+import { MANAGE_MISSION, MISSION_TYPE, SPAWN_MISSION, TERMINAL_MISSION, TRANSPORT_MISSION } from "@/constant/mission";
 import { addMission, countMission } from "../mission/pool";
 import { updateCreepNum, updateSpawnCreepNum } from "../function";
 import { CREEP_ROLE } from "@/constant/creep";
@@ -66,7 +66,7 @@ const roomFactorySendResource = (room: Room) => {
     if (!room.factory) return ;
     let resources = Object.keys(room.factory.store); 
     for (const rType of resources) {
-        if (countMission(room, MISSION_TYPE.MANAGE, m => m.data.target === room.terminal.id && m.data.resourceType === rType) > 0) {
+        if (!countMission(room, MISSION_TYPE.MANAGE, m => m.data.target === room.terminal.id && m.data.resourceType === rType)) {
             addMission(room, MISSION_TYPE.MANAGE, MANAGE_MISSION.f2t, {
                 rType,
                 amount: room.factory.store[rType]
@@ -102,7 +102,66 @@ export const roomDiscard = (room: Room) => {
     resource += roomFactorySendResource(room);
     resource += roomTerminalSendResource(room);
 
-    if (resource <= 0) {
+    if (Game.time % 10 === 0) {
+        room.lab.forEach(lab => {
+            if (lab.store[RESOURCE_ENERGY] > 0 || lab.mineralType) {
+                resource += 1;
+                if (!countMission(room, MISSION_TYPE.TRANSPORT, m => m.data.target === room.terminal.id && m.data.source == lab.id)) {
+                    addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
+                        source: lab.id,
+                        target: room.terminal.id,
+                        pos: lab.pos,
+                        rType: lab.store[RESOURCE_ENERGY] > 0 ? RESOURCE_ENERGY : lab.mineralType,
+                        amount: lab.store[RESOURCE_ENERGY] > 0 ? lab.store[RESOURCE_ENERGY] : lab.store[lab.mineralType]
+                    })
+                }
+            }
+        })
+
+        if (room.powerSpawn?.store[RESOURCE_ENERGY] > 0) {
+            resource += 1;
+            if (!countMission(room, MISSION_TYPE.TRANSPORT, m => m.data.target === room.terminal.id && m.data.source == room.powerSpawn.id)) {
+                addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
+                    source: room.powerSpawn.id,
+                    target: room.terminal.id, 
+                    pos: room.powerSpawn.pos,
+                    rType: RESOURCE_ENERGY,
+                    amount: room.powerSpawn.store[RESOURCE_ENERGY]
+                }) 
+            }
+        }
+        if (room.powerSpawn?.store[RESOURCE_POWER] > 0) {
+            resource += 1;
+            if (!countMission(room, MISSION_TYPE.TRANSPORT, m => m.data.target === room.terminal.id && m.data.source == room.powerSpawn.id)) {
+                addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
+                    source: room.powerSpawn.id,
+                    target: room.terminal.id,
+                    pos: room.powerSpawn.pos,
+                    rType: RESOURCE_POWER,
+                    amount: room.powerSpawn.store[RESOURCE_POWER] 
+                }) 
+            } 
+        }
+
+        room.find(FIND_RUINS, { filter: r => Object.keys(r.store).length > 0 }).forEach(r => {
+            for (const rType in r.store) {
+                resource += 1;
+                if (!countMission(room, MISSION_TYPE.TRANSPORT, m => m.data.target === room.terminal.id && m.data.source == r.id)) {
+                    addMission(room, MISSION_TYPE.TRANSPORT, TRANSPORT_MISSION.lab, {
+                        source: r.id,
+                        target: room.terminal.id,
+                        pos: r.pos,
+                        rType: rType as ResourceConstant,
+                        amount: r.store[rType as ResourceConstant] 
+                    })
+                } 
+            } 
+        })
+    } else {
+        resource += 1;
+    }
+
+    if (resource <= 1) {
         return roomDeclaim(room);
     }
 
@@ -116,10 +175,10 @@ export const roomDiscard = (room: Room) => {
         });
     }
 
-    const ccs = (global.CreepNum[room.name][CREEP_ROLE.CARRIER] || 0) + (global.SpawnCreepNum[room.name][CREEP_ROLE.CARRIER] || 0);
+    const cos = (global.CreepNum[room.name][CREEP_ROLE.COURIER] || 0) + (global.SpawnCreepNum[room.name][CREEP_ROLE.COURIER] || 0);
 
-    if (ccs < 1) {
-        addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.carrier, {
+    if (cos < 1) {
+        addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.courier, {
             home: room.name
         }); 
     }

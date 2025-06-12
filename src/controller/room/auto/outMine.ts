@@ -84,7 +84,7 @@ const outEnergyMine = (room: Room) => {
         if (controller?.owner) continue;
 
         // 预定该房间
-        if (room.level >= 3) createOutReserverCreep(room, targetRoom);
+        if (room.level >= 5) createOutReserverCreep(room, targetRoom);
 
         // 如果别人预定了
         if (controller.reservation &&
@@ -92,7 +92,7 @@ const outEnergyMine = (room: Room) => {
         ) continue;
 
         createOutHarvesterCreep(room, targetRoom, sources);
-        createOutCarrierCreep(room, targetRoom, Math.floor(sources*1.5));
+        createOutCarrierCreep(room, targetRoom, sources);
         createOutBuilderCreep(room, targetRoom);
     }
 }
@@ -144,6 +144,14 @@ const outCenterMine = (room: Room) => {
             continue;
         }
 
+        const invaderCore = targetRoom.find(FIND_STRUCTURES, {
+            filter: s => s.structureType === STRUCTURE_INVADER_CORE
+        });
+    
+        if (invaderCore.length > 0) {
+            createOutInvaderCreep(room, targetRoom);
+        }
+
         // 有敌人暂时不采集
         if (sourceKeeper.length > 0 && out_attacker < 1) {
             const tasks = filterMission(room, MISSION_TYPE.SPAWN,
@@ -193,20 +201,22 @@ const outHighwayMine = (room: Room) => {
         if (!room.memory.depositTarget) room.memory.depositTarget = {};
 
         if (!room.memory.powerTarget[roomName]) {
-            const count = outRoomPowerBankCheck(targetRoom);
+            const count = outRoomPowerBankCheck(targetRoom, room);
             if (count > 0) {
                 const power = targetRoom.find<StructurePowerBank>(FIND_STRUCTURES, {
                     filter: s => s.structureType === STRUCTURE_POWER_BANK && 
                         s.power >= 2000
-                })[0].power;
-                const data = getPowerBankMissionData(room, count, power);
-                room.memory.powerTarget[roomName] = data;
-                console.log(`[${room.name}] 外矿 ${roomName} 发现 ${count} 个超能矿，能量 ${power}，准备发送爬爬。`)
+                })[0]?.power;
+                if (power) {
+                    const data = getPowerBankMissionData(room, count, power);
+                    room.memory.powerTarget[roomName] = data;
+                    console.log(`[${room.name}] 外矿 ${roomName} 发现 ${count} 个超能矿，能量 ${power}，准备发送爬爬。`)
+                }
             }
         }
 
         if (!room.memory.depositTarget[roomName]) {
-            const count = outRoomDepositCheck(targetRoom);
+            const count = outRoomDepositCheck(targetRoom, room);
             if (count > 0) {
                 room.memory.depositTarget[roomName] = {
                     num: count,
@@ -237,7 +247,7 @@ const outDepositMine = (room: Room) => {
 
         // 检查商品可采集位
         if (targetRoom && Game.time % (15 * 4) === 1) {
-            const count = outRoomDepositCheck(targetRoom);
+            const count = outRoomDepositCheck(targetRoom, room);
             if (count > 0) {
                 data.num = count;
             } else {
@@ -249,6 +259,21 @@ const outDepositMine = (room: Room) => {
         if (!data.open) continue;
 
         const creeps = getRoomTargetCreepNum(roomName);
+
+        // 检查是否有人抢占
+        if (targetRoom && Game.time % (15 * 4) === 1) {
+            if(outRoomDepositHostileCheck(targetRoom)) {
+                const dgs = (creeps[CREEP_ROLE.DEPOSIT_GUARDIAN] || []).filter(c => c.spawning || c.ticks > 100).length;
+                const dgspawns = global.SpawnCreepNum[room.name][CREEP_ROLE.DEPOSIT_GUARDIAN] || 0;
+                if (dgs + dgspawns < 1) {
+                    addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.deposit_guardian, {
+                        home: room.name, targetRoom: roomName, boostLevel: 0
+                    })
+                    console.log(`[${room.name}] 外矿 ${roomName} 发现商品争夺，准备发送守卫爬爬。`)
+                }
+            }
+        }
+
         // 检查商品采集爬爬数量
         const dhs = (creeps[CREEP_ROLE.DEPOSIT_HARVESTER] || []).filter(c => c.spawning || c.ticks > 200).length;
         const dhspawns = global.SpawnCreepNum[room.name][CREEP_ROLE.DEPOSIT_HARVESTER] || 0
@@ -270,12 +295,14 @@ const outDepositMine = (room: Room) => {
     }
 }
 
-const outRoomDepositCheck = (room: Room) => {
+const outRoomDepositCheck = (room: Room, fromRoom: Room) => {
     const deposits = room.find(FIND_DEPOSITS);
     
     if (!deposits || deposits.length === 0) return 0;
     
     let count = 0;
+    
+    const walls = room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_WALL });
     for (const deposit of deposits) {
         // 冷却太长不值得
         if (deposit.lastCooldown >= 100) continue;
@@ -288,6 +315,67 @@ const outRoomDepositCheck = (room: Room) => {
         })
 
         if (hpos === 0) continue;
+
+        // 判断商品是否在隔离墙内
+        if (walls.length > 0) {
+            const xmap = {}, ymap = {};
+            let pos;
+            let shape = 0;
+            for (const s of walls) {
+                if (!xmap[s.pos.x]) xmap[s.pos.x] = 0;
+                if (!ymap[s.pos.y]) ymap[s.pos.y] = 0;
+                xmap[s.pos.x]++;
+                ymap[s.pos.y]++;
+
+                if (xmap[s.pos.x] > 25) {
+                    shape = 1;
+                    pos = s.pos.x;
+                    break;
+                } else if (ymap[s.pos.y] > 25) {
+                    shape = 2;
+                    pos = s.pos.y;
+                    break;
+                }
+            }
+            
+            if (shape == 0) { // 中间通道判断有点复杂，暂时不写
+                continue;
+            } else if (shape == 1) {
+                if (pos > 25 && deposit.pos.x > pos) { // 无法到达
+                    continue;
+                } else if (pos < 25 && deposit.pos.x < pos) { // 无法到达
+                    continue;
+                }
+            } else if (shape == 2) {
+                if (pos > 25 && deposit.pos.y > pos) { // 无法到达
+                    continue;
+                } else if (pos < 25 && deposit.pos.y < pos) { // 无法到达
+                    continue;
+                }
+            }
+        }
+        // 寻找是否有路径
+        // if (walls.length > 0) {
+        //     const path = PathFinder.search(fromRoom.spawn[0].pos, { pos: deposit.pos, range: 1}, {
+        //         maxCost: 500,
+        //         maxOps: 500,
+        //         roomCallback: (roomName) => {
+        //             const costs = new PathFinder.CostMatrix
+        //             if (roomName !== room.name) {
+        //                 return costs;
+        //             }
+        //             walls.forEach(s => {
+        //                 costs.set(s.pos.x, s.pos.y, 0xff);
+        //             })
+        //             return costs;
+        //         }
+        //     })
+
+        //     if (path.incomplete) {
+        //         continue
+        //     }
+        // }
+
         if (!room.memory.depositMineral) room.memory.depositMineral = {};
         room.memory.depositMineral[deposit.id] = hpos;
         
@@ -299,6 +387,22 @@ const outRoomDepositCheck = (room: Room) => {
         delete room.memory['depositMineral'][id];
     }
     return count;
+}
+
+const outRoomDepositHostileCheck = (room: Room) => {
+    const deposits = room.find(FIND_DEPOSITS);
+    
+    if (!deposits || deposits.length === 0) return false;
+
+    for (const deposit of deposits) {
+        // 冷却太长不值得
+        if (deposit.lastCooldown >= 100) continue;
+
+        if (deposit.pos.findInRange(FIND_HOSTILE_CREEPS, 2).length > 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 // 超能采集
@@ -338,6 +442,10 @@ const outPowerBankMine = (room: Room) => {
             const phTotal = phs + (global.SpawnCreepNum[room.name][CREEP_ROLE.POWER_HEALER] || 0);
 
             for (let i = Math.min(paTotal, phTotal); i < creepNum; i++) {
+                if (room.name == 'E51N26') {
+                    console.log('E51N26 power', paTotal, phTotal, data.count, 'addMission')
+                }
+                // console.log()
                 if (data.boostLevel === 0) {
                     addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.power_attacker, {
                         home: room.name, targetRoom: roomName,
@@ -360,9 +468,9 @@ const outPowerBankMine = (room: Room) => {
                         boostLevel: 1
                     })
                 } else if (data.boostLevel === 2) {
-                    roomStructureLab.setBoost(room, 'GH2O', 150);
-                    roomStructureLab.setBoost(room, 'UH2O', 600);
-                    roomStructureLab.setBoost(room, 'LO', 750);
+                    roomStructureLab.setBoost(room, 'GHO2', 150, true);
+                    roomStructureLab.setBoost(room, 'UH2O', 600, true);
+                    roomStructureLab.setBoost(room, 'LO', 750, true);
                     addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.power_attacker, {
                         home: room.name, targetRoom: roomName,
                         boostLevel: 2
@@ -395,7 +503,7 @@ const outPowerBankMine = (room: Room) => {
 
         let threshold = ticksToArrive * Math.max(1800, data.creep*600*(data.boostLevel+1));
 
-        if (threshold < 600e3) threshold = 600e3;
+        if (threshold < 500e3) threshold = 500e3;
         if (threshold > 1.5e6) threshold = 1.5e6;
 
         if (powerBank.hits <= threshold) {
@@ -411,7 +519,7 @@ const outPowerBankMine = (room: Room) => {
     }
 }
 
-const outRoomPowerBankCheck = (room: Room) => {
+const outRoomPowerBankCheck = (room: Room, fromRoom: Room) => {
     const powerBank = room.find<StructurePowerBank>(FIND_STRUCTURES, {
         filter: s => s.structureType === STRUCTURE_POWER_BANK &&
             s.hits >= s.hitsMax
@@ -430,6 +538,68 @@ const outRoomPowerBankCheck = (room: Room) => {
 
     if (hpos === 0) return 0;
 
+    // 判断是否在隔离墙内
+    const walls = room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_WALL });
+    if (walls.length > 0) {
+        const xmap = {}, ymap = {};
+        let pos;
+        let shape = 0;
+        for (const s of walls) {
+            if (!xmap[s.pos.x]) xmap[s.pos.x] = 0;
+            if (!ymap[s.pos.y]) ymap[s.pos.y] = 0;
+            xmap[s.pos.x]++;
+            ymap[s.pos.y]++;
+
+            if (xmap[s.pos.x] > 25) {
+                shape = 1;
+                pos = s.pos.x;
+                break;
+            } else if (ymap[s.pos.y] > 25) {
+                shape = 2;
+                pos = s.pos.y;
+                break;
+            }
+        }
+        
+        if (shape == 0) { // 中间通道判断有点复杂，暂时不写
+            return 0;
+        } else if (shape == 1) {
+            if (pos > 25 && powerBank.pos.x > pos) { // 无法到达
+                return 0;
+            } else if (pos < 25 && powerBank.pos.x < pos) { // 无法到达
+                return 0;
+            }
+        } else if (shape == 2) {
+            if (pos > 25 && powerBank.pos.y > pos) { // 无法到达
+                return 0;
+            } else if (pos < 25 && powerBank.pos.y < pos) { // 无法到达
+                return 0;
+            }
+        }
+    }
+    // 寻找是否有路径
+    // const walls = room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_WALL });
+    // if (walls.length > 0) {
+    //     const path = PathFinder.search(fromRoom.spawn[0].pos, { pos: powerBank.pos, range: 1}, {
+    //         maxCost: 50*16,
+    //         maxOps: 500,
+    //         roomCallback: (roomName) => {
+    //             const costs = new PathFinder.CostMatrix
+    //             if (roomName !== room.name) {
+    //                 return costs;
+    //             }
+    //             walls.forEach(s => {
+    //                 costs.set(s.pos.x, s.pos.y, 0xff);
+    //             })
+    //             return costs;
+    //         }
+    //     })
+
+    //     if (path.incomplete) {
+    //         return -1;
+    //     }
+    // }
+
     const count = Math.min(hpos, 3);
     if (powerBank.ticksToDecay > (2e6 / (600 * count) + 500)) return count;
     return 0;
@@ -441,25 +611,25 @@ const getPowerBankMissionData = (room: Room, hpos: number, power: number) => {
     const LOAmount = stores.reduce((sum, s) => sum + s.store['LO'], 0);
     const GOAmount = stores.reduce((sum, s) => sum + s.store['GO'], 0);
     const UHAmount = stores.reduce((sum, s) => sum + s.store['UH'], 0);
-    const GHO2Amount = stores.reduce((sum, s) => sum + s.store['GH2O'], 0);
+    const GHO2Amount = stores.reduce((sum, s) => sum + s.store['GHO2'], 0);
     const UH2OAmount = stores.reduce((sum, s) => sum + s.store['UH2O'], 0);
 
     let data;
     // 一队T2
-    if (power >= 7000 && LOAmount >= 3000 && GHO2Amount >= 3000 && UH2OAmount >= 3000) {
+    if (power >= 3000 && LOAmount >= 3000 && GHO2Amount >= 3000 && UH2OAmount >= 3000) {
         data = {
             creep: 1,
-            max: 1,
+            max: 2,
             boostLevel: 2,
             rCreep: 0,
             rMax: 0
         }
     }
     // 一队T1 + 5Range
-    else if (power >= 7000 && LOAmount >= 3000 && GOAmount >= 3000 && UHAmount >= 3000) {
+    else if (power >= 6000 && LOAmount >= 3000 && GOAmount >= 3000 && UHAmount >= 3000) {
         data = {
             creep: 1,
-            max: 2,
+            max: 3,
             boostLevel: 1,
             rCreep: 5,
             rMax: 8
@@ -469,7 +639,7 @@ const getPowerBankMissionData = (room: Room, hpos: number, power: number) => {
     else if (power > 3000 && LOAmount >= 3000 && GOAmount >= 3000 && UHAmount >= 3000) {
         data = {
             creep: Math.min(hpos, 2),
-            max: 3,
+            max: 4,
             boostLevel: 1,
             rCreep: hpos == 1 ? 4 : 0,
             rMax: 6
@@ -498,14 +668,6 @@ const getPowerBankMissionData = (room: Room, hpos: number, power: number) => {
     return data;
 }
 
-export const roomOutMine = (room: Room) => {
-    outEnergyMine(room);
-    outCenterMine(room);
-    outHighwayMine(room);
-    outDepositMine(room);
-    outPowerBankMine(room);
-}
-
 // 外房攻击者
 const createOutAttackerCreep = (room: Room, targetRoom: Room) => {
     const creeps = getRoomTargetCreepNum(targetRoom.name);
@@ -530,6 +692,17 @@ const createOutProtectorCreep = (room: Room, targetRoom: Room) => {
     if (out_protector.length + spawns >= 1) return false;
 
     addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.out_protector, {
+        home: room.name,
+        targetRoom: targetRoom.name
+    });
+}
+
+const createOutInvaderCreep = (room: Room, targetRoom: Room) => {
+    const creeps = getRoomTargetCreepNum(targetRoom.name);
+    const out_invader = (creeps[CREEP_ROLE.OUT_INVADER]||[]).filter(c => c.ticks > 300 || c.spawning);
+    const spawns = global.SpawnCreepNum[room.name][CREEP_ROLE.OUT_INVADER] || 0;
+    if (out_invader.length + spawns >= 1) return false;
+    addMission(room, MISSION_TYPE.SPAWN, SPAWN_MISSION.out_invader, {
         home: room.name,
         targetRoom: targetRoom.name
     });
@@ -701,4 +874,12 @@ const createOutDefendCreep = (room: Room, targetRoom: Room, hostiles: Creep[]) =
         return true;
     }
     return false;
+}
+
+export const roomOutMine = (room: Room) => {
+    outEnergyMine(room);
+    outCenterMine(room);
+    outHighwayMine(room);
+    outDepositMine(room);
+    outPowerBankMine(room);
 }

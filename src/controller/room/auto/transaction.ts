@@ -1,3 +1,5 @@
+import { ORDER_PRICE } from "@/constant/market";
+import { Goods } from "@/constant/resource";
 import { gerOrderPrice } from "@/util/market";
 import { toArray } from "lodash";
 
@@ -65,15 +67,24 @@ const roomMarket = {
         const total = (room.terminal.store[item.rType] || 0) + (room.storage.store[item.rType] || 0);
 
         // 如果已有数量大于设定值，返回
-        if (total >= item.amount) return;
+        if (total >= item.amount) {
+            if (total >= item.amount * 2) {
+                Memory.RoomInfo[room.name].Market.splice(Memory.RoomInfo[room.name].Market.findIndex(o => o.orderType === ORDER_BUY && o.rType === item.rType), 1)
+            }
+            return ;
+        }
 
         // 单次购买量
-        const orderAmount = Math.min(item.rType !== RESOURCE_ENERGY ? 3000 : 50000, item.amount-total);
+        const orderAmount = Math.min(item.rType !== RESOURCE_ENERGY ? 3000 : 80000, item.amount-total);
         
 
         let eOrder = null;
         // 查找是否已挂单
         for (const order of Object.values(Game.market.orders)) {
+            if (order.remainingAmount <= 0) {
+                Game.market.cancelOrder(order.id);
+                continue;
+            }
             if (order.roomName === room.name &&
                 order.resourceType === item.rType &&
                 order.type == ORDER_BUY &&
@@ -86,9 +97,17 @@ const roomMarket = {
 
         let price = gerOrderPrice(item.rType, ORDER_BUY);
 
+        
+        if (ORDER_PRICE[item.rType] && price > ORDER_PRICE[item.rType].max) {
+            price = ORDER_PRICE[item.rType].max;
+        }
+
         // 计算订单最优买价，更新价格
+        
         if (eOrder) {
-            if (price > item.price) return ;
+            if (price > item.price) {
+                price = item.price;
+            }
             if (price > eOrder.price + 0.1 || price < eOrder.price - 1) {
                 return Game.market.changeOrderPrice(eOrder.id, price);
             }
@@ -113,15 +132,29 @@ const roomMarket = {
         const total = (room.terminal.store[item.rType] || 0) + (room.storage.store[item.rType] || 0);
 
         // 如果已有数量小于设定值，返回
-        if (total < item.amount) return;
+        if (total < item.amount) {
+            if (total < item.amount / 2) {
+                Memory.RoomInfo[room.name].Market.splice(Memory.RoomInfo[room.name].Market.findIndex(o => o.orderType === ORDER_SELL && o.rType === item.rType), 1)
+            }
+            return ;
+        }
         
         // 单次出售量
-        const orderAmount = item.rType !== RESOURCE_ENERGY ? 3000 : 10000;
-        if (total - item.amount < orderAmount) return ;
+        let orderAmount = 3000;
+        if (item.rType === RESOURCE_ENERGY) {
+            orderAmount = 10000;
+        } else if (Goods.includes(item.rType as any)) {
+            orderAmount = Math.min(total - item.amount, 3000);
+        }
+        if (orderAmount <= 0 || total - item.amount < orderAmount) return ;
 
         let eOrder = null;
         // 查找是否已挂单
         for (const order of Object.values(Game.market.orders)) {
+            if (order.remainingAmount <= 0) {
+                Game.market.cancelOrder(order.id);
+                continue;
+            }
             if (order.roomName === room.name &&
                 order.resourceType === item.rType &&
                 order.type == ORDER_SELL &&
@@ -132,7 +165,17 @@ const roomMarket = {
             }
         }
 
-        let price = gerOrderPrice(item.rType, ORDER_SELL);
+        let price = gerOrderPrice(item.rType, ORDER_SELL) || 10;
+        let buyPrice = gerOrderPrice(item.rType, ORDER_BUY);
+
+        if (price > buyPrice * 2) {
+            price = buyPrice * 1.5;
+        }
+
+        
+        if (ORDER_PRICE[item.rType] && price < ORDER_PRICE[item.rType].min) {
+            price = ORDER_PRICE[item.rType].min;
+        }
 
         // 计算订单最优买价，更新价格
         if (eOrder) {
@@ -161,7 +204,10 @@ const roomMarket = {
         const total = (room.terminal.store[item.rType] || 0) + (room.storage.store[item.rType] || 0);
 
         // 如果已有数量大于设定值，返回
-        if (total >= item.amount) return;
+        if (total >= item.amount) {
+            // Memory.RoomInfo[room.name].Market.splice(Memory.RoomInfo[room.name].Market.findIndex(o => o.orderType === 'deal_buy' && o.rType === item.rType), 1)
+            return ;
+        }
 
         const buyAmount = Math.min(item.amount - total, room.terminal.store.getFreeCapacity());
         if (buyAmount < 5000) return ;
@@ -178,10 +224,13 @@ const roomMarket = {
         const total = (room.terminal.store[item.rType] || 0) + (room.storage.store[item.rType] || 0);
 
         // 如果已有数量小于设定值，返回
-        if (total <= item.amount) return;
+        if (total <= item.amount) {
+            // Memory.RoomInfo[room.name].Market.splice(Memory.RoomInfo[room.name].Market.findIndex(o => o.orderType === 'deal_sell' && o.rType === item.rType), 1)
+            return ;
+        }
 
         const sellAmount = Math.min(total - item.amount, room.terminal.store[item.rType]);
-        if (sellAmount < 3000) return ;
+        if (sellAmount <= (Goods.includes(item.rType as any) ? 0 : 3000)) return ;
 
         // 按照最优买单成交
         roomMarket.auto_deal(room, item.rType, sellAmount, ORDER_BUY, 10, item.price);
@@ -281,7 +330,7 @@ export const roomAutoTransaction = (room: Room) => {
     if (Game.time % 50 !== 0) return ;
     if (!room.terminal) return ;
     
-    const market = Memory.RoomInfo[room.name].Market;
+    const market = Object.assign([], Memory.RoomInfo[room.name].Market);
     if (!market) return ;
     
     for (const item of market) {
