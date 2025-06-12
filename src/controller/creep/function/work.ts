@@ -35,7 +35,8 @@ export const creepGoHarvest = (creep: Creep, target: Source, harvestPos?: any) =
     } else if (res === ERR_NOT_IN_RANGE) {
         creepMoveTo(creep, target, {
             maxRooms: 1,
-            range: 1
+            range: 1,
+            swampCost: 5
         });
     }
     return false;

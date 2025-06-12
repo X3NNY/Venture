@@ -83,6 +83,7 @@ interface Memory {
             Factory?: {
                 state: number,                                  // 工作阶段
                 open: boolean,                                  // 是否工作
+                loadtime?: number,                              // 初次装填时间
                 wakeup?: number,                                // 唤醒时间
                 produceCheck?: boolean,                         // 是否开启生产检测
                 product: CommodityConstant,                     // 生产化合物

@@ -9,11 +9,8 @@ import { memoryInit } from './init/memory';
 import mountConsole from '@/console';
 import { endClean } from './end/clean';
 import { endGeneratePixel } from './end/pixel';
-import { getCpuConsumption } from '@/util/function';
-import { endClaimCheck } from './end/claim';
-import { endAidCheck } from './end/aid';
 import { drawTable } from '@/util/chart';
-import { endAttackCheck } from './end/attack';
+import { endInterShardManage, startInterShardManage } from './shard/intershard';
 
 let _cachedMemory: Memory;
 let _isFirstCreate = true;
@@ -42,7 +39,7 @@ const onCreate = () => {
 }
 
 const onStart = () => {
-
+    startInterShardManage();
 }
 
 const onProcess = () => {
@@ -97,6 +94,8 @@ const onProcess = () => {
 const onEnd = () => {
     endClean();
     endGeneratePixel();
+    endInterShardManage();
+
     // endClaimCheck();
     // endAidCheck();
     // endAttackCheck();
@@ -112,13 +111,13 @@ export const botLoop = () => {
     onCreate();
 
     // 回合开始事件
-    onStart();
+    errorMapper(onStart);
 
     // 回合主进程：房间&爬
     errorMapper(onProcess);
 
     // 回合结束事件
-    onEnd();
+    errorMapper(onEnd);
 
     // 回合销毁事件
     onDestory();

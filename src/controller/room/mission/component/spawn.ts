@@ -14,7 +14,8 @@ export const addSpawnMission = (room: Room, mission: MISSION, memory: any) => {
         data: {
             code: mission.code,
             body: getCreepRoleBody(room, mission.role, memory.opts),
-            memory: memory
+            memory: _.omit(memory, 'opts')
+            
         }
     }, 'level')
 }

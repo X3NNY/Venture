@@ -32,6 +32,14 @@ export const addManageMission = (room: Room, mission: MISSION, data: {rType: Res
             source = room.factory.id;
             target = room.terminal.id;
             break;
+        case 's2p':
+            source = room.storage.id;
+            target = room.powerSpawn.id;
+            break;
+        case 't2p':
+            source = room.terminal.id;
+            target = room.powerSpawn.id;
+            break;
     }
 
     // 已存在则更新

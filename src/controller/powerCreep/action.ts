@@ -20,9 +20,9 @@ const opsGenerate = (pc: PowerCreep) => {
 }
 
 const opsTransfer = (pc: PowerCreep) => {
-    if (pc.store.getFreeCapacity() === 0 && pc.store[RESOURCE_OPS] > 200) {
+    if (pc.store.getFreeCapacity() === 0 && pc.store[RESOURCE_OPS] >= 200) {
         const halfOps = Math.floor(pc.store[RESOURCE_OPS] / 2);
-        const amount = Math.min(halfOps, pc.store[RESOURCE_OPS] - 200);
+        const amount = Math.min(halfOps, pc.level === 1 ? 100 : pc.store[RESOURCE_OPS] - 200);
         if (amount <= 0) return false;
         
         if (pc.pos.isNearTo(pc.room.storage)) {

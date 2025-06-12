@@ -18,7 +18,7 @@ export default {
             if (Game.time % (creep.memory.cache.standby+1)) return;
             let target;
             const structs = creep.room.find(FIND_STRUCTURES, {
-                filter: (s: any) => s.hits && s.hits > 0 && s.hits < 1e4 &&
+                filter: (s: any) => s.hits && s.hits > 0 && s.hits < 5e4 &&
                     s.structureType !== STRUCTURE_ROAD &&
                     (!s.store || s.store.getUsedCapacity() < 1000) &&
                     !creep.memory.cache.exclude?.includes(s.id)

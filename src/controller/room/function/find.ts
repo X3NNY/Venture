@@ -33,6 +33,12 @@ export const roomFindClosestSource = (room: Room, creep: Creep) => {
                 if (terrain.get(nx, ny) === TERRAIN_MASK_WALL) {
                     return false;
                 }
+                if (room.lookAt(nx, ny).find(s => s.structure && (s.structure.structureType !== STRUCTURE_ROAD && s.structure.structureType !== STRUCTURE_CONTAINER && s.structure.structureType !== STRUCTURE_RAMPART))) {
+                    return false;
+                }
+                if (room.link.find(l => l.pos.isEqualTo(nx, ny))) {
+                    return false;
+                }
                 if (room.link.filter(l => l.pos.isNearTo(nx, ny)).length >= 2) {
                     return true;
                 }
@@ -60,7 +66,7 @@ export const roomFindClosestSource = (room: Room, creep: Creep) => {
     const sources = room.source.filter(source => {
         let creepCount = creeps.filter(c => c.memory.targetSourceId === source.id).length;
         // 周围有敌对爬爬
-        if (room.level < 3 && source.pos.findInRange(FIND_HOSTILE_CREEPS, 3, {
+        if ((room.level||0) < 3 && source.pos.findInRange(FIND_HOSTILE_CREEPS, 3, {
             filter: c => c.getActiveBodyparts(ATTACK) > 0 || c.getActiveBodyparts(RANGED_ATTACK) > 0
         }).length > 0) return false;
 
@@ -69,8 +75,9 @@ export const roomFindClosestSource = (room: Room, creep: Creep) => {
         // if (hPos.length === 0) return false;
 
         if (creepCount === 0) zeroSources.push(source);
-
-        if (creepCount < hPos.length) return true;
+        if (!room.level && creepCount === 0) return true;
+        else if (room.level && creepCount < hPos.length) return true;
+        return false;
     })
 
     let targetSource = null;
@@ -91,4 +98,13 @@ export const roomFindClosestSource = (room: Room, creep: Creep) => {
         source: targetSource,
         harvestPos: harvestPos
     }
+}
+
+export const roomFindClosestPotalRoom = (room: Room) => {
+    const coords = [
+        parseInt(room.name.substring(1, 3)),
+        parseInt(room.name.substring(4, 6))
+    ]
+    const portalRoom = `${room.name[0]}${coords[0]%10 > 5 ? coords[0] + (10 - coords[0] % 10) : coords[0] - coords[0] % 10}${room.name[3]}${coords[1]%10 > 5? coords[1] + (10 - coords[1] % 10) : coords[1] - coords[1] % 10}`;
+    return portalRoom;
 }

@@ -40,9 +40,9 @@ export const addMission = (room: Room, type: string, mission: MISSION, data: any
     }
 }
 
-export const getMissionByDist = (room: Room, type: string, pos?: RoomPosition) => {
+export const getMissionByDist = (room: Room, type: string, pos?: RoomPosition, lock: boolean = false) => {
     if (!room.memory.missions[type]) return;
-    const tasks = room.memory.missions[type].filter(m => !m.lock);
+    const tasks = room.memory.missions[type].filter(m => (lock || !m.lock));
     if (tasks.length === 0) return null;
     if (tasks.length === 1) return tasks[0];
 
@@ -119,7 +119,7 @@ export const delayMission = (room: Room, type: string, missionId: string) => {
     newMission.delay = (newMission.delay || 0) + 1;
     room.memory.missions[type].splice(index, 1);
     
-    if (newMission.delay > 3) return ;
+    if (newMission.delay > 5) return ;
     insertSorted(room.memory.missions[type], newMission, 'level');
 }
 

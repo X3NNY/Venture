@@ -49,15 +49,20 @@ export const getCreepRoleBody = (room: Room, role: string, options?: any) => {
     let moveParts: number; 
     const maxEnergy = options.now ? room.energyAvailable : room.energyCapacityAvailable;
 
+    if (room.level == 8 && options.body) {
+        return CreepRoleBody[role][level][options.body];
+    }
+
     if (room.level > 2 && room.source.length < 2 && (room.storage?.store[RESOURCE_ENERGY]||0) < 10000) {
         level -= 1;
     }
 
-    const allRoad = room.road.length > 70;
+    const allRoad = room.road.length >= (room.level >= 8 ? 30 : 50);
 
     if (CreepRoleBody[role]) {
         while (level >= 1) {
-            body = CreepRoleBody[role][level].body;
+            if (options.upbody && CreepRoleBody[role][level].upbody) body = CreepRoleBody[role][level].upbody;
+            else body = CreepRoleBody[role][level].body;
             moveParts = getCreepRoleMoveCount(allRoad, body.length, options.move || CreepRoleBody[role][level].move);
             if (maxEnergy >= calcCreepBodyEnergy(body) + moveParts * 50) break;
             level --;

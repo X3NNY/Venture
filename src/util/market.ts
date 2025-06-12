@@ -1,3 +1,5 @@
+import { ORDER_PRICE } from "@/constant/market";
+
 const filterOutliers = (arr: Order[]): Order[] => {
     // 计算平均值
     const mean = arr.reduce((sum, order) => sum + order.price, 0) / arr.length;
@@ -23,7 +25,8 @@ export const gerOrderPrice = (rType: ResourceConstant, orderType: ORDER_BUY | OR
     let top10 = orders
         // 初步过滤 
         .filter(order => {
-            if (orderType === ORDER_BUY && order.price < 10) return false;
+            if (Game.rooms[order.roomName]?.my) return false;
+            if (orderType === ORDER_BUY && order.price < 1) return false;
             if (rType === RESOURCE_ENERGY && order.amount < 10000) return false;
             if (rooms[order.roomName]) return false;
             rooms[order.roomName] = true;
@@ -53,5 +56,6 @@ export const gerOrderPrice = (rType: ResourceConstant, orderType: ORDER_BUY | OR
             price = orders[0].price * 1.01;
         }
     }
+
     return price;
 }

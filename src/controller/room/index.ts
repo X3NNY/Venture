@@ -18,7 +18,7 @@ export const roomInit = (room: Room) => {
 
 export const eventLoop = (room: Room) => {
     // 更新建筑缓存
-    if (Game.time % 100 == 0) room.update();
+    if (Game.time % 300 == 0) room.update();
 
     // 是否自己的房间
     if (!room || !room.controller?.my) return ;
@@ -28,7 +28,6 @@ export const eventLoop = (room: Room) => {
         if (Memory.gamemode === 'auto') {
             Memory.RoomInfo[room.name] = {
                 autobuild: true,
-                
             }
         } else return ;
     }
