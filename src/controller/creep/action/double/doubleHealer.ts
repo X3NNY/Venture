@@ -5,13 +5,17 @@ import { creepIsOnEdge } from "../../function/position";
 
 export default {
     prepare: (creep: Creep) => {
+        if (!creep.memory.cache) creep.memory.cache = {};
         if (!creep.memory.notified) {
             creep.notifyWhenAttacked(false);
             creep.memory.notified = true;
         }
 
         if (!creep.memory.boosted) {
-            const boosts = ['XGHO2', 'GHO2', 'GO', 'XLHO2', 'LHO2', 'LO', 'XZHO2', 'ZHO2', 'ZO'];
+            const boosts = ['XGHO2', 'GHO2', 'GO', 'XLHO2', 'LHO2', 'LO'];
+            if (creep.getActiveBodyparts(MOVE) < 25) {
+                boosts.push('XZHO2', 'ZHO2', 'ZO');
+            }
             creep.memory.boosted = creepChargeBoost(creep, boosts);
             return false;
         }

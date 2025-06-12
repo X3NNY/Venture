@@ -1,5 +1,6 @@
 import { roomStructureTower } from "@/controller/room/structure/tower";
 import { creepMoveTo } from "../../function/move";
+import { range } from "lodash";
 
 const creepDefendAttackerActions = {
     patrol: (creep: Creep) => {
@@ -16,7 +17,7 @@ const creepDefendAttackerActions = {
             )) {
                 return false;
             }
-            return r.hits >= 6e5;
+            return r.hits >= 5e5;
         });
 
         let minDist = Infinity;
@@ -44,9 +45,15 @@ const creepDefendAttackerActions = {
             ) {
                 const result = creep.attack(target);
                 if (result === OK) roomStructureTower.attack(creep.room, target);
+                else if (result === ERR_NOT_IN_RANGE && !targetRampart) {
+                    creepMoveTo(creep, target.pos, { maxRooms: 1 });
+                }
             } else if (hasAttackPart) {
                 const result = creep.rangedAttack(target);
                 if (result === OK) roomStructureTower.attack(creep.room, target);
+                else if (result === ERR_NOT_IN_RANGE && !targetRampart) {
+                    creepMoveTo(creep, target.pos, { maxRooms: 1, range: 3 });
+                }
             }
         }
     }

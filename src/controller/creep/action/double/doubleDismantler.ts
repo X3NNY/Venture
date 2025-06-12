@@ -3,6 +3,7 @@ import { creepDoubleMoveTo, creepDoubleMoveToRoom, creepMoveTo } from "../../fun
 
 export default {
     prepare: (creep: Creep) => {
+        if (!creep.memory.cache) creep.memory.cache = {}
         if (!creep.memory.notified) {
             creep.notifyWhenAttacked(false);
             creep.memory.notified = true;
@@ -59,13 +60,13 @@ export default {
             const walls = creep.room.find(FIND_STRUCTURES, {
                 filter: s => s.structureType === STRUCTURE_WALL || s.structureType === STRUCTURE_RAMPART
             });
-            target = walls[0];
+            target = creep.pos.findClosestByRange(walls);
             if (target) {
                 creep.memory.cache.wall = target.id;
             }
         }
         if (target) {
-            if (creep.pos.isNearTo(target)) {
+            if (creep.pos.isNearTo(target.pos)) {
                 creep.dismantle(target);
             } else {
                 if (bindCreep) {

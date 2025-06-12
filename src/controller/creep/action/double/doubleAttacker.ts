@@ -2,10 +2,39 @@ import { creepChargeBoost } from "../../function/charge";
 import { creepDoubleMoveTo, creepDoubleMoveToRoom } from "../../function/move";
 import { creepIsOnEdge } from "../../function/position";
 
+
+const moveWithAttack = (creep: Creep, target: RoomPosition) => {
+    creepDoubleMoveTo(creep, target, '#ff0000');
+
+    if (creep.fatigue > 0) {
+        const target = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 1);
+        if (target.length > 0) {
+            creep.attack(target[0]);
+        }
+    }
+}
+
+
 const creepDoubleAttackerActions = {
     attack: (creep: Creep) => {
+        if (!creep.memory.cache) creep.memory.cache = {};
+        const flag = Game.flags['ATTACK'];
+        if (flag && flag.room && flag.room.name === creep.room.name) {
+            const structs = flag.pos.lookFor(LOOK_STRUCTURES);
+            if (structs.length === 0) {
+                flag.remove();
+            } else {
+                if (creep.pos.inRangeTo(flag, 1)) {
+                    creep.attack(structs[0]);
+                } else {
+                    moveWithAttack(creep, flag.pos);
+                }
+                return ;
+            }
+        }
+
         const enemies = creep.room.find(FIND_HOSTILE_CREEPS, {
-            filter: c => !creepIsOnEdge(c)
+            filter: c => !creepIsOnEdge(c) && (c.getActiveBodyparts(ATTACK) > 0 || c.getActiveBodyparts(RANGED_ATTACK) > 0 || c.getActiveBodyparts(HEAL) > 0)
         });
         if (enemies.length > 0) {
             const targetEnemy = creep.pos.findClosestByRange(enemies);
@@ -14,6 +43,7 @@ const creepDoubleAttackerActions = {
             } else {
                 creepDoubleMoveTo(creep, targetEnemy.pos, '#ff0000');
             }
+            creep.memory.cache.target = null;
             return ;
         }
 
@@ -39,7 +69,7 @@ const creepDoubleAttackerActions = {
             if (creep.pos.inRangeTo(target, 1)) {
                 creep.attack(target);
             } else {
-                creepDoubleMoveTo(creep, target.pos, '#ff0000'); 
+                moveWithAttack(creep, target.pos);
             }
         }
     }
@@ -54,7 +84,10 @@ export default {
         }
 
         if (!creep.memory.boosted) {
-            const boosts = ['XGHO2', 'GHO2', 'GO', 'XUH2O', 'UH2O', 'UH', 'XZHO2', 'ZHO2', 'ZO'];
+            const boosts = ['XGHO2', 'GHO2', 'GO', 'XUH2O', 'UH2O', 'UH'];
+            if (creep.getActiveBodyparts(MOVE) < 25) {
+                boosts.push('XZHO2', 'ZHO2', 'ZO');
+            }
             creep.memory.boosted = creepChargeBoost(creep, boosts);
             return false;
         }

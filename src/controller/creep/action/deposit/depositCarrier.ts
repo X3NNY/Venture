@@ -35,6 +35,11 @@ const creepDepositCarrierActions = {
                 }
             } else if (tType === 'tombstone' && target.store.getUsedCapacity() > 0) {
                 const rType = Object.keys(target.store).find(t => t !== RESOURCE_ENERGY) as ResourceConstant;
+                if (!rType) {
+                    creep.memory.cache.targetId = '';
+                    creep.memory.cache.tType = '';
+                    return ;
+                }
                 const result = creep.withdraw(target, rType);
                 if (result === ERR_NOT_IN_RANGE) {
                     creepMoveTo(creep, target, { range: 1, maxRooms: 1});
